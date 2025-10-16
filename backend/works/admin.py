@@ -1,0 +1,102 @@
+"""
+Configuración del admin de Django para la app works.
+Permite gestionar obras del portfolio desde el panel de administración.
+"""
+from django.contrib import admin
+from .models import Work
+
+
+@admin.register(Work)
+class WorkAdmin(admin.ModelAdmin):
+    """
+    Admin personalizado para el modelo Work.
+    
+    Características:
+    - Lista con información resumida de cada obra
+    - Filtros por artista, categoría, destacado, fecha
+    - Búsqueda por título, descripción y nombre del artesano
+    - Edición rápida de display_order e is_featured desde la lista
+    - Campos organizados en fieldsets lógicos
+    """
+    
+    # Columnas visibles en la lista
+    list_display = (
+        'title',
+        'artist',
+        'category',
+        'is_featured',
+        'display_order',
+        'created_at',
+    )
+    
+    # Filtros disponibles en la barra lateral
+    list_filter = (
+        'artist',
+        'category',
+        'is_featured',
+        'created_at',
+    )
+    
+    # Campos de búsqueda
+    search_fields = (
+        'title',
+        'description',
+        'artist__display_name',
+    )
+    
+    # Campos de solo lectura
+    readonly_fields = (
+        'created_at',
+        'updated_at',
+    )
+    
+    # Campos editables directamente desde la lista (sin entrar al detalle)
+    list_editable = (
+        'display_order',
+        'is_featured',
+    )
+    
+    # Organización de campos en el formulario de edición
+    fieldsets = (
+        ('Información Básica', {
+            'fields': (
+                'artist',
+                'title',
+                'description',
+                'category',
+            )
+        }),
+        ('Imágenes', {
+            'fields': (
+                'thumbnail_url',
+                'images',
+            ),
+            'description': 'URLs de imágenes almacenadas en Cloudinary'
+        }),
+        ('Configuración', {
+            'fields': (
+                'display_order',
+                'is_featured',
+            ),
+            'description': 'Control de visualización y ordenamiento'
+        }),
+        ('Metadata', {
+            'fields': (
+                'created_at',
+                'updated_at',
+            ),
+            'classes': ('collapse',),  # Sección colapsable
+        }),
+    )
+    
+    # Configuración adicional
+    date_hierarchy = 'created_at'  # Navegación por fechas en la parte superior
+    list_per_page = 50  # Paginación
+    
+    def get_queryset(self, request):
+        """
+        Optimiza queries con select_related para evitar N+1 queries.
+        Pre-carga la relación con ArtistProfile.
+        """
+        queryset = super().get_queryset(request)
+        return queryset.select_related('artist', 'artist__user')

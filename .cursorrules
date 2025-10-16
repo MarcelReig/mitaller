@@ -1,0 +1,248 @@
+# MiTaller.art - Marketplace de Artesanos de Menorca
+
+## Contexto del Proyecto
+Marketplace multi-vendor SaaS para artesanos de Menorca. Los artesanos pueden:
+- Crear perfil público con slug único (/artistas/{slug})
+- Gestionar portfolio de obras (galería de su trabajo)
+- Vender productos con Stripe Connect (comisión 12%)
+- Gestionar pedidos desde su dashboard
+
+## Stack Tecnológico
+
+### Backend (Django)
+- Framework: Django 5.0 + Django REST Framework
+- Database: PostgreSQL 15
+- Auth: JWT (djangorestframework-simplejwt)
+- Media: Cloudinary (futuro)
+- Payments: Stripe Connect Express (futuro)
+- Deploy: Railway
+
+### Frontend (Next.js)
+- Framework: Next.js 14 (App Router)
+- Language: TypeScript (strict mode)
+- Styling: Tailwind CSS + shadcn/ui
+- HTTP: Axios + TanStack Query
+- State: Zustand (auth + global state)
+- Deploy: Vercel
+
+## Estructura del Monorepo
+
+mitaller/
+├── backend/          # Django REST API
+│   ├── config/       # Settings del proyecto
+│   ├── accounts/     # Custom User + Auth
+│   ├── artists/      # Perfiles de artesanos
+│   ├── works/        # Portfolio items
+│   └── shop/         # Productos + Orders
+└── frontend/         # Next.js App Router
+    └── src/
+        ├── app/      # Routes (App Router)
+        ├── components/
+        ├── lib/      # Utils + API client
+        └── stores/   # Zustand stores
+
+## Apps Django y Responsabilidades
+
+### accounts (Auth + Users)
+- Custom User model (email como username)
+- Roles: CUSTOMER, ARTISAN_PENDING, ARTISAN_VERIFIED, ADMIN
+- JWT authentication (register, login, refresh, logout)
+- Email verification (futuro)
+
+### artists (Perfiles Públicos)
+- ArtistProfile model (1:1 con User)
+- Campos: slug, display_name, bio, avatar, location (pueblo Menorca), craft_type
+- Stripe: stripe_account_id, onboarding_completed (futuro)
+- URLs públicas: /api/artists/, /api/artists/{slug}/
+
+### works (Portfolio)
+- Work model: título, descripción, categoría, media_urls[], thumbnail_url
+- ForeignKey a ArtistProfile
+- display_order para drag & drop
+- Solo el artesano dueño puede editar sus obras
+
+### shop (E-commerce)
+- Product model: nombre, precio, stock, imagen, shipping_options
+- Order model: multi-vendor, status, stripe_session_id
+- OrderItem: relaciona Order con Product y ArtistProfile (para comisiones)
+- Solo el artesano dueño puede editar sus productos
+
+## Convenciones de Código
+
+### Python (Backend)
+- Style: PEP 8 estricto
+- Type hints: Usar siempre que sea posible
+- Docstrings: Google style para funciones complejas
+- Imports: isort con perfil "black"
+- Naming:
+  * Variables/funciones: snake_case
+  * Clases: PascalCase
+  * Constantes: UPPER_SNAKE_CASE
+
+### TypeScript (Frontend)
+- Style: Airbnb + Prettier
+- Strict mode: habilitado
+- Naming:
+  * Variables/funciones: camelCase
+  * Componentes: PascalCase
+  * Constantes: UPPER_SNAKE_CASE
+  * Tipos/Interfaces: PascalCase con prefijo I (IUser, IArtist)
+
+### CSS (Tailwind)
+- Preferir utilities de Tailwind
+- Custom CSS solo cuando sea necesario (usar BEM)
+- Responsive: mobile-first (sm:, md:, lg:, xl:)
+
+## Patrones de Diseño
+
+### Backend (Django)
+- Views: Class-Based Views con ViewSets (DRF)
+- Serializers: ModelSerializer con validaciones custom
+- Permissions: Custom permissions (IsArtistOwner, IsVerifiedArtisan)
+- URLs: Routers de DRF, versionado /api/v1/
+- Queries: Usar select_related/prefetch_related para optimizar
+- Transactions: Usar transaction.atomic() en operaciones críticas
+
+### Frontend (Next.js)
+- Components: Server Components por defecto
+- Client Components: Solo cuando necesites interactividad (use* hooks)
+- Data fetching: Server Components cuando sea posible, TanStack Query para client
+- State management:
+  * Local: useState, useReducer
+  * Global: Zustand (auth, cart)
+  * Server: Next.js cache, TanStack Query
+- Forms: React Hook Form + zod validation
+- Error handling: Error boundaries + try/catch apropiados
+
+## API Design
+
+### Endpoints RESTful
+GET    /api/artists/              # Listar artistas (público)
+GET    /api/artists/{slug}/       # Detalle artista (público)
+POST   /api/artists/              # Crear perfil (auth requerido)
+PUT    /api/artists/{slug}/       # Actualizar (owner only)
+
+GET    /api/works/                # Listar obras (público, filtrable por artist)
+POST   /api/works/                # Crear obra (artisan verified)
+PUT    /api/works/{id}/           # Actualizar (owner only)
+DELETE /api/works/{id}/           # Eliminar (owner only)
+
+GET    /api/products/             # Listar productos (público)
+POST   /api/products/             # Crear producto (artisan verified)
+POST   /api/orders/               # Crear orden (customer)
+GET    /api/orders/me/            # Mis órdenes (auth)
+
+### Response format
+Success:
+{
+  "success": true,
+  "data": {...},
+  "message": "Success message"
+}
+
+Error:
+{
+  "success": false,
+  "error": "Error message",
+  "details": {...}
+}
+
+## Seguridad
+
+### Backend
+- CORS: Solo frontend (local + producción)
+- JWT: Access token (15min) + Refresh token (7 días)
+- Permissions: Verificar en CADA endpoint (IsAuthenticated, IsArtistOwner)
+- Input validation: Serializers + custom validators
+- SQL Injection: ORM previene (no raw queries sin parametrizar)
+- Secrets: Siempre en .env, nunca commitear
+
+### Frontend
+- JWT: Almacenar en httpOnly cookie (preferido) o localStorage (fallback)
+- CSRF: Next.js maneja automáticamente en Server Actions
+- XSS: React escapa automáticamente, cuidado con dangerouslySetInnerHTML
+- Env vars: NEXT_PUBLIC_* solo para públicas, secretas en server-side
+
+## Testing (Fase futura)
+
+### Backend
+- Framework: pytest + pytest-django
+- Coverage mínimo: 80%
+- Tests críticos: Auth, Payments, Permissions
+- Fixtures: factory_boy para datos de prueba
+
+### Frontend
+- Framework: Vitest + React Testing Library
+- E2E críticos: Playwright (registro → login → crear producto → compra)
+
+## Git Workflow
+
+### Commits
+Conventional Commits:
+- feat: Nueva feature
+- fix: Bug fix
+- refactor: Refactoring sin cambio funcional
+- docs: Documentación
+- test: Tests
+- chore: Tareas mantenimiento
+
+Ejemplos:
+feat(artists): add bio field to artist profile
+fix(auth): resolve JWT refresh token expiry issue
+refactor(shop): optimize product query with select_related
+
+### Branches (cuando sea necesario)
+- main: Producción estable
+- develop: Desarrollo activo (por ahora trabaja directo en main)
+- feature/nombre: Features nuevas (futuro)
+
+## Reglas de Generación de Código
+
+Cuando generes código, SIEMPRE:
+
+1. Explica decisiones técnicas importantes
+   - ¿Por qué elegiste este approach?
+   - ¿Hay alternativas?
+
+2. Incluye comentarios para lógica compleja
+   # Calculate artist payout after 12% platform commission
+   artist_payout = price * Decimal('0.88')
+
+3. Maneja errores apropiadamente
+   - Backend: try/except con logs
+   - Frontend: Error boundaries + user-friendly messages
+
+4. Valida inputs
+   - Backend: Serializers + custom validators
+   - Frontend: zod schemas
+
+5. Usa type hints y tipos
+   Python: def create_artist_profile(user: User, data: dict) -> ArtistProfile:
+   TypeScript: function createOrder(items: ICartItem[]): Promise<IOrder>
+
+6. Sigue las convenciones arriba
+   - Naming, estructura, patterns
+
+## Contexto de Negocio (NO OLVIDAR)
+
+- Comisión: 12% fija en MVP (futuro: 15% free, 8% pro + 20€/mes)
+- Verificación: Manual por admin (cambiar role PENDING → VERIFIED)
+- Envíos: Cada artesano define precios (local/península/internacional)
+- MVP Scope: Auth + Artistas + Portfolio + Shop + Pagos (sin reviews, mapa, eventos)
+- Target: 10-15 artesanos piloto en 12 semanas
+
+## Referencias
+
+- Marina (proyecto anterior): /marina-backend, /marina-frontend
+  → Reutilizar lógica de upload Cloudinary, drag & drop, auth flow
+- Django Docs: https://docs.djangoproject.com/
+- DRF Docs: https://www.django-rest-framework.org/
+- Next.js Docs: https://nextjs.org/docs
+- shadcn/ui: https://ui.shadcn.com/
+
+## Notas Importantes
+
+- Este es un MONOREPO: backend y frontend en el mismo repo
+- Deploy separado: Railway (backend) + Vercel (frontend)
+- Cursor puede ver TODO el contexto del proyecto
+- Al responder, pregunta si algo no está claro antes de asumir
