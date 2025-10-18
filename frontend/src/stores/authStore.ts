@@ -27,7 +27,7 @@ interface AuthState {
  * Acciones del store de autenticación
  */
 interface AuthActions {
-  login: (data: LoginData) => Promise<void>;
+  login: (data: LoginData) => Promise<User>;
   logout: () => void;
   register: (data: RegisterData) => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -65,7 +65,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
         try {
           const response = await axiosInstance.post<AuthResponse>(
-            '/api/v1/auth/token/',
+            '/api/v1/auth/login/',
             data
           );
 
@@ -83,6 +83,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           });
 
           toast.success(`¡Bienvenido, ${user.username}!`);
+          
+          return user; // Retornar el usuario para que el componente pueda redirigir
         } catch (error: unknown) {
           set({ isLoading: false });
 
@@ -186,7 +188,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
         try {
           // Obtener datos del usuario actual
-          const response = await axiosInstance.get<User>('/api/v1/auth/me/');
+          const response = await axiosInstance.get<User>('/api/v1/auth/profile/');
 
           set({
             user: response.data,
@@ -214,7 +216,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         }
 
         try {
-          const response = await axiosInstance.get<User>('/api/v1/auth/me/');
+          const response = await axiosInstance.get<User>('/api/v1/auth/profile/');
           set({ user: response.data });
         } catch (error) {
           console.error('Error refreshing user:', error);

@@ -1,14 +1,63 @@
-// TODO: Página de directorio de artesanos
-// - Lista de artesanos con filtros
-// - Búsqueda por nombre, tipo de artesanía, ubicación
-// - Grid de cards con avatar, nombre, especialidad
+'use client';
 
+import { useState } from 'react';
+import type { ArtistFilters as ArtistFiltersType } from '@/types';
+import ArtistsGrid from '@/components/artists/ArtistsGrid';
+import ArtistFilters from '@/components/artists/ArtistFilters';
+
+/**
+ * Página del directorio de artesanos con filtros funcionales
+ * 
+ * Permite buscar y filtrar artesanos por nombre, especialidad y ubicación.
+ * Los filtros se aplican en tiempo real con React Query.
+ */
 export default function ArtesanosPage() {
+  // State para filtros
+  const [filters, setFilters] = useState<ArtistFiltersType>({
+    search: '',
+    craft_type: undefined,
+    location: undefined,
+  });
+
+  // Handler para cuando cambian los filtros
+  const handleFilterChange = (newFilters: ArtistFiltersType) => {
+    setFilters(newFilters);
+  };
+
   return (
-    <div>
-      <h1>Directorio de Artesanos</h1>
-      {/* TODO: Implementar */}
+    <div className="min-h-screen py-12">
+      <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto space-y-8">
+          
+          {/* Header */}
+          <div className="space-y-4">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+              Directorio de Artesanos
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl">
+              Descubre el talento local de Menorca. Explora perfiles de artesanos, 
+              conoce su trabajo y encuentra piezas únicas.
+            </p>
+          </div>
+
+          {/* Filtros */}
+          <div className="bg-card border rounded-lg p-6 shadow-sm">
+            <ArtistFilters
+              initialFilters={filters}
+              onFilterChange={handleFilterChange}
+            />
+          </div>
+
+          {/* Grid de artesanos */}
+          <div>
+            <ArtistsGrid
+              search={filters.search}
+              craftType={filters.craft_type}
+              location={filters.location}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-

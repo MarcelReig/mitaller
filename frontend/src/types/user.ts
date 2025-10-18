@@ -35,6 +35,9 @@ export interface User {
   last_name?: string;
   role: UserRole;
   is_approved?: boolean; // Solo para artesanos
+  is_active: boolean;
+  can_sell?: boolean; // true si es artesano aprobado
+  date_joined?: string;
   artist_profile?: ArtistProfile;
 }
 
@@ -42,6 +45,7 @@ export interface User {
  * Respuesta del endpoint de login/token
  */
 export interface AuthResponse {
+  message?: string;
   access: string;
   refresh: string;
   user: User;
