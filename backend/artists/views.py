@@ -150,3 +150,52 @@ class ArtistProfileViewSet(viewsets.ReadOnlyModelViewSet):
             # Retornar perfil actualizado completo
             response_serializer = ArtistProfileSerializer(profile)
             return Response(response_serializer.data)
+    
+    @action(
+        detail=True,
+        methods=['get'],
+        permission_classes=[AllowAny],
+        url_path='works'
+    )
+    def works(self, request, slug=None):
+        """
+        Endpoint para obtener todas las obras de un artesano.
+        
+        GET /api/v1/artists/{slug}/works/
+        
+        Retorna todas las obras del artesano ordenadas por display_order.
+        Útil para la página de perfil del artesano donde se muestran
+        sus obras en un grid/galería.
+        
+        Permisos:
+        - Público (sin autenticación requerida)
+        
+        Returns:
+        - 200: Lista de obras del artesano
+        - 404: Artesano no encontrado
+        
+        Example:
+            GET /api/v1/artists/juan-ceramista/works/
+            [
+                {
+                    "id": 101,
+                    "title": "Vasijas tradicionales",
+                    "thumbnail_url": "https://...",
+                    "category": "ceramics",
+                    "is_featured": false,
+                    "display_order": 1
+                }
+            ]
+        """
+        # Importar aquí para evitar circular imports
+        from works.serializers import WorkListSerializer
+        
+        # Obtener el artesano por slug
+        artist = self.get_object()
+        
+        # Obtener todas las obras del artesano ordenadas
+        works = artist.works.all().order_by('display_order', '-created_at')
+        
+        # Serializar y retornar
+        serializer = WorkListSerializer(works, many=True)
+        return Response(serializer.data)

@@ -36,7 +36,7 @@ mitaller/
 └── README.md         # This file
 🛠️ Tech Stack
 Backend: Django 5 + DRF + PostgreSQL
-Frontend: Next.js 14 + TypeScript + Tailwind
+Frontend: Next.js 15 + TypeScript + Tailwind
 Auth: JWT
 Payments: Stripe Connect (coming soon)
 Deploy: Railway + Vercel

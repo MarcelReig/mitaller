@@ -6,7 +6,7 @@ Transformar el MVP actual (Marina) en **mitaller.art** - un marketplace SaaS don
 
 **Stack Objetivo:**
 - **Backend:** Django + Django Rest Framework + PostgreSQL  
-- **Frontend:** Next.js 14 (App Router) + Tailwind CSS + shadcn/ui + BEM
+- **Frontend:** Next.js 15 (App Router) + Tailwind CSS + shadcn/ui + BEM
 - **Enfoque:** Minimalista e incremental - añadir complejidad solo cuando sea necesaria
 
 ---
@@ -35,7 +35,7 @@ Transformar el MVP actual (Marina) en **mitaller.art** - un marketplace SaaS don
 - [ ] Sistema de suscripciones (Free/Pro/Enterprise)
 
 ### ⚛️ Phase 3: Frontend (1-2 semanas)
-- [ ] Setup Next.js 14 con App Router
+- [x] Setup Next.js 15 con App Router
 - [ ] Instalar Tailwind CSS + shadcn/ui
 - [ ] Implementar auth frontend (login, register, protected routes)
 - [ ] Crear páginas públicas (home, /artists/[slug], shop)
@@ -193,7 +193,7 @@ python manage.py runserver
 - Libro: "Two Scoops of Django"
 
 ### Next.js
-- [Next.js 14 Docs](https://nextjs.org/docs)
+- [Next.js 15 Docs](https://nextjs.org/docs)
 - [shadcn/ui](https://ui.shadcn.com/)
 
 ### Arquitectura

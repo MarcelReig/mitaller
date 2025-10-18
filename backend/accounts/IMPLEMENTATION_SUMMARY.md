@@ -550,7 +550,7 @@ Solo artesanos se registran vía API. Compradores son invitados (no tienen cuent
 
 Sistema implementado para **MiTaller** - Multi-vendor Artisan Marketplace
 
-Stack: Django 5 + DRF + PostgreSQL + Next.js 14 + TypeScript
+Stack: Django 5 + DRF + PostgreSQL + Next.js 15 + TypeScript
 
 ---
 
