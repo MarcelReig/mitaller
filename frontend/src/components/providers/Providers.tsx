@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
  * 
  * Features:
  * - React Query para data fetching
- * - React Hot Toast para notificaciones
+ * - Sonner para notificaciones
  * - Verificación de autenticación al iniciar
  */
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -21,6 +21,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         defaultOptions: {
           queries: {
             staleTime: 60 * 1000, // 1 minuto
+            gcTime: 5 * 60 * 1000, // 5 minutos
             retry: 1,
             refetchOnWindowFocus: false,
           },
@@ -32,27 +33,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthInitializer>
         {children}
-        <Toaster
-          position="top-right"
+        <Toaster 
+          position="bottom-right"
           toastOptions={{
             duration: 4000,
             style: {
-              background: '#363636',
-              color: '#fff',
-            },
-            success: {
-              duration: 3000,
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
-              },
-            },
-            error: {
-              duration: 5000,
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
-              },
+              background: 'hsl(var(--background))',
+              color: 'hsl(var(--foreground))',
+              border: '1px solid hsl(var(--border))',
             },
           }}
         />

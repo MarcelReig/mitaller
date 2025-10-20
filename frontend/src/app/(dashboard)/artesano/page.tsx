@@ -1,14 +1,9 @@
-// TODO: Dashboard home del artesano
-// - Resumen de estadísticas (ventas, productos, visitas)
-// - Gráficos con datos recientes
-// - Acciones rápidas
+import { redirect } from 'next/navigation';
 
-export default function ArtesanoDashboardPage() {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      {/* TODO: Implementar estadísticas */}
-    </div>
-  );
+/**
+ * Redirect del sistema viejo /artesano al nuevo dashboard
+ * Esta página ya no se usa - todo se consolidó en /dashboard
+ */
+export default function ArtesanoPage() {
+  redirect('/dashboard');
 }
-

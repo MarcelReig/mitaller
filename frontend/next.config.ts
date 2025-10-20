@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Configuración de imágenes para Cloudinary y Django backend
+  // Configuración de imágenes para Cloudinary, placeholders y Django backend
   images: {
     remotePatterns: [
       {
@@ -10,9 +10,21 @@ const nextConfig: NextConfig = {
         port: '8000',
         pathname: '/media/**',
       },
+      // Cloudinary (producción)
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      // Placeholders
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
         pathname: '/**',
       },
     ],

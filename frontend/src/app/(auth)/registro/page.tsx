@@ -1,6 +1,5 @@
 'use client';
 
-import type { Metadata } from 'next';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -18,7 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 const registerSchema = z
   .object({

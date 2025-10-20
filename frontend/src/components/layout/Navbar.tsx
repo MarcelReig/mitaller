@@ -130,7 +130,7 @@ export default function Navbar() {
                   {isArtisan && (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link href="/artesano" className="cursor-pointer">
+                        <Link href="/dashboard" className="cursor-pointer">
                           <LayoutDashboard className="mr-2 h-4 w-4" />
                           Mi Taller
                         </Link>
@@ -215,7 +215,7 @@ export default function Navbar() {
               <>
                 {isArtisan && (
                   <Link
-                    href="/artesano"
+                    href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-4 py-2 text-sm font-medium rounded-md text-muted-foreground hover:bg-muted transition-colors"
                   >

@@ -5,9 +5,19 @@ import {
   UseQueryResult,
   UseMutationResult,
 } from '@tanstack/react-query';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import axiosInstance from '@/lib/axios';
 import type { Work, WorkFormData, WorkListResponse } from '@/types';
+import type { AxiosError } from 'axios';
+
+// Helper para obtener mensaje de error de respuesta de Axios
+function getErrorMessage(error: Error): string {
+  if ('response' in error) {
+    const axiosError = error as AxiosError<{ detail?: string }>;
+    return axiosError.response?.data?.detail || error.message;
+  }
+  return error.message;
+}
 
 // Query keys para cache de React Query
 export const workKeys = {
@@ -108,14 +118,12 @@ export function useCreateWork(): UseMutationResult<Work, Error, WorkFormData> {
       const formData = new FormData();
       formData.append('title', data.title);
       if (data.description) formData.append('description', data.description);
-      if (data.year) formData.append('year', data.year.toString());
+      if (data.category) formData.append('category', data.category);
       if (data.is_featured !== undefined) {
         formData.append('is_featured', data.is_featured.toString());
       }
-      if (data.display_order !== undefined) {
-        formData.append('display_order', data.display_order.toString());
-      }
-      if (data.image) formData.append('image', data.image);
+      if (data.thumbnail_url) formData.append('thumbnail_url', data.thumbnail_url);
+      if (data.images) formData.append('images', JSON.stringify(data.images));
 
       const response = await axiosInstance.post<Work>(
         '/api/v1/works/',
@@ -126,16 +134,14 @@ export function useCreateWork(): UseMutationResult<Work, Error, WorkFormData> {
       );
       return response.data;
     },
-    onSuccess: (newWork) => {
+    onSuccess: () => {
       // Invalidar queries para refetch
       queryClient.invalidateQueries({ queryKey: workKeys.lists() });
 
       toast.success('Obra creada exitosamente');
     },
-    onError: (error: any) => {
-      const message =
-        error.response?.data?.detail ||
-        'Error al crear la obra. Inténtalo de nuevo.';
+    onError: (error: Error) => {
+      const message = getErrorMessage(error) || 'Error al crear la obra. Inténtalo de nuevo.';
       toast.error(message);
     },
   });
@@ -169,23 +175,21 @@ export function useUpdateWork(): UseMutationResult<
   return useMutation({
     mutationFn: async ({ id, data }) => {
       // Si hay imagen nueva, usar FormData
-      const hasFile = data.image instanceof File;
+      const hasFile = false; // En la nueva API no se usa File directamente
 
       let payload: FormData | Partial<WorkFormData>;
-      let headers: Record<string, string> = {};
+      const headers: Record<string, string> = {};
 
       if (hasFile) {
         const formData = new FormData();
         if (data.title) formData.append('title', data.title);
         if (data.description) formData.append('description', data.description);
-        if (data.year) formData.append('year', data.year.toString());
+        if (data.category) formData.append('category', data.category);
         if (data.is_featured !== undefined) {
           formData.append('is_featured', data.is_featured.toString());
         }
-        if (data.display_order !== undefined) {
-          formData.append('display_order', data.display_order.toString());
-        }
-        if (data.image) formData.append('image', data.image);
+        if (data.thumbnail_url) formData.append('thumbnail_url', data.thumbnail_url);
+        if (data.images) formData.append('images', JSON.stringify(data.images));
 
         payload = formData;
         headers['Content-Type'] = 'multipart/form-data';
@@ -217,15 +221,13 @@ export function useUpdateWork(): UseMutationResult<
 
       return { previousWork };
     },
-    onError: (error: any, { id }, context) => {
+    onError: (error: Error, { id }, context) => {
       // Rollback en caso de error
       if (context?.previousWork) {
         queryClient.setQueryData(workKeys.detail(id), context.previousWork);
       }
 
-      const message =
-        error.response?.data?.detail ||
-        'Error al actualizar la obra. Inténtalo de nuevo.';
+      const message = getErrorMessage(error) || 'Error al actualizar la obra. Inténtalo de nuevo.';
       toast.error(message);
     },
     onSuccess: (updatedWork) => {
@@ -284,7 +286,7 @@ export function useDeleteWork(): UseMutationResult<void, Error, number> {
 
       return { previousWorks };
     },
-    onError: (error: any, id, context) => {
+    onError: (error: Error, id, context) => {
       // Rollback
       if (context?.previousWorks) {
         context.previousWorks.forEach(([queryKey, data]) => {
@@ -292,9 +294,7 @@ export function useDeleteWork(): UseMutationResult<void, Error, number> {
         });
       }
 
-      const message =
-        error.response?.data?.detail ||
-        'Error al eliminar la obra. Inténtalo de nuevo.';
+      const message = getErrorMessage(error) || 'Error al eliminar la obra. Inténtalo de nuevo.';
       toast.error(message);
     },
     onSuccess: () => {
@@ -362,7 +362,7 @@ export function useReorderWorks(): UseMutationResult<
 
       return { previousWorks };
     },
-    onError: (error: any, _, context) => {
+    onError: (error: Error, _, context) => {
       // Rollback
       if (context?.previousWorks) {
         context.previousWorks.forEach(([queryKey, data]) => {
@@ -370,9 +370,7 @@ export function useReorderWorks(): UseMutationResult<
         });
       }
 
-      const message =
-        error.response?.data?.detail ||
-        'Error al reordenar las obras. Inténtalo de nuevo.';
+      const message = getErrorMessage(error) || 'Error al reordenar las obras. Inténtalo de nuevo.';
       toast.error(message);
     },
     onSuccess: () => {

@@ -1,15 +1,9 @@
-// TODO: Gestión del portfolio (obras de arte)
-// - Lista de obras con imágenes
-// - Crear, editar, eliminar obras
-// - Upload de imágenes con react-dropzone
-// - Drag & drop para ordenar
+import { redirect } from 'next/navigation';
 
-export default function PortfolioPage() {
-  return (
-    <div>
-      <h1>Mi Portfolio</h1>
-      {/* TODO: Implementar CRUD de obras */}
-    </div>
-  );
+/**
+ * Redirect del sistema viejo /artesano/portfolio al nuevo dashboard
+ * Ahora la gestión de obras está en /dashboard/obras
+ */
+export default function ArtesanoPortfolioPage() {
+  redirect('/dashboard/obras');
 }
-

@@ -39,6 +39,7 @@ export function WorkDetailClient({ work, artisanSlug }: WorkDetailClientProps) {
       <WorkGallery
         images={work.images}
         workTitle={work.title}
+        workId={work.id}
         onImageClick={handleImageClick}
       />
 

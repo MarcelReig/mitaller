@@ -1,6 +1,5 @@
 'use client';
 
-import type { Metadata } from 'next';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -51,10 +50,10 @@ export default function LoginPage() {
       // Redirigir según el role del usuario
       if (user?.role === 'artisan') {
         console.log('Redirigiendo a dashboard artesano...');
-        router.push('/artesano');
+        router.push('/dashboard');
       } else if (user?.role === 'admin') {
         console.log('Redirigiendo a dashboard admin...');
-        router.push('/artesano'); // Admins también van al dashboard
+        router.push('/dashboard'); // Admins también van al dashboard
       } else {
         console.log('Redirigiendo al home...');
         router.push('/');

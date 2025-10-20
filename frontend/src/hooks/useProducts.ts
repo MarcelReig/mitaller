@@ -5,7 +5,7 @@ import {
   UseQueryResult,
   UseMutationResult,
 } from '@tanstack/react-query';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import axiosInstance from '@/lib/axios';
 import type {
   Product,
@@ -13,6 +13,16 @@ import type {
   ProductFilters,
   ProductListResponse,
 } from '@/types';
+import type { AxiosError } from 'axios';
+
+// Helper para obtener mensaje de error de respuesta de Axios
+function getErrorMessage(error: Error): string {
+  if ('response' in error) {
+    const axiosError = error as AxiosError<{ detail?: string }>;
+    return axiosError.response?.data?.detail || error.message;
+  }
+  return error.message;
+}
 
 // Query keys para cache de React Query
 export const productKeys = {
@@ -159,16 +169,14 @@ export function useCreateProduct(): UseMutationResult<
       );
       return response.data;
     },
-    onSuccess: (newProduct) => {
+    onSuccess: () => {
       // Invalidar queries para refetch
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
 
       toast.success('Producto creado exitosamente');
     },
-    onError: (error: any) => {
-      const message =
-        error.response?.data?.detail ||
-        'Error al crear el producto. Inténtalo de nuevo.';
+    onError: (error: Error) => {
+      const message = getErrorMessage(error) || 'Error al crear el producto. Inténtalo de nuevo.';
       toast.error(message);
     },
   });
@@ -207,7 +215,7 @@ export function useUpdateProduct(): UseMutationResult<
         (data.images && data.images.length > 0);
 
       let payload: FormData | Partial<ProductFormData>;
-      let headers: Record<string, string> = {};
+      const headers: Record<string, string> = {};
 
       if (hasFiles) {
         const formData = new FormData();
@@ -263,20 +271,18 @@ export function useUpdateProduct(): UseMutationResult<
         queryClient.setQueryData<Product>(productKeys.detail(id), {
           ...previousProduct,
           ...data,
-        });
+        } as Product);
       }
 
       return { previousProduct };
     },
-    onError: (error: any, { id }, context) => {
+    onError: (error: Error, { id }, context) => {
       // Rollback en caso de error
       if (context?.previousProduct) {
         queryClient.setQueryData(productKeys.detail(id), context.previousProduct);
       }
 
-      const message =
-        error.response?.data?.detail ||
-        'Error al actualizar el producto. Inténtalo de nuevo.';
+      const message = getErrorMessage(error) || 'Error al actualizar el producto. Inténtalo de nuevo.';
       toast.error(message);
     },
     onSuccess: (updatedProduct) => {
@@ -336,7 +342,7 @@ export function useDeleteProduct(): UseMutationResult<void, Error, number> {
 
       return { previousProducts };
     },
-    onError: (error: any, id, context) => {
+    onError: (error: Error, id, context) => {
       // Rollback
       if (context?.previousProducts) {
         context.previousProducts.forEach(([queryKey, data]) => {
@@ -344,9 +350,7 @@ export function useDeleteProduct(): UseMutationResult<void, Error, number> {
         });
       }
 
-      const message =
-        error.response?.data?.detail ||
-        'Error al eliminar el producto. Inténtalo de nuevo.';
+      const message = getErrorMessage(error) || 'Error al eliminar el producto. Inténtalo de nuevo.';
       toast.error(message);
     },
     onSuccess: () => {

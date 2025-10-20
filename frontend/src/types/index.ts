@@ -66,7 +66,7 @@ export {
 // API Response types
 export type ApiError = {
   detail?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export type PaginatedResponse<T> = {

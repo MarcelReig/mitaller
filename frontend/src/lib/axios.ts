@@ -1,10 +1,10 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 // Nombres de las cookies para los tokens
-const TOKEN_COOKIE = 'mitaller_access_token';
-const REFRESH_TOKEN_COOKIE = 'mitaller_refresh_token';
+const TOKEN_COOKIE = 'token';
+const REFRESH_TOKEN_COOKIE = 'refresh_token';
 
 /**
  * Helper functions para manejo de tokens en cookies
@@ -206,7 +206,7 @@ axiosInstance.interceptors.response.use(
     // --- 403 FORBIDDEN: Sin permisos ---
     if (error.response?.status === 403) {
       const message = 
-        (error.response.data as any)?.detail || 
+        (error.response.data as Record<string, unknown>)?.detail as string || 
         'No tienes permisos para realizar esta acción';
       
       if (typeof window !== 'undefined') {
@@ -223,7 +223,7 @@ axiosInstance.interceptors.response.use(
 
     // --- 400 BAD REQUEST: Errores de validación ---
     if (error.response?.status === 400) {
-      const errorData = error.response.data as any;
+      const errorData = error.response.data as Record<string, unknown>;
       
       // Si hay errores de campo específicos, no mostrar toast aquí
       // Dejar que el componente los maneje
@@ -234,7 +234,7 @@ axiosInstance.interceptors.response.use(
       
       // Si hay un mensaje general de error
       if (typeof window !== 'undefined' && errorData.detail) {
-        toast.error(errorData.detail);
+        toast.error(errorData.detail as string);
       }
     }
 

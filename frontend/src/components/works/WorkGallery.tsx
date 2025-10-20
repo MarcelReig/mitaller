@@ -12,16 +12,17 @@
 
 'use client';
 
-import Image from 'next/image';
+import { SafeNextImage } from '@/components/ui/SafeNextImage';
 import { galleryUrl } from '@/lib/cloudinary';
 
 interface WorkGalleryProps {
   images: string[];
   workTitle: string;
+  workId: number;
   onImageClick: (index: number) => void;
 }
 
-export function WorkGallery({ images, workTitle, onImageClick }: WorkGalleryProps) {
+export function WorkGallery({ images, workTitle, workId, onImageClick }: WorkGalleryProps) {
   if (!images || images.length === 0) {
     return (
       <div className="text-center py-16">
@@ -40,12 +41,15 @@ export function WorkGallery({ images, workTitle, onImageClick }: WorkGalleryProp
           onClick={() => onImageClick(index)}
           className="group relative aspect-square overflow-hidden rounded-lg bg-muted cursor-pointer"
         >
-          <Image
+          <SafeNextImage
             src={galleryUrl(imageUrl)}
             alt={`${workTitle} - Imagen ${index + 1}`}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            fallbackType="artwork"
+            fallbackId={`${workId}-${index}`}
+            fallbackSize="medium"
           />
           
           {/* Overlay en hover */}

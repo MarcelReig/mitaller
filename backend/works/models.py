@@ -101,6 +101,12 @@ class Work(models.Model):
         help_text=_('Obra destacada que aparece prominentemente en el perfil')
     )
     
+    is_active = models.BooleanField(
+        _('activa'),
+        default=True,
+        help_text=_('Obra activa y visible públicamente. Permite ocultar obras sin eliminarlas.')
+    )
+    
     # Timestamps
     created_at = models.DateTimeField(
         _('fecha de creación'),

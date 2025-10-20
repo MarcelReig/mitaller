@@ -1,227 +1,201 @@
 """
-Views para la app works.
-API REST para gestionar obras del portfolio de artesanos.
+Works ViewSet
+Endpoints para gestión de obras por artistas
 """
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-from django.db import transaction
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import PermissionDenied
+
 from .models import Work
-from .serializers import WorkSerializer, WorkListSerializer, WorkReorderSerializer
-from .permissions import IsArtistOwnerOrReadOnly, IsArtistOwner
+from .serializers import WorkDetailSerializer, WorkCreateUpdateSerializer
+from .permissions import IsArtistOwnerOrAdmin
 
 
 class WorkViewSet(viewsets.ModelViewSet):
     """
-    ViewSet para gestionar obras del portfolio.
+    ViewSet para gestión completa de obras.
     
-    Endpoints públicos de lectura:
-    - GET /api/v1/works/ - Lista todas las obras
-    - GET /api/v1/works/{id}/ - Detalle de una obra
-    
-    Endpoints privados de escritura (solo artesano dueño):
-    - POST /api/v1/works/ - Crear nueva obra
-    - PUT/PATCH /api/v1/works/{id}/ - Actualizar obra
-    - DELETE /api/v1/works/{id}/ - Eliminar obra
-    - POST /api/v1/works/reorder/ - Reordenar obras (drag & drop)
-    
-    Características:
-    - Lectura pública sin autenticación
-    - Escritura solo para artesano dueño
-    - Filtros por artista, categoría, destacado
-    - Búsqueda por título y descripción
-    - Ordenamiento por display_order y fecha
-    - Asignación automática del artista al crear
-    - Reordenamiento mediante drag & drop
-    
-    Permisos:
-    - IsArtistOwnerOrReadOnly: Lectura pública, escritura para dueño
-    - GET: Cualquiera
-    - POST: Usuario autenticado con ArtistProfile
-    - PUT/PATCH/DELETE: Solo artesano dueño de la obra
-    
-    Serializers:
-    - Lista: WorkListSerializer (simplificado)
-    - Detalle/Creación: WorkSerializer (completo)
+    Endpoints:
+    - GET /api/v1/works/              - Listar obras (filtradas por usuario)
+    - GET /api/v1/works/{id}/         - Detalle de obra
+    - POST /api/v1/works/             - Crear obra (solo artistas)
+    - PUT /api/v1/works/{id}/         - Actualizar obra (solo propietario)
+    - DELETE /api/v1/works/{id}/      - Eliminar obra (solo propietario)
+    - PUT /api/v1/works/reorder/      - Reordenar obras (solo propietario)
     """
     
-    queryset = Work.objects.select_related('artist', 'artist__user')
-    permission_classes = [IsAuthenticatedOrReadOnly, IsArtistOwnerOrReadOnly]
-    
-    # Configuración de filtros y búsqueda
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.SearchFilter,
-        filters.OrderingFilter,
-    ]
-    
-    # Campos de filtro exacto
-    filterset_fields = ['artist', 'category', 'is_featured']
-    
-    # Campos de búsqueda de texto libre
-    search_fields = ['title', 'description']
-    
-    # Campos de ordenamiento permitidos
-    ordering_fields = ['display_order', 'created_at', 'title']
-    
-    # Ordenamiento por defecto: primero por orden personalizado
-    ordering = ['display_order']
+    permission_classes = [IsAuthenticatedOrReadOnly, IsArtistOwnerOrAdmin]
     
     def get_serializer_class(self):
         """
-        Retorna el serializer apropiado según la acción.
-        
-        - Lista: serializer simplificado para performance
-        - Detalle/Creación: serializer completo con validaciones
-        - Reorder: serializer especializado para reordenamiento
+        Usar serializer apropiado según acción
         """
-        if self.action == 'list':
-            return WorkListSerializer
-        elif self.action == 'reorder':
-            return WorkReorderSerializer
-        return WorkSerializer
+        if self.action in ['create', 'update', 'partial_update']:
+            return WorkCreateUpdateSerializer
+        return WorkDetailSerializer
     
     def get_queryset(self):
         """
-        Filtra el queryset según el usuario autenticado.
-        
-        Lógica:
-        - Usuario anónimo: Solo obras públicas
-        - Artesano autenticado: Sus propias obras (incluidas privadas/borradores)
-        - Otros usuarios: Solo obras públicas
-        
-        Esto permite que artesanos vean obras en progreso en su dashboard
-        mientras mantiene el portfolio público limpio.
+        Filtrar obras según tipo de usuario:
+        - Público (no autenticado): solo obras activas y ordenadas
+        - Artista: solo sus obras
+        - Admin: todas las obras
         """
-        queryset = super().get_queryset()
         user = self.request.user
         
-        # Si el usuario es artesano autenticado, puede ver sus propias obras
-        if user and user.is_authenticated and hasattr(user, 'artist_profile'):
-            # Permitir ver todas sus obras (sin filtro adicional)
-            return queryset
+        # Usuario no autenticado: solo obras activas
+        if not user.is_authenticated:
+            return Work.objects.filter(
+                is_active=True
+            ).select_related('artist').order_by('display_order', '-created_at')
         
-        # Para usuarios no autenticados o no artesanos, solo obras públicas
-        # (En este modelo no hay campo is_published, todas son públicas)
-        # Si en el futuro agregas is_published:
-        # return queryset.filter(is_published=True)
-        return queryset
+        # Artista: solo sus obras
+        if hasattr(user, 'artist_profile'):
+            return Work.objects.filter(
+                artist=user.artist_profile
+            ).select_related('artist').order_by('display_order', '-created_at')
+        
+        # Admin: todas las obras
+        if user.is_staff:
+            return Work.objects.all().select_related(
+                'artist'
+            ).order_by('display_order', '-created_at')
+        
+        # Otros usuarios autenticados: ninguna obra
+        return Work.objects.none()
     
     def perform_create(self, serializer):
         """
-        Asigna automáticamente el artista al crear una obra.
-        
-        El artista se obtiene del perfil del usuario autenticado.
-        No se permite especificar un artista diferente.
-        
-        Esto asegura que:
-        1. Artesanos solo crean obras bajo su propio perfil
-        2. No se puede crear obras para otros artesanos
-        3. La relación artista-obra es siempre correcta
+        Al crear obra:
+        - Asignar al artista autenticado
+        - Calcular siguiente display_order
+        - Validar que el usuario sea artista
         """
-        serializer.save(artist=self.request.user.artist_profile)
+        user = self.request.user
+        
+        # Verificar que el usuario tiene perfil de artista
+        if not hasattr(user, 'artist_profile'):
+            raise PermissionDenied("Solo los artistas pueden crear obras")
+        
+        # Calcular siguiente display_order
+        last_work = Work.objects.filter(
+            artist=user.artist_profile
+        ).order_by('-display_order').first()
+        
+        next_order = (last_work.display_order + 1) if last_work else 1
+        
+        # Guardar con artista y display_order
+        serializer.save(
+            artist=user.artist_profile,
+            display_order=next_order,
+            is_active=True
+        )
     
-    @action(
-        detail=False,
-        methods=['post'],
-        permission_classes=[IsAuthenticatedOrReadOnly, IsArtistOwner],
-        url_path='reorder'
-    )
+    def perform_update(self, serializer):
+        """
+        Al actualizar obra:
+        - Verificar que el artista es propietario
+        - Permitir a admins editar cualquier obra
+        """
+        work = self.get_object()
+        user = self.request.user
+        
+        # Verificar ownership
+        if hasattr(user, 'artist_profile'):
+            if work.artist != user.artist_profile and not user.is_staff:
+                raise PermissionDenied(
+                    "No puedes editar obras de otros artistas"
+                )
+        elif not user.is_staff:
+            raise PermissionDenied("No tienes permisos para editar obras")
+        
+        serializer.save()
+    
+    def perform_destroy(self, instance):
+        """
+        Al eliminar obra:
+        - Verificar ownership
+        - Hard delete (eliminar permanentemente)
+        """
+        user = self.request.user
+        
+        # Verificar ownership
+        if hasattr(user, 'artist_profile'):
+            if instance.artist != user.artist_profile and not user.is_staff:
+                raise PermissionDenied(
+                    "No puedes eliminar obras de otros artistas"
+                )
+        elif not user.is_staff:
+            raise PermissionDenied("No tienes permisos para eliminar obras")
+        
+        # Hard delete (eliminar permanentemente)
+        instance.delete()
+    
+    @action(detail=False, methods=['put'], url_path='reorder')
     def reorder(self, request):
         """
-        Endpoint para reordenar obras mediante drag & drop.
+        Reordenar obras del artista.
         
-        POST /api/v1/works/reorder/
-        Body: {
-            "work_ids": [5, 2, 8, 1, 3]  // IDs en el nuevo orden deseado
+        Endpoint: PUT /api/v1/works/reorder/
+        
+        Body:
+        {
+            "order": [3, 1, 2, 5, 4]  // Array de IDs en el nuevo orden
         }
         
-        Flujo:
-        1. Recibe lista de IDs en el nuevo orden
-        2. Valida que todos los IDs existan y pertenezcan al artesano
-        3. Actualiza display_order de cada obra secuencialmente
-        4. Usa transacción para atomicidad (todo o nada)
-        
-        Casos de uso:
-        - Artesano reordena obras en su portfolio (drag & drop)
-        - Frontend envía nueva lista ordenada
-        - Backend actualiza display_order de todas las obras
-        
-        Permisos:
-        - Solo el artesano dueño puede reordenar sus obras
-        - No se puede reordenar obras de otros artesanos
-        
-        Returns:
-            200: Obras reordenadas exitosamente
-            400: Lista de IDs inválida o vacía
-            403: Usuario no es el dueño de las obras
-            404: Algunas obras no existen
-        
-        Example:
-            POST /api/v1/works/reorder/
-            {
-                "work_ids": [5, 2, 8]
-            }
-            
-            Resultado:
-            - Obra ID 5: display_order = 1
-            - Obra ID 2: display_order = 2
-            - Obra ID 8: display_order = 3
+        Response:
+        {
+            "success": true,
+            "message": "5 obras reordenadas correctamente"
+        }
         """
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        user = request.user
         
-        work_ids = serializer.validated_data['work_ids']
-        artist_profile = request.user.artist_profile
-        
-        # Obtener todas las obras del artesano con los IDs especificados
-        works = Work.objects.filter(
-            id__in=work_ids,
-            artist=artist_profile
-        )
-        
-        # Verificar que todas las obras existan y pertenezcan al artesano
-        if works.count() != len(work_ids):
+        # Verificar que el usuario es artista
+        if not hasattr(user, 'artist_profile'):
             return Response(
-                {
-                    'error': 'Algunos IDs de obras no existen o no te pertenecen',
-                    'detail': f'Se encontraron {works.count()} obras de {len(work_ids)} solicitadas'
-                },
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Solo los artistas pueden reordenar obras"},
+                status=status.HTTP_403_FORBIDDEN
             )
         
-        # Crear diccionario de obras por ID para acceso rápido
-        works_by_id = {work.id: work for work in works}
+        # Obtener array de IDs
+        order_ids = request.data.get('order', [])
         
-        # Actualizar display_order de cada obra en una transacción
-        try:
-            with transaction.atomic():
-                for index, work_id in enumerate(work_ids, start=1):
-                    work = works_by_id.get(work_id)
-                    if work:
-                        work.display_order = index
-                        work.save(update_fields=['display_order'])
-            
-            # Retornar las obras actualizadas en el nuevo orden
-            updated_works = Work.objects.filter(
-                id__in=work_ids
-            ).order_by('display_order')
-            
-            result_serializer = WorkListSerializer(updated_works, many=True)
-            
-            return Response({
-                'message': f'{len(work_ids)} obras reordenadas exitosamente',
-                'works': result_serializer.data
-            })
-        
-        except Exception as e:
+        # Validar que sea un array
+        if not order_ids or not isinstance(order_ids, list):
             return Response(
                 {
-                    'error': 'Error al reordenar obras',
-                    'detail': str(e)
+                    "error": "Se requiere un array 'order' con los IDs de las obras"
                 },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_400_BAD_REQUEST
             )
+        
+        # Validar que todos los IDs sean números
+        if not all(isinstance(id, int) for id in order_ids):
+            return Response(
+                {"error": "Todos los IDs deben ser números enteros"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Actualizar display_order de cada obra
+        updated_count = 0
+        for index, work_id in enumerate(order_ids, start=1):
+            try:
+                work = Work.objects.get(
+                    id=work_id,
+                    artist=user.artist_profile
+                )
+                work.display_order = index
+                work.save(update_fields=['display_order'])
+                updated_count += 1
+            except Work.DoesNotExist:
+                # Ignorar IDs que no pertenecen al artista
+                continue
+        
+        return Response({
+            "success": True,
+            "message": f"{updated_count} obras reordenadas correctamente"
+        })

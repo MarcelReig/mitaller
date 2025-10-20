@@ -1,15 +1,9 @@
-// TODO: Historial de ventas y órdenes
-// - Lista de órdenes con estado
-// - Filtros por fecha, estado
-// - Detalles de cada orden
-// - Exportar a CSV
+import { redirect } from 'next/navigation';
 
-export default function VentasPage() {
-  return (
-    <div>
-      <h1>Mis Ventas</h1>
-      {/* TODO: Implementar lista de órdenes */}
-    </div>
-  );
+/**
+ * Redirect del sistema viejo /artesano/ventas al nuevo dashboard
+ * Ahora la gestión de pedidos está en /dashboard/pedidos
+ */
+export default function ArtesanoVentasPage() {
+  redirect('/dashboard/pedidos');
 }
-

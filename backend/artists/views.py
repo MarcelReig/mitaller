@@ -193,8 +193,8 @@ class ArtistProfileViewSet(viewsets.ReadOnlyModelViewSet):
         # Obtener el artesano por slug
         artist = self.get_object()
         
-        # Obtener todas las obras del artesano ordenadas
-        works = artist.works.all().order_by('display_order', '-created_at')
+        # Obtener solo obras activas del artesano ordenadas
+        works = artist.works.filter(is_active=True).order_by('display_order', '-created_at')
         
         # Serializar y retornar
         serializer = WorkListSerializer(works, many=True)

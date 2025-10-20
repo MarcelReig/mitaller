@@ -5,13 +5,13 @@
  */
 export type WorkCategory = 
   | 'ceramics'    // Cerámica
+  | 'painting'    // Pintura
+  | 'sculpture'   // Escultura
   | 'jewelry'     // Joyería
-  | 'leather'     // Marroquinería
-  | 'textiles'    // Textiles
+  | 'textile'     // Textil
   | 'wood'        // Madera
   | 'glass'       // Vidrio
-  | 'sculpture'   // Escultura
-  | 'painting'    // Pintura
+  | 'metal'       // Metal
   | 'other';      // Otro
 
 /**
@@ -19,13 +19,13 @@ export type WorkCategory =
  */
 export const WORK_CATEGORY_LABELS: Record<WorkCategory, string> = {
   ceramics: 'Cerámica',
+  painting: 'Pintura',
+  sculpture: 'Escultura',
   jewelry: 'Joyería',
-  leather: 'Marroquinería',
-  textiles: 'Textiles',
+  textile: 'Textil',
   wood: 'Madera',
   glass: 'Vidrio',
-  sculpture: 'Escultura',
-  painting: 'Pintura',
+  metal: 'Metal',
   other: 'Otro',
 };
 

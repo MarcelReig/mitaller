@@ -11,7 +11,6 @@
  * Server Component para mejor SEO.
  */
 
-import Image from 'next/image';
 import { MapPin, Palette, ExternalLink, Instagram } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';

@@ -19,10 +19,10 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { ImageIcon, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { SafeNextImage } from '@/components/ui/SafeNextImage';
 import { thumbUrl } from '@/lib/cloudinary';
 import type { WorkListItem } from '@/types/work';
 
@@ -43,12 +43,15 @@ export function WorkCard({ work, artisanSlug }: WorkCardProps) {
       <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-border">
         {/* Thumbnail con overlay */}
         <div className="relative aspect-square overflow-hidden bg-muted">
-          <Image
+          <SafeNextImage
             src={optimizedThumbnail}
             alt={work.title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            fallbackType="artwork"
+            fallbackId={work.id}
+            fallbackSize="medium"
           />
 
           {/* Overlay oscuro en hover */}

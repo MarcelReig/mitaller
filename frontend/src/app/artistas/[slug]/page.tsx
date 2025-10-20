@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
+import { SafeNextImage } from '@/components/ui/SafeNextImage';
 import axios from '@/lib/axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -97,7 +97,7 @@ export default function ArtistDetailPage() {
         // Fetch artist products
         const productsResponse = await axios.get(`/api/v1/shop/products/?artist=${slug}`);
         setProducts(productsResponse.data.results || productsResponse.data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error fetching artist data:', err);
         setError('No se pudo cargar la información del artista');
       } finally {
@@ -140,18 +140,15 @@ export default function ArtistDetailPage() {
         {/* Avatar */}
         <div className="md:col-span-1">
           <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
-            {artist.avatar ? (
-              <Image
-                src={artist.avatar}
-                alt={artist.display_name}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Palette className="h-24 w-24 text-muted-foreground" />
-              </div>
-            )}
+            <SafeNextImage
+              src={artist.avatar}
+              alt={artist.display_name}
+              fill
+              className="object-cover"
+              fallbackType="avatar"
+              fallbackId={artist.slug}
+              fallbackSize="large"
+            />
           </div>
         </div>
 
@@ -259,14 +256,15 @@ export default function ArtistDetailPage() {
               {works.map((work) => (
                 <Card key={work.id} className="overflow-hidden">
                   <div className="relative h-64 bg-muted">
-                    {work.image && (
-                      <Image
-                        src={work.image}
-                        alt={work.title}
-                        fill
-                        className="object-cover"
-                      />
-                    )}
+                    <SafeNextImage
+                      src={work.image}
+                      alt={work.title}
+                      fill
+                      className="object-cover"
+                      fallbackType="artwork"
+                      fallbackId={work.id}
+                      fallbackSize="medium"
+                    />
                   </div>
                   <CardHeader>
                     <CardTitle>{work.title}</CardTitle>
@@ -299,14 +297,15 @@ export default function ArtistDetailPage() {
                 <Link key={product.id} href={`/tienda/${product.id}`}>
                   <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
                     <div className="relative h-64 bg-muted">
-                      {product.main_image && (
-                        <Image
-                          src={product.main_image}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      )}
+                      <SafeNextImage
+                        src={product.main_image}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                        fallbackType="product"
+                        fallbackId={product.id}
+                        fallbackSize="medium"
+                      />
                       {product.stock === 0 && (
                         <Badge className="absolute top-2 right-2" variant="destructive">
                           Agotado

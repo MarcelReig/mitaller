@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
  * Middleware de Next.js para proteger rutas del dashboard
  * 
  * Features:
- * - Protege rutas /artesano/* (dashboard artesanos)
+ * - Protege rutas /dashboard/* (dashboard artesanos)
  * - Verifica autenticación mediante token JWT en cookies
  * - Valida que el usuario tenga rol de artesano
  * - Redirige a login si no está autenticado
@@ -15,7 +15,7 @@ import type { NextRequest } from 'next/server';
  */
 
 // Rutas que requieren autenticación de artesano
-const ARTISAN_ROUTES = ['/artesano'];
+const ARTISAN_ROUTES = ['/dashboard', '/artesano'];
 
 // Rutas públicas que no requieren middleware
 const PUBLIC_ROUTES = ['/', '/artesanos', '/carrito', '/login', '/registro'];

@@ -1,15 +1,9 @@
-// TODO: Gestión de productos a la venta
-// - Lista de productos con stock y precio
-// - Crear, editar, eliminar productos
-// - Upload de imágenes principales y galería
-// - Activar/desactivar productos
+import { redirect } from 'next/navigation';
 
-export default function ProductosPage() {
-  return (
-    <div>
-      <h1>Mis Productos</h1>
-      {/* TODO: Implementar CRUD de productos */}
-    </div>
-  );
+/**
+ * Redirect del sistema viejo /artesano/productos al nuevo dashboard
+ * Ahora la gestión de productos está en /dashboard/tienda
+ */
+export default function ArtesanoProductosPage() {
+  redirect('/dashboard/tienda');
 }
-
