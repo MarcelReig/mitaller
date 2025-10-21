@@ -88,3 +88,4 @@ npm run dev
 **Tiempo de resolución**: [X horas/días]  
 **Versión afectada**: [X.Y.Z]
 
+
