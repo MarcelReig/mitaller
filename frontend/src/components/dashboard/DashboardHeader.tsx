@@ -40,9 +40,8 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const { logout } = useAuth();
   
-  const handleLogout = async () => {
-    // Usar el logout del authStore (igual que en home)
-    await logout();
+  const handleLogout = () => {
+    logout();
   };
 
   // Calcular iniciales del usuario
@@ -112,9 +111,17 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           
           <DropdownMenuSeparator />
           
-          <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Cerrar sesión</span>
+          <DropdownMenuItem asChild>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                handleLogout();
+              }}
+              className="w-full cursor-pointer flex items-center"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Cerrar sesión</span>
+            </button>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -27,7 +27,7 @@ const PUBLIC_ROUTES = ['/', '/artesanos', '/carrito', '/login', '/registro'];
  */
 function hasAuthToken(request: NextRequest): boolean {
   const token =
-    request.cookies.get('mitaller_access_token')?.value ||
+    request.cookies.get('token')?.value ||
     request.headers.get('authorization')?.replace('Bearer ', '');
 
   return !!token;
@@ -82,21 +82,10 @@ export async function middleware(request: NextRequest) {
   if (requiresArtisanAuth(pathname)) {
     const hasToken = hasAuthToken(request);
 
-    // Si no hay token, redirigir a login
+    // Si no hay token, redirigir a home
     if (!hasToken) {
-      const loginUrl = new URL('/login', request.url);
-      // Guardar la URL original para redirigir después del login
-      loginUrl.searchParams.set('redirect', pathname);
-      
-      const response = NextResponse.redirect(loginUrl);
-      
-      // Opcional: establecer un mensaje de error en cookie
-      response.cookies.set('auth_error', 'Debes iniciar sesión para acceder', {
-        maxAge: 60, // 1 minuto
-        path: '/',
-      });
-      
-      return response;
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
     }
 
     // Si hay token, verificar rol con el backend

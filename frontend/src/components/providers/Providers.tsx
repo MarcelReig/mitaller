@@ -42,6 +42,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
               color: 'hsl(var(--foreground))',
               border: '1px solid hsl(var(--border))',
             },
+            classNames: {
+              success: 'bg-green-500 text-white border-green-600',
+              error: 'bg-red-500 text-white border-red-600',
+              info: 'bg-blue-500 text-white border-blue-600',
+              warning: 'bg-yellow-500 text-white border-yellow-600',
+            },
           }}
         />
       </AuthInitializer>

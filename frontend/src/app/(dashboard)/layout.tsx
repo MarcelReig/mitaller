@@ -31,9 +31,10 @@ export default async function DashboardLayout({
   const cookieStore = await cookies();
   const token = cookieStore.get('token');
   
-  // Si no hay token, redirect a login
+  // Si no hay token, redirect a home
+  // (El toast de logout se mostrará allí si viene de un logout)
   if (!token) {
-    redirect('/login?redirect=/dashboard');
+    redirect('/');
   }
   
   // TODO: Decodificar token para obtener datos del usuario

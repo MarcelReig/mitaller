@@ -20,6 +20,7 @@ import Footer from '@/components/layout/Footer';
  * Página principal con Hero, Featured Artists, Features y CTA final
  */
 export default function HomePage() {
+
   // Fetch de artesanos destacados (máximo 6)
   const { data: featuredArtists, isLoading: isLoadingArtists } = useQuery({
     queryKey: ['artists', 'featured'],

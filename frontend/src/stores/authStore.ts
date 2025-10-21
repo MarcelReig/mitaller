@@ -99,8 +99,12 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       /**
        * Logout: limpia tokens y resetea estado
+       * Comportamiento idéntico al login: muestra toast ANTES del redirect
        */
       logout: () => {
+        // Mostrar toast INMEDIATAMENTE (igual que login)
+        toast.success('Sesión cerrada exitosamente');
+
         // Limpiar tokens de cookies
         removeAllTokens();
 
@@ -111,18 +115,19 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           isLoading: false,
         });
 
-        // Opcional: llamar al endpoint de logout del backend para blacklist del token
+        // Llamar al backend para blacklist del token (sin esperar respuesta)
         axiosInstance
           .post('/api/v1/auth/logout/')
           .catch(() => {
             // Ignorar errores del logout en el backend
           });
 
-        toast.success('Sesión cerrada correctamente');
-
-        // Redirigir a home
+        // Redirect a home después de un pequeño delay
+        // (igual que en login: el toast se ve en la página origen)
         if (typeof window !== 'undefined') {
-          window.location.href = '/';
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 800); // Delay suficiente para ver el toast
         }
       },
 
