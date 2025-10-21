@@ -223,6 +223,156 @@ Cuando generes código, SIEMPRE:
 6. Sigue las convenciones arriba
    - Naming, estructura, patterns
 
+## Documentación
+
+### Estructura de Documentación
+El proyecto tiene 3 niveles de documentación organizados:
+
+```
+mitaller/
+├── docs/              # Documentación general del proyecto
+│   ├── README.md      # Índice principal
+│   ├── architecture/  # Diseño técnico, conceptos
+│   ├── auth/          # Sistema de autenticación
+│   ├── deployment/    # Deploy, dependencias
+│   ├── phases/        # Fases del proyecto
+│   ├── troubleshooting/ # Problemas resueltos
+│   └── .templates/    # Plantillas
+├── backend/docs/      # Documentación específica del backend
+│   ├── README.md      # Índice backend
+│   ├── modules/       # Por app Django (accounts, artists, etc.)
+│   └── config/        # Configuración backend
+└── frontend/docs/     # Documentación específica del frontend
+    ├── README.md      # Índice frontend
+    ├── auth/          # Auth frontend
+    ├── config/        # Env vars, setup
+    ├── guides/        # Hooks, types, layouts
+    ├── features/      # Features específicas
+    └── placeholders/  # Sistema de placeholders
+```
+
+### Cuándo Documentar
+
+**SIEMPRE documenta:**
+- Nueva feature compleja (usa plantilla `feature-template.md`)
+- Problema resuelto que tomó >1h (usa plantilla `troubleshooting-template.md`)
+- Cambio arquitectónico significativo
+- Nueva integración (Stripe, Cloudinary, etc.)
+- Proceso de setup no obvio
+
+**NO hace falta documentar:**
+- CRUD simple siguiendo patrones existentes
+- Cambios menores de UI
+- Fixes triviales de typos o estilos
+
+### Dónde Colocar la Documentación
+
+**Documentación General** → `docs/`:
+- Arquitectura del sistema completo
+- Decisiones de diseño transversales
+- Autenticación (flujo completo backend+frontend)
+- Troubleshooting general
+
+**Backend específico** → `backend/docs/modules/{app}/`:
+- Guías de API de un módulo Django
+- Modelos complejos con lógica de negocio
+- Integraciones backend (Stripe Connect)
+- Cada app mantiene su README.md en la carpeta de la app
+
+**Frontend específico** → `frontend/docs/`:
+- Hooks personalizados complejos
+- Componentes reutilizables avanzados
+- Guías de tipos TypeScript
+- Setup de herramientas (Cloudinary upload)
+
+### Formato de Documentación
+
+**Estructura de archivo:**
+```markdown
+# Título Descriptivo
+
+> Breve descripción (1-2 líneas)
+
+## 📋 Contexto
+¿Qué problema resuelve? ¿Por qué es necesario?
+
+## 🛠️ Implementación
+### Backend (si aplica)
+- Código clave
+- Endpoints afectados
+
+### Frontend (si aplica)
+- Componentes principales
+- Hooks/utils usados
+
+## ✅ Uso
+Ejemplos prácticos de cómo usar
+
+## 🐛 Known Issues / Limitaciones
+(si hay)
+
+---
+**Autor**: [nombre]  
+**Fecha**: [YYYY-MM-DD]
+```
+
+**Estilo:**
+- Emojis para secciones (📋 📊 🛠️ ✅ 🐛 ⚡)
+- Code blocks con sintaxis highlight
+- Enlaces internos a otros docs cuando sea relevante
+- Screenshots solo si aportan valor real
+
+### Plantillas Disponibles
+
+**Para nueva feature:**
+```bash
+cp docs/.templates/feature-template.md docs/features/mi-feature.md
+# O en módulo específico:
+cp docs/.templates/feature-template.md backend/docs/modules/payments/feature-name.md
+```
+
+**Para problema resuelto:**
+```bash
+cp docs/.templates/troubleshooting-template.md docs/troubleshooting/problema-xyz.md
+```
+
+### Ejemplo de Cuándo Usar Cada Ubicación
+
+**Caso 1: Nueva feature de galería con lightbox**
+- Afecta solo frontend
+- **Ubicación**: `frontend/docs/features/GALERIA_LIGHTBOX.md`
+- **Incluir**: Componentes, hooks, guía de uso
+
+**Caso 2: Integración Stripe Connect**
+- Afecta backend principalmente
+- **Ubicación**: `backend/docs/modules/payments/STRIPE_CONNECT_GUIDE.md`
+- **Incluir**: Webhooks, API calls, testing en dev
+
+**Caso 3: Sistema de autenticación JWT completo**
+- Afecta backend + frontend
+- **Ubicación**: `docs/auth/SISTEMA_AUTENTICACION.md`
+- **Incluir**: Flujo completo, decisiones arquitectónicas
+
+**Caso 4: Bug de logout que borraba tokens incorrectamente**
+- Problema específico resuelto
+- **Ubicación**: `docs/troubleshooting/PROBLEMA_LOGOUT.md`
+- **Incluir**: Síntomas, causa raíz, solución, verificación
+
+### Reglas para el AI
+
+Cuando generes código que requiera documentación:
+
+1. **Pregunta dónde documentar** si no está claro
+2. **Usa las plantillas** apropiadas
+3. **Actualiza índices** (README.md de cada docs/)
+4. **Enlaza desde el código** si es relevante:
+   ```python
+   # Ver documentación completa en backend/docs/modules/payments/STRIPE_CONNECT_GUIDE.md
+   ```
+5. **Mantén la documentación cerca del código conceptualmente**
+   - Feature de artists → backend/docs/modules/artists/
+   - No todo en docs/ raíz
+
 ## Contexto de Negocio (NO OLVIDAR)
 
 - Comisión: 12% fija en MVP (futuro: 15% free, 8% pro + 20€/mes)
