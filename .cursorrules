@@ -373,6 +373,52 @@ Cuando generes código que requiera documentación:
    - Feature de artists → backend/docs/modules/artists/
    - No todo en docs/ raíz
 
+### ⚠️ REGLA CRÍTICA: Documentación Siempre Actualizada
+
+**NUNCA dejes documentación desactualizada:**
+
+1. **Cuando cambies código, actualiza la documentación relacionada INMEDIATAMENTE**
+   - Si cambias una API, actualiza su documentación
+   - Si corriges un bug documentado, actualiza el troubleshooting
+   - Si refactorizas, actualiza los ejemplos de código
+
+2. **NO marques documentos como "desactualizados" o "obsoletos"**
+   - ❌ MAL: Añadir "⚠️ DOCUMENTO DESACTUALIZADO"
+   - ✅ BIEN: Actualizar el contenido directamente
+   - Si necesitas refactorizar documentación, hazlo, no la marques
+
+3. **Busca documentos relacionados antes de terminar**
+   - Usa grep para buscar referencias al código que cambias
+   - Ejemplo: Si cambias signed uploads, busca "signed upload" en docs/
+   - Actualiza TODOS los documentos que mencionen la feature
+
+4. **Verifica la consistencia de ejemplos de código**
+   - Los code snippets deben reflejar el código actual
+   - Las configuraciones deben estar actualizadas
+   - Los comandos deben ser los correctos
+
+5. **Actualiza fechas y versiones**
+   - Cambia "Última actualización" al final de los docs
+   - Si cambias significativamente un doc, actualiza su fecha
+
+**Ejemplo de workflow correcto:**
+
+```
+1. Usuario pide cambiar código X
+2. Haces el cambio en el código
+3. ANTES de terminar, buscas: grep -r "código X" docs/
+4. Actualizas TODOS los docs que mencionan X
+5. Verificas que los ejemplos funcionen
+6. Actualizas fechas
+7. ENTONCES terminas la tarea
+```
+
+**Por qué es crítico:**
+- Documentación desactualizada es PEOR que no tener documentación
+- Causa confusión y pérdida de tiempo
+- Rompe la confianza en la documentación
+- El proyecto pierde su "fuente de verdad"
+
 ## Contexto de Negocio (NO OLVIDAR)
 
 - Comisión: 12% fija en MVP (futuro: 15% free, 8% pro + 20€/mes)

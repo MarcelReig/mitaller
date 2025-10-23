@@ -2,57 +2,10 @@
  * API Client para Works
  * 
  * Funciones para interactuar con el backend de obras.
- * Maneja autenticación JWT y errores.
+ * Usa axiosInstance para autenticación JWT automática y manejo de errores.
  */
 
-import Cookies from 'js-cookie';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-/**
- * Helper para obtener token JWT
- * 
- * El sistema de auth guarda el token en cookies con nombre 'token'
- */
-function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  
-  // El sistema de auth guarda el token en cookies con nombre 'token'
-  const token = Cookies.get('token');
-  return token || null;
-}
-
-/**
- * Helper para crear headers con autenticación
- */
-function getAuthHeaders(): HeadersInit {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-  
-  const token = getAuthToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  
-  return headers;
-}
-
-/**
- * Helper para manejar errores de API
- */
-async function handleApiError(response: Response): Promise<never> {
-  let errorMessage = `Error ${response.status}`;
-  
-  try {
-    const errorData = await response.json();
-    errorMessage = errorData.detail || errorData.error || errorMessage;
-  } catch {
-    // Si no se puede parsear el error, usar mensaje por defecto
-  }
-  
-  throw new Error(errorMessage);
-}
+import axiosInstance from '@/lib/axios';
 
 // ===== TIPOS =====
 
@@ -94,50 +47,24 @@ interface PaginatedResponse<T> {
  * Obtener todas las obras del artista autenticado
  */
 export async function getMyWorks(): Promise<Work[]> {
-  const response = await fetch(`${API_URL}/api/v1/works/`, {
-    headers: getAuthHeaders(),
-    cache: 'no-store', // No cache en dashboard
-  });
-  
-  if (!response.ok) {
-    await handleApiError(response);
-  }
-  
-  const data: PaginatedResponse<Work> = await response.json();
-  return data.results; // Extraer array de obras del objeto paginado
+  const response = await axiosInstance.get<PaginatedResponse<Work>>('/api/v1/works/');
+  return response.data.results; // Extraer array de obras del objeto paginado
 }
 
 /**
  * Obtener una obra específica por ID
  */
 export async function getWork(id: number): Promise<Work> {
-  const response = await fetch(`${API_URL}/api/v1/works/${id}/`, {
-    headers: getAuthHeaders(),
-    cache: 'no-store',
-  });
-  
-  if (!response.ok) {
-    await handleApiError(response);
-  }
-  
-  return response.json();
+  const response = await axiosInstance.get<Work>(`/api/v1/works/${id}/`);
+  return response.data;
 }
 
 /**
  * Crear nueva obra
  */
 export async function createWork(data: WorkFormData): Promise<Work> {
-  const response = await fetch(`${API_URL}/api/v1/works/`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  });
-  
-  if (!response.ok) {
-    await handleApiError(response);
-  }
-  
-  return response.json();
+  const response = await axiosInstance.post<Work>('/api/v1/works/', data);
+  return response.data;
 }
 
 /**
@@ -147,31 +74,15 @@ export async function updateWork(
   id: number,
   data: Partial<WorkFormData>
 ): Promise<Work> {
-  const response = await fetch(`${API_URL}/api/v1/works/${id}/`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  });
-  
-  if (!response.ok) {
-    await handleApiError(response);
-  }
-  
-  return response.json();
+  const response = await axiosInstance.put<Work>(`/api/v1/works/${id}/`, data);
+  return response.data;
 }
 
 /**
  * Eliminar obra
  */
 export async function deleteWork(id: number): Promise<void> {
-  const response = await fetch(`${API_URL}/api/v1/works/${id}/`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-  
-  if (!response.ok) {
-    await handleApiError(response);
-  }
+  await axiosInstance.delete(`/api/v1/works/${id}/`);
 }
 
 /**
@@ -180,14 +91,6 @@ export async function deleteWork(id: number): Promise<void> {
  * @param orderIds - Array de IDs en el nuevo orden
  */
 export async function reorderWorks(orderIds: number[]): Promise<void> {
-  const response = await fetch(`${API_URL}/api/v1/works/reorder/`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ order: orderIds }),
-  });
-  
-  if (!response.ok) {
-    await handleApiError(response);
-  }
+  await axiosInstance.put('/api/v1/works/reorder/', { order: orderIds });
 }
 

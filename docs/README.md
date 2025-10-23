@@ -62,6 +62,9 @@ Guías de despliegue y gestión de dependencias.
 
 Documentación de características específicas del proyecto.
 
+**Cloudinary & Media:**
+- [**CLOUDINARY_SIGNED_UPLOADS.md**](./features/CLOUDINARY_SIGNED_UPLOADS.md) - Guía completa de signed uploads seguros
+
 **Artistas:**
 - [Artists README](../backend/artists/README.md) - Perfiles y gestión de artistas
 - [Artists Implementation](../backend/artists/IMPLEMENTATION_SUMMARY.md)
@@ -107,7 +110,7 @@ Plantillas para crear nueva documentación:
 
 ---
 
-**Última actualización**: 21 de Octubre, 2025
+**Última actualización**: 23 de Octubre, 2025
 
 
 

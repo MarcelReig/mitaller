@@ -1,37 +1,36 @@
 /**
- * Nueva Obra Page (Placeholder)
- * Se implementará en PROMPT #3B
+ * Create Work Page
+ * 
+ * Página para crear una nueva obra
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+'use client';
 
-export default function NuevaObraPage() {
+import { WorkForm } from '@/components/works/WorkForm';
+import { useCreateWork } from '@/lib/hooks/useWorks';
+import type { WorkFormData } from '@/lib/schemas/workSchema';
+import type { WorkFormData as ApiWorkFormData } from '@/lib/api/works';
+
+export default function NewWorkPage() {
+  const createWork = useCreateWork();
+
+  const handleSubmit = async (data: WorkFormData) => {
+    const payload: ApiWorkFormData = {
+      title: data.title,
+      description: data.description || '',
+      category: data.category || undefined,
+      is_featured: data.is_featured,
+      thumbnail_url: data.images[0]?.url || '',
+      images: data.images.map(img => img.url),
+    };
+
+    await createWork.mutateAsync(payload);
+  };
+
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" asChild>
-        <Link href="/dashboard/obras">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver a Mis Obras
-        </Link>
-      </Button>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Crear Nueva Obra</CardTitle>
-        </CardHeader>
-        <CardContent className="py-16 text-center">
-          <p className="text-muted-foreground mb-4">
-            El formulario de creación se implementará en <strong>PROMPT #3B</strong>.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Incluirá: upload de imágenes, drag & drop, validaciones.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <WorkForm
+      mode="create"
+      onSubmit={handleSubmit}
+    />
   );
 }
-

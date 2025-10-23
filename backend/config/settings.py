@@ -226,3 +226,25 @@ STRIPE_CONNECT_WEBHOOK_SECRET = os.getenv('STRIPE_CONNECT_WEBHOOK_SECRET')
 # Comisión del marketplace (10% por defecto)
 MARKETPLACE_FEE_PERCENT = Decimal('10.0')
 
+
+# Cloudinary Configuration
+# https://cloudinary.com/documentation/django_integration
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+# Variables de configuración (para usar en views)
+CLOUDINARY_CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME')
+CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY')
+CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET')
+CLOUDINARY_UPLOAD_PRESET = os.getenv('CLOUDINARY_UPLOAD_PRESET', 'mitaller-unsigned')
+
+# Configurar el cliente de Cloudinary
+cloudinary.config(
+    cloud_name=CLOUDINARY_CLOUD_NAME,
+    api_key=CLOUDINARY_API_KEY,
+    api_secret=CLOUDINARY_API_SECRET,
+    secure=True  # Usar HTTPS
+)
+
