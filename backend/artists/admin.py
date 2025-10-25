@@ -84,7 +84,6 @@ class ArtistProfileAdmin(admin.ModelAdmin):
             'fields': (
                 'website',
                 'instagram',
-                'facebook',
                 'phone',
             )
         }),

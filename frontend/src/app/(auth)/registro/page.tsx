@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -17,7 +16,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 
 const registerSchema = z
   .object({
@@ -25,15 +23,17 @@ const registerSchema = z
       .string()
       .min(3, 'El nombre de usuario debe tener al menos 3 caracteres')
       .max(20, 'Máximo 20 caracteres')
-      .regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guiones bajos'),
+      .regex(/^[a-zA-Z0-9_-]+$/, 'Solo letras, números, guiones y guiones bajos'),
     email: z
       .string()
       .min(1, 'El email es requerido')
       .email('Ingresa un email válido'),
     password: z
       .string()
-      .min(6, 'La contraseña debe tener al menos 6 caracteres')
-      .max(100, 'Máximo 100 caracteres'),
+      .min(8, 'La contraseña debe tener al menos 8 caracteres')
+      .max(100, 'Máximo 100 caracteres')
+      .regex(/[a-zA-Z]/, 'Debe contener al menos una letra')
+      .regex(/\d/, 'Debe contener al menos un número'),
     password_confirm: z.string().min(1, 'Confirma tu contraseña'),
     first_name: z
       .string()
@@ -55,7 +55,6 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const { register, isLoading } = useAuth();
-  const router = useRouter();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -71,17 +70,21 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
+      // El authStore maneja:
+      // 1. Registro del usuario
+      // 2. Login automático
+      // 3. Redirección al dashboard
+      // 4. Toast de bienvenida
       await register({
         username: data.username,
         email: data.email,
         password: data.password,
+        password_confirm: data.password_confirm,
         first_name: data.first_name || '',
         last_name: data.last_name || '',
       });
-
-      // Éxito: mostrar toast y redirigir a login
-      toast.success('Cuenta creada exitosamente. Ahora inicia sesión.');
-      router.push('/login');
+      
+      // El authStore ya redirige, no necesitamos hacer nada más aquí
     } catch (error) {
       // El hook ya muestra el toast de error
       console.error('Register error:', error);

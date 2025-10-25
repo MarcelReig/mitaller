@@ -11,7 +11,7 @@
  * Server Component para mejor SEO.
  */
 
-import { MapPin, Palette, ExternalLink, Instagram } from 'lucide-react';
+import { MapPin, Palette, ExternalLink, Instagram, Phone } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -132,6 +132,18 @@ export function ArtisanHeader({ artisan }: ArtisanHeaderProps) {
                   >
                     <Instagram className="h-4 w-4" />
                     Instagram
+                  </a>
+                </Button>
+              )}
+
+              {artisan.phone && (
+                <Button variant="outline" size="sm" asChild>
+                  <a 
+                    href={`tel:${artisan.phone}`}
+                    className="gap-2"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Teléfono
                   </a>
                 </Button>
               )}

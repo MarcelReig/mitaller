@@ -144,12 +144,31 @@ class RegisterSerializer(serializers.ModelSerializer):
         return UserSerializer(instance).data
 
 
+class ArtistProfileBasicSerializer(serializers.Serializer):
+    """
+    Serializer básico para el perfil de artista anidado en UserSerializer.
+    Solo incluye campos esenciales para el frontend.
+    """
+    id = serializers.IntegerField()
+    slug = serializers.CharField()
+    display_name = serializers.CharField()
+    avatar = serializers.URLField(allow_null=True)
+    craft_type = serializers.CharField()
+    location = serializers.CharField()
+    bio = serializers.CharField(allow_null=True)
+    is_featured = serializers.BooleanField()
+    stripe_account_status = serializers.CharField()
+
+
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer para representación de datos de usuario.
     Usado en perfiles y respuestas de autenticación.
     """
     can_sell = serializers.SerializerMethodField()
+    has_artist_profile = serializers.SerializerMethodField()
+    artist_slug = serializers.SerializerMethodField()
+    artist_profile = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -163,6 +182,9 @@ class UserSerializer(serializers.ModelSerializer):
             'is_approved',
             'is_active',
             'can_sell',
+            'has_artist_profile',
+            'artist_slug',
+            'artist_profile',
             'date_joined',
         )
         read_only_fields = (
@@ -170,6 +192,9 @@ class UserSerializer(serializers.ModelSerializer):
             'role',
             'is_approved',
             'can_sell',
+            'has_artist_profile',
+            'artist_slug',
+            'artist_profile',
             'date_joined',
         )
     
@@ -179,24 +204,68 @@ class UserSerializer(serializers.ModelSerializer):
         True si es artesano aprobado o admin.
         """
         return obj.can_sell
+    
+    def get_has_artist_profile(self, obj: User) -> bool:
+        """
+        Retorna si el usuario tiene un ArtistProfile asociado.
+        """
+        return hasattr(obj, 'artist_profile')
+    
+    def get_artist_slug(self, obj: User) -> str | None:
+        """
+        Retorna el slug del perfil de artista si existe.
+        """
+        if hasattr(obj, 'artist_profile'):
+            return obj.artist_profile.slug
+        return None
+    
+    def get_artist_profile(self, obj: User) -> dict | None:
+        """
+        Retorna el perfil completo del artista si existe.
+        Incluye avatar para mostrar en el navbar.
+        """
+        if hasattr(obj, 'artist_profile'):
+            profile = obj.artist_profile
+            return ArtistProfileBasicSerializer(profile).data
+        return None
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Serializer personalizado para login con JWT.
     Además de los tokens, retorna datos del usuario.
+    
+    Usa 'email' como campo de identificación (en lugar de 'username').
     """
+    # Cambiar el nombre del campo de username a email
+    username_field = User.USERNAME_FIELD
     
     def validate(self, attrs: dict) -> dict:
         """
         Valida credenciales y retorna tokens + datos de usuario.
         """
+        # DEBUG: Log para ver qué credenciales se están validando
+        import logging
+        logger = logging.getLogger(__name__)
+        email = attrs.get(self.username_field, 'NO_EMAIL')
+        logger.info(f"[LOGIN] Intentando autenticar usuario con email: {email}")
+        
         # Obtener tokens del serializer padre
         data = super().validate(attrs)
         
-        # Agregar datos del usuario a la respuesta
-        user_data = UserSerializer(self.user).data
+        # El usuario autenticado está disponible en self.user después de super().validate()
+        logger.info(f"[LOGIN] Usuario autenticado: {self.user.email} (ID: {self.user.id})")
+        
+        # Optimizar query para cargar artist_profile si existe
+        from .models import User
+        user_with_profile = User.objects.select_related('artist_profile').get(id=self.user.id)
+        
+        # Agregar datos del usuario a la respuesta (con artist_profile incluido)
+        user_data = UserSerializer(user_with_profile).data
         data['user'] = user_data
+        
+        # DEBUG: Verificar que el usuario sea el correcto
+        logger.info(f"[LOGIN] Datos del usuario en respuesta: email={user_data.get('email')}, id={user_data.get('id')}")
         
         return data
 

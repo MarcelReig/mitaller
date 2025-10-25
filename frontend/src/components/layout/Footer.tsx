@@ -90,16 +90,6 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://facebook.com/mitaller.art"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  Facebook
-                </a>
-              </li>
-              <li>
-                <a
                   href="mailto:hola@mitaller.art"
                   className="flex items-center text-sm text-slate-400 hover:text-white transition-colors"
                 >

@@ -69,7 +69,7 @@ Se ha implementado exitosamente el sistema de **perfiles públicos de artesanos*
 - Slug único para URLs amigables
 - Bio y descripción del taller
 - Imágenes (avatar, cover_image)
-- Redes sociales (Instagram, Facebook, website, phone)
+- Redes sociales (Instagram, website, phone)
 - Integración Stripe (stripe_account_id, stripe_onboarding_completed)
 - Estadísticas (total_works, total_products, is_featured)
 - Properties: `full_location`, `instagram_url`

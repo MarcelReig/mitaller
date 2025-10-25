@@ -17,6 +17,9 @@ import type { NextRequest } from 'next/server';
 // Rutas que requieren autenticación de artesano
 const ARTISAN_ROUTES = ['/dashboard', '/artesano'];
 
+// Rutas que requieren autenticación de administrador
+const ADMIN_ROUTES = ['/admin'];
+
 // Rutas públicas que no requieren middleware
 const PUBLIC_ROUTES = ['/', '/artesanos', '/carrito', '/login', '/registro'];
 
@@ -40,6 +43,15 @@ function hasAuthToken(request: NextRequest): boolean {
  */
 function requiresArtisanAuth(pathname: string): boolean {
   return ARTISAN_ROUTES.some((route) => pathname.startsWith(route));
+}
+
+/**
+ * Verificar si la ruta requiere autenticación de administrador
+ * @param pathname - Ruta a verificar
+ * @returns true si requiere autenticación de administrador
+ */
+function requiresAdminAuth(pathname: string): boolean {
+  return ADMIN_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 /**
@@ -78,14 +90,37 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Proteger rutas /admin/*
+  if (requiresAdminAuth(pathname)) {
+    const token = request.cookies.get('token')?.value;
+    
+    // Verificar si hay token
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    
+    // Decodificar JWT y verificar role
+    try {
+      const payload = JSON.parse(
+        Buffer.from(token.split('.')[1], 'base64').toString()
+      );
+      
+      if (payload.role !== 'admin') {
+        return NextResponse.redirect(new URL('/not-authorized', request.url));
+      }
+    } catch (error) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
   // Si la ruta requiere autenticación de artesano
   if (requiresArtisanAuth(pathname)) {
     const hasToken = hasAuthToken(request);
 
-    // Si no hay token, redirigir a home
+    // Si no hay token, redirigir a login
     if (!hasToken) {
-      const homeUrl = new URL('/', request.url);
-      return NextResponse.redirect(homeUrl);
+      const loginUrl = new URL('/login', request.url);
+      return NextResponse.redirect(loginUrl);
     }
 
     // Si hay token, verificar rol con el backend

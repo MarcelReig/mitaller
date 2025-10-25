@@ -78,7 +78,12 @@ class WorkViewSet(viewsets.ModelViewSet):
         
         # Verificar que el usuario tiene perfil de artista
         if not hasattr(user, 'artist_profile'):
-            raise PermissionDenied("Solo los artistas pueden crear obras")
+            error_msg = (
+                f"Solo los artistas pueden crear obras. "
+                f"Usuario actual: {user.email} (role: {user.get_role_display()}). "
+                f"Necesitas tener un ArtistProfile asociado."
+            )
+            raise PermissionDenied(error_msg)
         
         # Calcular siguiente display_order
         last_work = Work.objects.filter(

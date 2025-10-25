@@ -38,6 +38,23 @@ Soluciones a problemas comunes encontrados durante el desarrollo.
 
 ---
 
+## 🧹 Mantenimiento & Refactorización
+
+Documentación de tareas de limpieza, auditorías y refactorización del código.
+
+**[Índice de Mantenimiento](./maintenance/README.md)** - Índice completo
+
+**Limpieza de Rutas y Vistas (Oct 2025):**
+- [RESUMEN_LIMPIEZA.md](./maintenance/RESUMEN_LIMPIEZA.md) - Resumen ejecutivo
+- [ANALISIS_RUTAS_Y_VISTAS.md](./maintenance/ANALISIS_RUTAS_Y_VISTAS.md) - Análisis completo
+- [CAMBIOS_APLICADOS.md](./maintenance/CAMBIOS_APLICADOS.md) - Log de cambios
+
+**Reorganización de Scripts de Debug (Oct 2025):**
+- [REORGANIZACION_SCRIPTS_DEBUG.md](./maintenance/REORGANIZACION_SCRIPTS_DEBUG.md) - Resumen ejecutivo
+- [ANALISIS_SCRIPTS_DEBUG.md](./maintenance/ANALISIS_SCRIPTS_DEBUG.md) - Análisis detallado
+
+---
+
 ## 🚀 Fases del Proyecto
 
 Documentación de las diferentes fases de desarrollo.
@@ -110,7 +127,7 @@ Plantillas para crear nueva documentación:
 
 ---
 
-**Última actualización**: 23 de Octubre, 2025
+**Última actualización**: 25 de Octubre, 2025
 
 
 

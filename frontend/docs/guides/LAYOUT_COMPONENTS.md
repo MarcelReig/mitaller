@@ -64,7 +64,7 @@ export default function PublicLayout({ children }) {
 
 ✅ **Logo y descripción** del proyecto  
 ✅ **Links útiles**: Inicio, Artesanos, Sobre nosotros, Contacto  
-✅ **Redes sociales**: Instagram, Facebook, Email  
+✅ **Redes sociales**: Instagram, Email  
 ✅ **Copyright** con año dinámico  
 ✅ **Links legales**: Privacidad, Términos, Cookies  
 ✅ **Fondo oscuro** (slate-900) con buen contraste  

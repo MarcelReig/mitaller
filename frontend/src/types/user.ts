@@ -37,8 +37,10 @@ export interface User {
   is_approved?: boolean; // Solo para artesanos
   is_active: boolean;
   can_sell?: boolean; // true si es artesano aprobado
+  has_artist_profile?: boolean; // true si tiene ArtistProfile asociado
+  artist_slug?: string | null; // slug del perfil si tiene
   date_joined?: string;
-  artist_profile?: ArtistProfile;
+  artist_profile?: ArtistProfile; // Perfil completo (opcional, solo en algunos endpoints)
 }
 
 /**
@@ -58,6 +60,7 @@ export interface RegisterData {
   email: string;
   username: string;
   password: string;
+  password_confirm: string; // Confirmación de contraseña (validación backend)
   first_name?: string;
   last_name?: string;
 }

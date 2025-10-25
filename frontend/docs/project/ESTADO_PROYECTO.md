@@ -125,7 +125,7 @@
 - ✅ **components/layout/Footer.tsx**
   - Logo y descripción del proyecto
   - Links útiles (Inicio, Artesanos, Sobre Nosotros, Contacto)
-  - Redes sociales (Instagram, Facebook, Email)
+  - Redes sociales (Instagram, Email)
   - Copyright + links legales (Privacidad, Términos, Cookies)
   - Fondo oscuro (slate-900)
 

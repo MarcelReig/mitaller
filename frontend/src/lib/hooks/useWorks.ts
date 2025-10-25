@@ -46,7 +46,7 @@ export function useWork(id: number) {
  * 
  * Features:
  * - Invalida cache de obras después de crear
- * - Toast de éxito/error
+ * - Toast de éxito/error con detalles de validación
  */
 export function useCreateWork() {
   const queryClient = useQueryClient();
@@ -61,9 +61,37 @@ export function useCreateWork() {
         description: `"${work.title}" ha sido añadida a tu portfolio`,
       });
     },
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
+      // Log completo del error para debugging
+      console.error('Error completo al crear obra:', error);
+      
+      // Type guard para axios error
+      const axiosError = error as { response?: { data?: unknown; status?: number }; message?: string };
+      
+      console.error('Response data:', axiosError.response?.data);
+      console.error('Status:', axiosError.response?.status);
+      
+      // Extraer mensajes de error de validación del backend
+      const errorData = axiosError.response?.data;
+      let errorMessage = 'Error desconocido';
+      
+      if (errorData) {
+        // Si hay errores de validación de campos
+        if (typeof errorData === 'object') {
+          const fieldErrors = Object.entries(errorData)
+            .map(([field, messages]) => {
+              const msg = Array.isArray(messages) ? messages[0] : messages;
+              return `${field}: ${msg}`;
+            })
+            .join('\n');
+          errorMessage = fieldErrors || axiosError.message || 'Error desconocido';
+        } else {
+          errorMessage = errorData.toString();
+        }
+      }
+      
       toast.error('Error al crear obra', {
-        description: error.message,
+        description: errorMessage,
       });
     },
   });

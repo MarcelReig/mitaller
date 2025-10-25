@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from accounts.models import UserRole
 from .models import ArtistProfile
 from .serializers import (
     ArtistProfileSerializer, 
@@ -117,7 +118,7 @@ class ArtistProfileViewSet(viewsets.ReadOnlyModelViewSet):
         - 404: Usuario no tiene perfil de artesano creado
         """
         # Verificar que el usuario es artesano
-        if not hasattr(request.user, 'role') or request.user.role != 'ARTISAN':
+        if not hasattr(request.user, 'role') or request.user.role != UserRole.ARTISAN:
             return Response(
                 {'error': 'Solo los artesanos pueden acceder a este endpoint'},
                 status=status.HTTP_403_FORBIDDEN

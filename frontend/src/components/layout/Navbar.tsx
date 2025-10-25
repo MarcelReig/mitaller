@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
+import { useIsAdmin } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,7 +14,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { SafeImage } from '@/components/ui/SafeImage';
+import { avatarUrl } from '@/lib/cloudinary';
 import {
   Menu,
   X,
@@ -22,6 +25,7 @@ import {
   LogOut,
   LayoutDashboard,
   Palette,
+  Shield,
 } from 'lucide-react';
 
 /**
@@ -40,6 +44,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const { user, isAuthenticated, logout, isArtisan } = useAuth();
   const { totalItems } = useCart();
+  const isAdmin = useIsAdmin();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Helper para verificar si un link está activo
@@ -87,6 +92,19 @@ export default function Navbar() {
             >
               Artesanos
             </Link>
+            {isAdmin && (
+              <Link
+                href="/admin/dashboard"
+                className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary ${
+                  pathname?.startsWith('/admin')
+                    ? 'text-primary'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                <Shield className="h-4 w-4" />
+                Admin
+              </Link>
+            )}
           </div>
 
           {/* Right Side: Cart + User */}
@@ -109,9 +127,12 @@ export default function Navbar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                     <Avatar className="h-9 w-9">
-                      <AvatarImage 
-                        src={user.artist_profile?.avatar || undefined} 
-                        alt={user.username} 
+                      <SafeImage
+                        src={avatarUrl(user.artist_profile?.avatar)}
+                        alt={user.username}
+                        fallbackType="avatar"
+                        fallbackId={user.id}
+                        className="w-full h-full object-cover rounded-full"
                       />
                       <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
@@ -132,7 +153,7 @@ export default function Navbar() {
                       <DropdownMenuItem asChild>
                         <Link href="/dashboard" className="cursor-pointer">
                           <LayoutDashboard className="mr-2 h-4 w-4" />
-                          Mi Taller
+                          Mi taller
                         </Link>
                       </DropdownMenuItem>
                       {user.artist_profile && (
@@ -142,7 +163,7 @@ export default function Navbar() {
                             className="cursor-pointer"
                           >
                             <User className="mr-2 h-4 w-4" />
-                            Ver Perfil Público
+                            Ver perfil público
                           </Link>
                         </DropdownMenuItem>
                       )}
@@ -152,10 +173,10 @@ export default function Navbar() {
                   
                   <DropdownMenuItem 
                     onClick={logout}
-                    className="cursor-pointer text-destructive focus:text-destructive"
+                    className="cursor-pointer"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Cerrar Sesión
+                    Cerrar sesión
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -219,7 +240,16 @@ export default function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-4 py-2 text-sm font-medium rounded-md text-muted-foreground hover:bg-muted transition-colors"
                   >
-                    Mi Taller
+                    Mi taller
+                  </Link>
+                )}
+                {isAdmin && (
+                  <Link
+                    href="/admin/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-2 text-sm font-medium rounded-md text-muted-foreground hover:bg-muted transition-colors"
+                  >
+                    🛠️ Admin
                   </Link>
                 )}
                 <button
@@ -227,9 +257,9 @@ export default function Navbar() {
                     setMobileMenuOpen(false);
                     logout();
                   }}
-                  className="w-full text-left px-4 py-2 text-sm font-medium rounded-md text-destructive hover:bg-destructive/10 transition-colors"
+                  className="w-full text-left px-4 py-2 text-sm font-medium rounded-md text-muted-foreground hover:bg-muted transition-colors"
                 >
-                  Cerrar Sesión
+                  Cerrar sesión
                 </button>
               </>
             ) : (

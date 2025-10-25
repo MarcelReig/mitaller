@@ -1,17 +1,17 @@
 // Tipos para obras de portfolio de artistas
 
 /**
- * Categorías de obras disponibles
+ * Categorías de obras disponibles (sincronizadas con backend WorkCategory)
  */
 export type WorkCategory = 
   | 'ceramics'    // Cerámica
-  | 'painting'    // Pintura
-  | 'sculpture'   // Escultura
   | 'jewelry'     // Joyería
-  | 'textile'     // Textil
+  | 'leather'     // Marroquinería
+  | 'textiles'    // Textiles
   | 'wood'        // Madera
   | 'glass'       // Vidrio
-  | 'metal'       // Metal
+  | 'sculpture'   // Escultura
+  | 'painting'    // Pintura
   | 'other';      // Otro
 
 /**
@@ -19,13 +19,13 @@ export type WorkCategory =
  */
 export const WORK_CATEGORY_LABELS: Record<WorkCategory, string> = {
   ceramics: 'Cerámica',
-  painting: 'Pintura',
-  sculpture: 'Escultura',
   jewelry: 'Joyería',
-  textile: 'Textil',
+  leather: 'Marroquinería',
+  textiles: 'Textiles',
   wood: 'Madera',
   glass: 'Vidrio',
-  metal: 'Metal',
+  sculpture: 'Escultura',
+  painting: 'Pintura',
   other: 'Otro',
 };
 

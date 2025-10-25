@@ -108,7 +108,6 @@ Perfil público del artesano con toda la información visible para compradores.
 **Contacto y Redes:**
 - `website`: Sitio web personal (opcional)
 - `instagram`: Usuario de Instagram sin @ (opcional)
-- `facebook`: URL de Facebook (opcional)
 - `phone`: Teléfono de contacto (opcional)
 
 **Stripe Connect:**
@@ -274,7 +273,6 @@ Usado en **detalles** (`GET /api/v1/artists/{slug}/`):
   "cover_image": "/media/artists/covers/juan-cover.jpg",
   "website": "https://juanceramista.com",
   "instagram": "juan_ceramista",
-  "facebook": "https://facebook.com/juanceramista",
   "instagram_url": "https://instagram.com/juan_ceramista",
   "full_location": "Taller en Maó, Menorca",
   "total_works": 15,
@@ -319,7 +317,7 @@ Panel de administración para gestionar perfiles:
 - Información Básica (user, display_name, slug)
 - Taller (craft_type, location, bio)
 - Imágenes (avatar, cover_image)
-- Contacto y Redes (website, instagram, facebook, phone)
+- Contacto y Redes (website, instagram, phone)
 - Stripe (stripe_account_id, stripe_onboarding_completed)
 - Estadísticas (total_works, total_products, is_featured)
 - Metadata (created_at, updated_at)
@@ -390,7 +388,6 @@ GET /api/v1/artists/maria-joyera/
   "cover_image": null,
   "website": null,
   "instagram": null,
-  "facebook": null,
   "instagram_url": null,
   "full_location": "Taller en Otro, Menorca",
   "total_works": 0,

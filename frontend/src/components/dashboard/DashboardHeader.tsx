@@ -12,6 +12,7 @@
 
 'use client';
 
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SafeImage } from '@/components/ui/SafeImage';
@@ -40,9 +41,19 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const { logout } = useAuth();
   
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    // Logout hace la limpieza y redirección
+    await logout();
   };
+
+  // Si no hay usuario, no renderizar el header (prevenir flash durante logout)
+  if (!user) {
+    return (
+      <header className="sticky top-0 z-30 h-16 bg-card border-b border-border flex items-center justify-between px-4 md:px-6">
+        <div></div>
+      </header>
+    );
+  }
 
   // Calcular iniciales del usuario
   const initials = user.display_name
@@ -98,15 +109,22 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
               className="cursor-pointer"
             >
               <Eye className="mr-2 h-4 w-4" />
-              <span>Ver mi portfolio público</span>
+              <span>Ver perfil público</span>
             </a>
           </DropdownMenuItem>
           
           <DropdownMenuItem asChild>
-            <a href="/dashboard/perfil" className="cursor-pointer">
+            <Link 
+              href="/dashboard/perfil" 
+              className="cursor-pointer flex items-center"
+              onClick={() => {
+                console.log('[DROPDOWN] Click en Editar perfil');
+                console.log('[DROPDOWN] Usuario actual:', user.email);
+              }}
+            >
               <User className="mr-2 h-4 w-4" />
               <span>Editar perfil</span>
-            </a>
+            </Link>
           </DropdownMenuItem>
           
           <DropdownMenuSeparator />

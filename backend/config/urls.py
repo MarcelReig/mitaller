@@ -48,6 +48,9 @@ urlpatterns = [
     
     # Payments API (pagos con Stripe Connect)
     path('api/v1/payments/', include('payments.urls')),
+    
+    # Admin Panel API (gestión administrativa)
+    path('api/v1/admin/', include('admin_panel.urls')),
 ]
 
 # Servir archivos media en desarrollo

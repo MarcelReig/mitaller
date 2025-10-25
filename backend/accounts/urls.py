@@ -9,6 +9,7 @@ from .views import (
     CustomTokenObtainPairView,
     UserProfileView,
     LogoutView,
+    DebugAuthView,
 )
 
 app_name = 'accounts'
@@ -28,5 +29,8 @@ urlpatterns = [
     
     # Perfil del usuario autenticado
     path('profile/', UserProfileView.as_view(), name='profile'),
+    
+    # Debug de autenticación (solo desarrollo)
+    path('debug/', DebugAuthView.as_view(), name='debug_auth'),
 ]
 

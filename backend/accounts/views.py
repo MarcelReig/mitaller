@@ -2,7 +2,7 @@
 Views para la app accounts.
 Maneja registro, login y gestión de perfiles de usuario.
 """
-from rest_framework import status, generics
+from rest_framework import status, generics, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -88,7 +88,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         
         Returns:
             200: Login exitoso con tokens y datos de usuario
-            401: Credenciales inválidas
+            400/401: Credenciales inválidas o error de validación
         """
         serializer = self.get_serializer(data=request.data)
         
@@ -101,13 +101,27 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 },
                 status=status.HTTP_200_OK
             )
-        except Exception as e:
+        except serializers.ValidationError:
+            # Errores de validación (credenciales incorrectas)
             return Response(
                 {
                     'message': 'Error en el login.',
                     'errors': serializer.errors
                 },
                 status=status.HTTP_401_UNAUTHORIZED
+            )
+        except Exception as e:
+            # Errores inesperados - log para debugging
+            import traceback
+            print(f"Error inesperado en login: {str(e)}")
+            print(traceback.format_exc())
+            
+            return Response(
+                {
+                    'message': 'Error interno del servidor al procesar el login.',
+                    'detail': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -127,8 +141,13 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self) -> User:
         """
         Retorna el usuario autenticado.
+        Optimiza con select_related para cargar artist_profile en una sola query.
         """
-        return self.request.user
+        user_id = self.request.user.id
+        try:
+            return User.objects.select_related('artist_profile').get(id=user_id)
+        except User.DoesNotExist:
+            return self.request.user
     
     def update(self, request, *args, **kwargs):
         """
@@ -219,3 +238,61 @@ class LogoutView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class DebugAuthView(APIView):
+    """
+    Vista de debugging para verificar autenticación.
+    
+    GET /api/v1/auth/debug/
+    
+    SOLO DISPONIBLE EN DESARROLLO.
+    Retorna información sobre el usuario autenticado según el token JWT.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """
+        Retorna información de debugging sobre el usuario autenticado.
+        
+        Returns:
+            200: Información del usuario y token
+            404: En producción (debug deshabilitado)
+        """
+        # 🔒 PROTECCIÓN: Solo disponible en desarrollo
+        from django.conf import settings
+        from django.http import Http404
+        
+        if not settings.DEBUG:
+            raise Http404("Debug endpoint only available in development")
+        
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        user = request.user
+        
+        # Información del token (si está disponible)
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        token_preview = auth_header[:50] + '...' if len(auth_header) > 50 else auth_header
+        
+        debug_info = {
+            'message': 'Debug de autenticación',
+            'token_preview': token_preview,
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'username': user.username,
+                'role': user.role,
+                'is_approved': user.is_approved,
+                'is_active': user.is_active,
+            },
+            'request_info': {
+                'method': request.method,
+                'path': request.path,
+                'remote_addr': request.META.get('REMOTE_ADDR', 'unknown'),
+            }
+        }
+        
+        logger.info(f"[DEBUG AUTH] Usuario autenticado: {user.email} (ID: {user.id})")
+        
+        return Response(debug_info, status=status.HTTP_200_OK)

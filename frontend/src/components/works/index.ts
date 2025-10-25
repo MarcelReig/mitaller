@@ -4,7 +4,7 @@
 
 export { WorkCard } from './WorkCard';
 export { WorkGrid } from './WorkGrid';
-export { default as WorkForm } from './WorkForm';
+export { WorkForm } from './WorkForm';
 
 // Nuevos componentes para galería individual con lightbox
 export { WorkGallery } from './WorkGallery';

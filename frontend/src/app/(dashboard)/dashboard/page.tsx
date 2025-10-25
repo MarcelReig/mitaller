@@ -1,9 +1,11 @@
 /**
- * Dashboard Overview Page
+ * Dashboard Overview Page (Client Component)
  * 
  * Muestra resumen de estadísticas y actividad reciente.
  * NOTA: Contenido simulado - se implementará con datos reales en Fase 3D
  */
+
+'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -19,8 +21,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useMyArtistProfile } from '@/lib/hooks/useArtists';
 
 export default function DashboardPage() {
+  // Obtener perfil del artista para construir URL del portfolio
+  const { data: artist } = useMyArtistProfile();
   return (
     <div className="space-y-6">
       
@@ -291,12 +296,14 @@ export default function DashboardPage() {
                 Ver Pedidos
               </Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/preview" target="_blank">
-                <Eye className="mr-2 h-4 w-4" />
-                Preview Portfolio
-              </Link>
-            </Button>
+            {artist?.slug && (
+              <Button variant="outline" asChild>
+                <Link href={`/artesanos/${artist.slug}`} target="_blank">
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ver perfil público
+                </Link>
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

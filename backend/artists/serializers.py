@@ -38,7 +38,8 @@ class ArtistProfileUpdateSerializer(serializers.ModelSerializer):
     - stripe_account_id, stripe_onboarding_completed (solo admin)
     - is_featured (solo admin)
     
-    Soporta upload de imágenes (avatar, cover_image).
+    Imágenes: Acepta URLs de Cloudinary (subidas desde frontend).
+    Las imágenes se suben a Cloudinary desde el frontend y se envían las URLs.
     """
     
     class Meta:
@@ -52,7 +53,6 @@ class ArtistProfileUpdateSerializer(serializers.ModelSerializer):
             'cover_image',
             'website',
             'instagram',
-            'facebook',
             'phone',
         )
     
@@ -102,8 +102,8 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
             'cover_image',
             'website',
             'instagram',
-            'facebook',
             'instagram_url',
+            'phone',
             'full_location',
             'total_works',
             'total_products',

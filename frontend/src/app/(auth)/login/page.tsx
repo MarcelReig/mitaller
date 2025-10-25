@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, getDefaultRoute } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,15 +47,13 @@ export default function LoginPage() {
       // Llamar login y esperar el resultado
       const user = await login({ email: data.email, password: data.password });
       
-      // Redirigir según el role del usuario
-      if (user?.role === 'artisan') {
-        console.log('Redirigiendo a dashboard artesano...');
-        router.push('/dashboard');
-      } else if (user?.role === 'admin') {
-        console.log('Redirigiendo a dashboard admin...');
-        router.push('/dashboard'); // Admins también van al dashboard
+      // Redirigir según el role del usuario usando helper
+      if (user?.role) {
+        const redirectTo = getDefaultRoute(user.role);
+        console.log(`Redirigiendo a ${redirectTo} (rol: ${user.role})`);
+        router.push(redirectTo);
       } else {
-        console.log('Redirigiendo al home...');
+        console.log('Usuario sin rol, redirigiendo al home...');
         router.push('/');
       }
     } catch (error) {

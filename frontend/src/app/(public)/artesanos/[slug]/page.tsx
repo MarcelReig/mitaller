@@ -26,7 +26,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArtisanHeader } from '@/components/artists';
+import { ArtistHeader, ArtistSocials } from '@/components/artists';
 import { WorkGrid } from '@/components/works';
 import type { Artist } from '@/types/artist';
 import type { WorkListItem } from '@/types/work';
@@ -125,9 +125,14 @@ export default async function ArtisanProfilePage({ params }: PageParams) {
   return (
     <main className="min-h-screen bg-background">
       
-      {/* Breadcrumbs */}
-      <div className="border-b border-border bg-muted/30">
-        <div className="container max-w-7xl mx-auto px-4 py-4">
+      {/* Header del artesano con cover image */}
+      <ArtistHeader artist={artisan} />
+
+      {/* Container principal */}
+      <div className="container max-w-7xl mx-auto px-4 py-8 md:py-12">
+        <div className="space-y-12">
+          
+          {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
             <Link 
               href="/" 
@@ -147,15 +152,9 @@ export default async function ArtisanProfilePage({ params }: PageParams) {
               {artisan.display_name}
             </span>
           </nav>
-        </div>
-      </div>
 
-      {/* Container principal */}
-      <div className="container max-w-7xl mx-auto px-4 py-8 md:py-12">
-        <div className="space-y-12">
-          
-          {/* Header del artesano */}
-          <ArtisanHeader artisan={artisan} />
+          {/* Links de contacto y estadísticas */}
+          <ArtistSocials artist={artisan} />
 
           {/* Sección de colecciones/galerías */}
           <section>
@@ -203,20 +202,23 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     ? artisan.bio.slice(0, 160) + (artisan.bio.length > 160 ? '...' : '')
     : `Portfolio de ${artisan.display_name}, artesano en ${artisan.full_location}`;
 
+  // Priorizar cover_image para redes sociales (más visual), fallback a avatar
+  const socialImage = artisan.cover_image || artisan.avatar;
+
   return {
     title: `${artisan.display_name} - Artesano | Mitaller.art`,
     description,
     openGraph: {
       title: artisan.display_name,
       description,
-      images: artisan.avatar ? [artisan.avatar] : [],
+      images: socialImage ? [socialImage] : [],
       type: 'profile',
     },
     twitter: {
       card: 'summary_large_image',
       title: artisan.display_name,
       description,
-      images: artisan.avatar ? [artisan.avatar] : [],
+      images: socialImage ? [socialImage] : [],
     },
   };
 }

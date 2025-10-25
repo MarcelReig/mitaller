@@ -114,6 +114,321 @@ mitaller/
 - Forms: React Hook Form + zod validation
 - Error handling: Error boundaries + try/catch apropiados
 
+## Calidad de Código y Mejores Prácticas
+
+### 🎯 Principios Fundamentales
+
+**NUNCA:**
+- ❌ Implementar parches temporales o "quick fixes" que oculten el problema real
+- ❌ Añadir excepciones especiales en código global (code smell)
+- ❌ Crear soluciones "fire-and-forget" sin manejo de errores
+- ❌ Dejar código espagueti o difícil de mantener
+- ❌ Asumir que "funciona" es suficiente sin considerar arquitectura
+- ❌ Ignorar code smells con la excusa de "hacerlo después"
+
+**SIEMPRE:**
+- ✅ Identificar y resolver la causa raíz del problema
+- ✅ Escribir código limpio, mantenible y escalable desde el inicio
+- ✅ Seguir el orden lógico de operaciones (servidor → cliente → UI)
+- ✅ Implementar manejo robusto de errores (try-catch-finally)
+- ✅ Documentar decisiones técnicas importantes
+- ✅ Refactorizar cuando detectes un mal olor en el código
+
+### 🏗️ Arquitectura Profesional
+
+#### 1. Flujo Correcto de Operaciones
+
+**Ejemplo: Logout**
+```typescript
+// ✅ CORRECTO: Backend primero, limpieza local después
+logout: async () => {
+  try {
+    // 1. Invalidar en servidor (con token válido)
+    await backend.logout();
+  } catch (error) {
+    // 2. Manejo graceful si falla
+    console.warn('Backend failed, continuing cleanup');
+  } finally {
+    // 3. Limpieza local (siempre se ejecuta)
+    clearLocalState();
+    // 4. UI feedback
+    showToast();
+    redirect();
+  }
+}
+
+// ❌ INCORRECTO: Limpieza local primero
+logout: () => {
+  clearLocalState();  // Token eliminado
+  backend.logout();   // Falla: no hay token
+  redirect();         // Interceptor redirige a /login antes
+}
+```
+
+**Principio:** Operaciones críticas de servidor primero, estado local después.
+
+#### 2. Manejo de Errores Robusto
+
+**Backend (Python):**
+```python
+# ✅ CORRECTO: Try-except con contexto específico
+try:
+    profile = ArtistProfile.objects.get(slug=slug)
+    profile.update_stripe_account(account_id)
+    profile.save()
+except ArtistProfile.DoesNotExist:
+    logger.error(f"Artist profile not found: {slug}")
+    raise Http404("Perfil no encontrado")
+except StripeError as e:
+    logger.error(f"Stripe API error: {str(e)}")
+    raise ValidationError("Error al conectar con Stripe")
+except Exception as e:
+    logger.critical(f"Unexpected error: {str(e)}")
+    raise
+
+# ❌ INCORRECTO: Catch genérico sin contexto
+try:
+    # ... código
+except:
+    pass  # Silent failure
+```
+
+**Frontend (TypeScript):**
+```typescript
+// ✅ CORRECTO: Manejo específico con fallback
+async function fetchArtist(slug: string): Promise<Artist> {
+  try {
+    const response = await api.get(`/artists/${slug}/`);
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 404) {
+      throw new NotFoundError('Artista no encontrado');
+    }
+    if (error.response?.status >= 500) {
+      throw new ServerError('Error del servidor');
+    }
+    throw new NetworkError('Error de conexión');
+  }
+}
+
+// ❌ INCORRECTO: Catch sin tipar
+try {
+  const data = await api.get(url);
+} catch (e) {
+  console.log(e);  // ¿Qué hacemos con el error?
+}
+```
+
+#### 3. Código Auto-Documentado
+
+**Usa nombres descriptivos:**
+```typescript
+// ✅ CORRECTO: Intención clara
+async function invalidateUserSessionOnServer(userId: number): Promise<void> {
+  await axiosInstance.post('/api/v1/auth/logout/');
+}
+
+// ❌ INCORRECTO: Nombre ambiguo
+async function doLogout(): Promise<void> {
+  // ¿Qué hace exactamente?
+}
+```
+
+**Comentarios explican el "por qué", no el "qué":**
+```python
+# ✅ CORRECTO: Explica la decisión
+# Guardamos el thumbnail por separado para optimizar la carga inicial de la galería
+# Las imágenes completas se cargan bajo demanda (lazy loading)
+thumbnail_url = cloudinary.upload(image, transformation={
+    'width': 400,
+    'height': 300,
+    'crop': 'fill'
+})
+
+# ❌ INCORRECTO: Repite el código
+# Subir thumbnail
+thumbnail_url = cloudinary.upload(image, ...)
+```
+
+#### 4. Principio DRY pero con Sentido Común
+
+```typescript
+// ✅ CORRECTO: Abstracción útil
+function createAuthenticatedRequest(endpoint: string, data: unknown) {
+  return axiosInstance.post(endpoint, data, {
+    headers: { Authorization: `Bearer ${getToken()}` }
+  });
+}
+
+// ❌ INCORRECTO: Sobre-abstracción innecesaria
+function get(url) { return fetch(url); }
+function post(url, data) { return fetch(url, {method: 'POST', body: data}); }
+// ... Mejor usar una librería como axios
+```
+
+#### 5. Single Responsibility Principle
+
+```python
+# ✅ CORRECTO: Responsabilidades separadas
+class OrderService:
+    def create_order(self, cart_items: List[CartItem]) -> Order:
+        order = self._build_order(cart_items)
+        self._validate_stock(cart_items)
+        self._process_payment(order)
+        self._send_confirmation_email(order)
+        return order
+
+# ❌ INCORRECTO: Función monolítica
+def create_order_and_do_everything(items):
+    # 200 líneas de código mezclando validación, 
+    # pago, emails, notificaciones, etc.
+```
+
+### 🚨 Code Smells Comunes y Cómo Evitarlos
+
+#### 1. Excepciones Especiales (Ejemplo Real)
+
+```typescript
+// ❌ INCORRECTO: Parche en interceptor
+if (error.response?.status === 401) {
+  // Excepción especial para logout
+  if (url.includes('/auth/logout/')) {
+    return Promise.reject(error);  // Code smell
+  }
+  // ... resto del código
+}
+
+// ✅ CORRECTO: Resolver la causa raíz
+// Cambiar el orden en authStore.logout() para que
+// llame al backend ANTES de eliminar el token
+```
+
+#### 2. Estado Temporal Frágil
+
+```typescript
+// ❌ INCORRECTO: Confiar en sessionStorage
+logout: () => {
+  sessionStorage.setItem('logout_success', 'true');
+  clearTokens();
+  redirect('/');
+}
+// En home:
+useEffect(() => {
+  if (sessionStorage.getItem('logout_success')) {
+    toast.success('...');
+    sessionStorage.removeItem('logout_success');
+  }
+}, []);
+
+// ✅ CORRECTO: Operación atómica
+logout: async () => {
+  await backend.logout();
+  clearTokens();
+  toast.success('...');
+  setTimeout(() => redirect('/'), 800);
+}
+```
+
+#### 3. Callbacks Hell
+
+```typescript
+// ❌ INCORRECTO: Pyramid of doom
+function processOrder(orderId, callback) {
+  getOrder(orderId, (order) => {
+    validateStock(order, (valid) => {
+      if (valid) {
+        processPayment(order, (payment) => {
+          sendConfirmation(order, payment, (sent) => {
+            callback(null, order);
+          });
+        });
+      }
+    });
+  });
+}
+
+// ✅ CORRECTO: Async/await limpio
+async function processOrder(orderId: number): Promise<Order> {
+  const order = await getOrder(orderId);
+  const isValid = await validateStock(order);
+  
+  if (!isValid) throw new ValidationError('Stock insuficiente');
+  
+  const payment = await processPayment(order);
+  await sendConfirmation(order, payment);
+  
+  return order;
+}
+```
+
+### 📏 Métricas de Código de Calidad
+
+**Antes de hacer commit, pregúntate:**
+
+1. **¿Es mantenible?** ¿Lo entenderás en 6 meses?
+2. **¿Es escalable?** ¿Funciona con 1 usuario y con 10,000?
+3. **¿Es testeable?** ¿Puedes escribir tests fácilmente?
+4. **¿Es resiliente?** ¿Maneja errores gracefully?
+5. **¿Es limpio?** ¿Hay code smells evidentes?
+
+**Si la respuesta a alguna es "No", refactoriza antes de continuar.**
+
+### 🎓 Ejemplo Completo: Logout Profesional
+
+**Antes (Con problemas):**
+```typescript
+logout: () => {
+  removeAllTokens();              // 1. Elimina tokens primero
+  axiosInstance.post('/logout/'); // 2. Backend falla (401)
+  window.location.href = '/';     // 3. Interceptor redirige a /login
+}
+```
+
+**Problemas:**
+- ❌ Orden incorrecto de operaciones
+- ❌ Backend no puede invalidar token
+- ❌ Interceptor causa redirect inesperado
+- ❌ No hay manejo de errores
+- ❌ Code smell: necesita excepción en interceptor
+
+**Después (Profesional):**
+```typescript
+/**
+ * Cierra sesión del usuario
+ * 
+ * Flujo:
+ * 1. Invalida token en servidor (permite blacklist)
+ * 2. Limpia estado local (garantizado con finally)
+ * 3. Muestra feedback y redirige
+ */
+logout: async () => {
+  try {
+    // Backend primero (con token válido)
+    await axiosInstance.post('/api/v1/auth/logout/');
+  } catch (error) {
+    // Graceful degradation si backend falla
+    console.warn('Backend logout failed, continuing with local cleanup:', error);
+  } finally {
+    // Limpieza local (siempre se ejecuta)
+    removeAllTokens();
+    set({ user: null, isAuthenticated: false });
+    
+    // UI feedback
+    toast.success('Sesión cerrada exitosamente');
+    setTimeout(() => window.location.href = '/', 800);
+  }
+}
+```
+
+**Ventajas:**
+- ✅ Orden lógico: servidor → cliente → UI
+- ✅ Backend puede hacer blacklist
+- ✅ Manejo robusto de errores
+- ✅ Limpieza garantizada (finally)
+- ✅ Sin code smells ni parches
+- ✅ Código auto-documentado
+- ✅ Testeable y mantenible
+
 ## API Design
 
 ### Endpoints RESTful
@@ -200,28 +515,69 @@ refactor(shop): optimize product query with select_related
 
 Cuando generes código, SIEMPRE:
 
-1. Explica decisiones técnicas importantes
+1. **Resuelve la causa raíz, no los síntomas**
+   - ❌ No añadas excepciones especiales o parches temporales
+   - ✅ Identifica por qué ocurre el problema y arréglalo en origen
+   - Si algo requiere una "excepción especial", el diseño está mal
+
+2. **Sigue el orden lógico de operaciones**
+   - Servidor primero (invalidar, guardar, actualizar)
+   - Cliente después (estado local, cache)
+   - UI al final (feedback, redirects)
+
+3. **Maneja errores de forma robusta**
+   - Backend: try/except específicos con logging contextual
+   - Frontend: try-catch-finally con graceful degradation
+   - Nunca silenciar errores (catch sin manejo)
+   - Logs útiles: qué falló, por qué, dónde
+
+4. **Escribe código mantenible desde el inicio**
+   - Pregúntate: ¿Lo entenderé en 6 meses?
+   - Refactoriza cuando detectes code smells
+   - Nombres descriptivos > comentarios explicativos
+   - Funciones pequeñas con responsabilidad única
+
+5. **Explica decisiones técnicas importantes**
    - ¿Por qué elegiste este approach?
-   - ¿Hay alternativas?
+   - ¿Qué alternativas consideraste?
+   - ¿Qué trade-offs tiene?
 
-2. Incluye comentarios para lógica compleja
-   # Calculate artist payout after 12% platform commission
-   artist_payout = price * Decimal('0.88')
+6. **Incluye comentarios para el "por qué", no el "qué"**
+   ```python
+   # ✅ BIEN: Explica la decisión de negocio
+   # Guardamos thumbnail separado para optimizar carga inicial
+   thumbnail_url = cloudinary.upload(...)
+   
+   # ❌ MAL: Repite lo que dice el código
+   # Subir imagen a cloudinary
+   thumbnail_url = cloudinary.upload(...)
+   ```
 
-3. Maneja errores apropiadamente
-   - Backend: try/except con logs
-   - Frontend: Error boundaries + user-friendly messages
-
-4. Valida inputs
+7. **Valida inputs y outputs**
    - Backend: Serializers + custom validators
-   - Frontend: zod schemas
+   - Frontend: zod schemas + type guards
+   - Nunca confíes en datos externos
 
-5. Usa type hints y tipos
-   Python: def create_artist_profile(user: User, data: dict) -> ArtistProfile:
-   TypeScript: function createOrder(items: ICartItem[]): Promise<IOrder>
+8. **Usa type hints y tipos siempre**
+   ```python
+   # Python
+   def create_artist_profile(user: User, data: dict) -> ArtistProfile:
+   ```
+   ```typescript
+   // TypeScript
+   function createOrder(items: ICartItem[]): Promise<IOrder>
+   ```
 
-6. Sigue las convenciones arriba
-   - Naming, estructura, patterns
+9. **Verifica que el código sea:**
+   - ✅ Mantenible (legible en 6 meses)
+   - ✅ Escalable (funciona con 1 y 10,000 usuarios)
+   - ✅ Testeable (fácil escribir tests)
+   - ✅ Resiliente (maneja errores gracefully)
+   - ✅ Limpio (sin code smells)
+
+10. **Sigue las convenciones del proyecto**
+    - Naming, estructura, patterns
+    - Consulta sección "Calidad de Código" arriba
 
 ## Documentación
 

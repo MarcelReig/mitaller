@@ -12,17 +12,17 @@
 import { z } from 'zod';
 
 /**
- * Categorías válidas de obras
+ * Categorías válidas de obras (sincronizadas con backend WorkCategory)
  */
 export const WORK_CATEGORIES = [
   'ceramics',
-  'painting',
-  'sculpture',
   'jewelry',
-  'textile',
+  'leather',
+  'textiles',
   'wood',
   'glass',
-  'metal',
+  'sculpture',
+  'painting',
   'other',
 ] as const;
 
@@ -31,13 +31,13 @@ export const WORK_CATEGORIES = [
  */
 export const WORK_CATEGORY_LABELS: Record<typeof WORK_CATEGORIES[number], string> = {
   ceramics: 'Cerámica',
-  painting: 'Pintura',
-  sculpture: 'Escultura',
   jewelry: 'Joyería',
-  textile: 'Textil',
+  leather: 'Marroquinería',
+  textiles: 'Textiles',
   wood: 'Madera',
   glass: 'Vidrio',
-  metal: 'Metal',
+  sculpture: 'Escultura',
+  painting: 'Pintura',
   other: 'Otro',
 };
 

@@ -28,7 +28,7 @@ Se ha implementado exitosamente el sistema completo de **perfiles públicos de a
 - Slug único para URLs (`/artistas/{slug}/`)
 - Info del taller (bio, craft_type, location)
 - Imágenes (avatar, cover_image)
-- Redes sociales (Instagram, Facebook, website, phone)
+- Redes sociales (Instagram, website, phone)
 - Stripe Connect (stripe_account_id, onboarding_completed)
 - Estadísticas (total_works, total_products, is_featured)
 - Timestamps automáticos

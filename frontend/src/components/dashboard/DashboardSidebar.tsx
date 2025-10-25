@@ -20,7 +20,6 @@ import {
   Images,
   ShoppingBag,
   Receipt,
-  Eye,
   User,
   Settings,
 } from 'lucide-react';
@@ -46,11 +45,6 @@ const navigation = [
     name: 'Pedidos',
     href: '/dashboard/pedidos',
     icon: Receipt,
-  },
-  {
-    name: 'Preview Portfolio',
-    href: '/dashboard/preview',
-    icon: Eye,
   },
   {
     name: 'Mi Perfil',

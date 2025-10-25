@@ -96,20 +96,20 @@ class ArtistProfile(models.Model):
         help_text=_('Municipio donde se encuentra el taller')
     )
     
-    # Imágenes
-    avatar = models.ImageField(
+    # Imágenes (almacenadas en Cloudinary)
+    avatar = models.URLField(
         _('avatar'),
-        upload_to='artists/avatars/',
+        max_length=500,
         blank=True,
         null=True,
-        help_text=_('Foto de perfil del artesano')
+        help_text=_('URL de foto de perfil almacenada en Cloudinary')
     )
-    cover_image = models.ImageField(
+    cover_image = models.URLField(
         _('imagen de portada'),
-        upload_to='artists/covers/',
+        max_length=500,
         blank=True,
         null=True,
-        help_text=_('Imagen de portada del perfil')
+        help_text=_('URL de imagen de portada almacenada en Cloudinary')
     )
     
     # Contacto y redes sociales
@@ -125,12 +125,6 @@ class ArtistProfile(models.Model):
         blank=True,
         null=True,
         help_text=_('Usuario de Instagram (sin @)')
-    )
-    facebook = models.URLField(
-        _('facebook'),
-        blank=True,
-        null=True,
-        help_text=_('URL de página de Facebook')
     )
     phone = models.CharField(
         _('teléfono'),

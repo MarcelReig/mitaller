@@ -65,3 +65,29 @@ export function useAuth() {
     ...roles,
   };
 }
+
+/**
+ * Helper para obtener la ruta de redirección por defecto según el rol del usuario
+ * 
+ * @param role - Rol del usuario ('admin', 'artisan', 'customer', etc.)
+ * @returns Ruta a la que debe ser redirigido el usuario
+ * 
+ * @example
+ * ```tsx
+ * const user = await login(credentials);
+ * const redirectTo = getDefaultRoute(user.role);
+ * router.push(redirectTo);
+ * ```
+ */
+export const getDefaultRoute = (role: string): string => {
+  switch (role) {
+    case 'admin':
+      return '/admin/dashboard';
+    case 'artisan':
+      return '/dashboard';
+    case 'customer':
+      return '/';
+    default:
+      return '/';
+  }
+};
