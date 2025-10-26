@@ -257,3 +257,43 @@ cloudinary.config(
     secure=True  # Usar HTTPS
 )
 
+# ==============================================================================
+# SENTRY - Error Tracking & Performance Monitoring
+# ==============================================================================
+# https://docs.sentry.io/platforms/python/guides/django/
+
+import sentry_sdk
+
+# Solo activar Sentry en producción (DEBUG=False)
+if not DEBUG:
+    SENTRY_DSN = os.getenv('SENTRY_DSN')
+    
+    if SENTRY_DSN:
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            
+            # Identificar versión de la app
+            release=os.getenv('SENTRY_RELEASE', 'mitaller@1.0.0'),
+            
+            # Identificar entorno (production, staging, etc)
+            environment=os.getenv('SENTRY_ENVIRONMENT', 'production'),
+            
+            # Performance monitoring (10% de las requests)
+            traces_sample_rate=float(os.getenv('SENTRY_TRACES_SAMPLE_RATE', '0.1')),
+            
+            # Capturar información de usuario (email, ID)
+            # Set to False para cumplir GDPR/privacidad
+            send_default_pii=False,
+            
+            # Integración automática con Django
+            integrations=[
+                # DjangoIntegration ya está incluida por defecto
+            ],
+        )
+        
+        print(f"✅ Sentry iniciado - Entorno: {os.getenv('SENTRY_ENVIRONMENT', 'production')}")
+    else:
+        print("⚠️  SENTRY_DSN no configurado - Monitoreo de errores desactivado")
+else:
+    print("ℹ️  Sentry desactivado (DEBUG=True)")
+
