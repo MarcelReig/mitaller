@@ -4,28 +4,39 @@
 export type {
   User,
   UserRole,
+  ArtisanProfile,
   ArtistProfile,
   AuthResponse,
   RegisterData,
   LoginData,
 } from './user';
 
-// Artist types
+// Artisan types (artesanos - craftspeople)
 export type {
-  Artist,
-  ArtistSummary,
-  ArtistFormData,
-  ArtistFilters,
+  Artisan,
+  ArtisanSummary,
+  ArtisanListItem,
+  ArtisanFormData,
+  ArtisanUpdateData,
+  ArtisanFilters,
   CraftType,
   Location,
+} from './artisan';
+
+export { CRAFT_TYPE_LABELS, LOCATION_LABELS } from './artisan';
+
+// Artist types (artistas - futura implementación)
+export type {
+  Artist,
+  ArtisticDiscipline,
 } from './artist';
 
-export { CRAFT_TYPE_LABELS, LOCATION_LABELS } from './artist';
+export { DISCIPLINE_LABELS } from './artist';
 
 // Work types
 export type {
   Work,
-  WorkArtist,
+  WorkArtisan,
   WorkFormData,
   WorkFilters,
   WorkListResponse,
@@ -34,7 +45,7 @@ export type {
 // Product types
 export type {
   Product,
-  ProductArtist,
+  ProductArtisan,
   ProductFormData,
   ProductFilters,
   ProductListResponse,
@@ -47,7 +58,7 @@ export type {
   Order,
   OrderItem,
   OrderItemProduct,
-  OrderItemArtist,
+  OrderItemArtisan,
   OrderStatus,
   PaymentStatus,
   CreateOrderData,
@@ -75,4 +86,3 @@ export type PaginatedResponse<T> = {
   previous: string | null;
   results: T[];
 };
-

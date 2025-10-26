@@ -11,6 +11,26 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import * as worksApi from '@/lib/api/works';
 import type { Work, WorkFormData } from '@/lib/api/works';
+import { useAuthStore } from '@/stores/authStore';
+
+/**
+ * Helper para revalidar páginas públicas en Next.js
+ * Llama al API route de revalidation para actualizar el caché de ISR
+ */
+async function revalidatePublicPages(artisanSlug: string) {
+  try {
+    await fetch('/api/revalidate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paths: [`/artesanos/${artisanSlug}`]
+      })
+    });
+  } catch (error) {
+    console.error('Error revalidating public pages:', error);
+    // No mostrar error al usuario, es solo optimización
+  }
+}
 
 /**
  * Hook para obtener todas las obras del artista
@@ -46,20 +66,25 @@ export function useWork(id: number) {
  * 
  * Features:
  * - Invalida cache de obras después de crear
+ * - Revalida páginas públicas (ISR)
  * - Toast de éxito/error con detalles de validación
  */
 export function useCreateWork() {
   const queryClient = useQueryClient();
+  const user = useAuthStore(state => state.user);
   
   return useMutation({
     mutationFn: (data: WorkFormData) => worksApi.createWork(data),
-    onSuccess: (work) => {
-      // Invalidar cache de obras para refetch
+    onSuccess: () => {
+      // Invalidar cache de obras para refetch (dashboard)
       queryClient.invalidateQueries({ queryKey: ['works'] });
       
-      toast.success('Obra creada exitosamente', {
-        description: `"${work.title}" ha sido añadida a tu portfolio`,
-      });
+      // Revalidar página pública del artesano (ISR)
+      if (user?.artisan_profile?.slug) {
+        revalidatePublicPages(user.artisan_profile.slug);
+      }
+      
+      // Toast manejado por el componente WorkForm
     },
     onError: (error: unknown) => {
       // Log completo del error para debugging
@@ -103,10 +128,12 @@ export function useCreateWork() {
  * Features:
  * - Optimistic update (UI se actualiza antes del servidor)
  * - Rollback automático si falla
+ * - Revalida páginas públicas (ISR)
  * - Toast de éxito/error
  */
 export function useUpdateWork() {
   const queryClient = useQueryClient();
+  const user = useAuthStore(state => state.user);
   
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<WorkFormData> }) =>
@@ -150,9 +177,12 @@ export function useUpdateWork() {
       queryClient.invalidateQueries({ queryKey: ['works'] });
       queryClient.invalidateQueries({ queryKey: ['works', updatedWork.id] });
       
-      toast.success('Obra actualizada', {
-        description: `"${updatedWork.title}" ha sido actualizada`,
-      });
+      // Revalidar página pública del artesano (ISR)
+      if (user?.artisan_profile?.slug) {
+        revalidatePublicPages(user.artisan_profile.slug);
+      }
+      
+      // Toast manejado por el componente WorkForm
     },
   });
 }
@@ -163,10 +193,12 @@ export function useUpdateWork() {
  * Features:
  * - Invalida cache después de eliminar
  * - Remueve del cache la obra eliminada
+ * - Revalida páginas públicas (ISR)
  * - Toast de éxito/error
  */
 export function useDeleteWork() {
   const queryClient = useQueryClient();
+  const user = useAuthStore(state => state.user);
   
   return useMutation({
     mutationFn: (id: number) => worksApi.deleteWork(id),
@@ -176,6 +208,11 @@ export function useDeleteWork() {
       
       // Remover obra específica del cache
       queryClient.removeQueries({ queryKey: ['works', deletedId] });
+      
+      // Revalidar página pública del artesano (ISR)
+      if (user?.artisan_profile?.slug) {
+        revalidatePublicPages(user.artisan_profile.slug);
+      }
       
       toast.success('Obra eliminada', {
         description: 'La obra ha sido eliminada de tu portfolio',
@@ -195,10 +232,12 @@ export function useDeleteWork() {
  * Features:
  * - Optimistic update (UI se actualiza instantáneamente)
  * - Rollback automático si falla
+ * - Revalida páginas públicas (ISR)
  * - Toast de éxito/error
  */
 export function useReorderWorks() {
   const queryClient = useQueryClient();
+  const user = useAuthStore(state => state.user);
   
   return useMutation({
     mutationFn: (orderIds: number[]) => worksApi.reorderWorks(orderIds),
@@ -241,6 +280,11 @@ export function useReorderWorks() {
     // Si tiene éxito, invalidar cache
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['works'] });
+      
+      // Revalidar página pública del artesano (ISR)
+      if (user?.artisan_profile?.slug) {
+        revalidatePublicPages(user.artisan_profile.slug);
+      }
       
       toast.success('Orden actualizado');
     },

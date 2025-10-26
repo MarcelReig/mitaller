@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import type { ArtistFilters as ArtistFiltersType } from '@/types';
-import ArtistsGrid from '@/components/artists/ArtistsGrid';
-import ArtistFilters from '@/components/artists/ArtistFilters';
+import type { ArtisanFilters } from '@/types';
+import ArtistsGrid from '@/components/artisans/ArtistsGrid';
+import ArtistFilters from '@/components/artisans/ArtistFilters';
 
 /**
  * Página del directorio de artesanos con filtros funcionales
@@ -13,14 +13,14 @@ import ArtistFilters from '@/components/artists/ArtistFilters';
  */
 export default function ArtesanosPage() {
   // State para filtros
-  const [filters, setFilters] = useState<ArtistFiltersType>({
+  const [filters, setFilters] = useState<ArtisanFilters>({
     search: '',
     craft_type: undefined,
     location: undefined,
   });
 
   // Handler para cuando cambian los filtros
-  const handleFilterChange = (newFilters: ArtistFiltersType) => {
+  const handleFilterChange = (newFilters: ArtisanFilters) => {
     setFilters(newFilters);
   };
 

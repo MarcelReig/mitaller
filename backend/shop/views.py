@@ -8,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from .models import Product
 from .serializers import ProductSerializer, ProductListSerializer
-from .permissions import IsArtistOwnerOrReadOnly
+from .permissions import IsArtisanOwnerOrReadOnly
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -34,9 +34,9 @@ class ProductViewSet(viewsets.ModelViewSet):
     - Artesanos pueden ver sus productos inactivos
     
     Permisos:
-    - IsArtistOwnerOrReadOnly: Lectura pública, escritura para dueño
+    - IsArtisanOwnerOrReadOnly: Lectura pública, escritura para dueño
     - GET: Cualquiera (solo productos activos con stock)
-    - POST: Usuario autenticado con ArtistProfile
+    - POST: Usuario autenticado con ArtisanProfile
     - PUT/PATCH/DELETE: Solo artesano dueño del producto
     
     Serializers:
@@ -51,8 +51,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     - ordering: created_at, price, name
     """
     
-    queryset = Product.objects.select_related('artist', 'artist__user')
-    permission_classes = [IsAuthenticatedOrReadOnly, IsArtistOwnerOrReadOnly]
+    queryset = Product.objects.select_related('artisan', 'artisan__user')
+    permission_classes = [IsAuthenticatedOrReadOnly, IsArtisanOwnerOrReadOnly]
     
     # Configuración de filtros y búsqueda
     filter_backends = [
@@ -62,7 +62,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     ]
     
     # Campos de filtro exacto
-    filterset_fields = ['artist', 'category', 'is_active']
+    filterset_fields = ['artisan', 'category', 'is_active']
     
     # Campos de búsqueda de texto libre
     search_fields = ['name', 'description']
@@ -108,7 +108,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         # Si el usuario es artesano autenticado, puede ver todos sus productos
-        if user and user.is_authenticated and hasattr(user, 'artist_profile'):
+        if user and user.is_authenticated and hasattr(user, 'artisan_profile'):
             # Puede ver todos sus productos (activos, inactivos, con/sin stock)
             return queryset
         
@@ -118,17 +118,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         """
-        Asigna automáticamente el artista al crear un producto.
+        Asigna automáticamente el artesano al crear un producto.
         
-        El artista se obtiene del perfil del usuario autenticado.
-        No se permite especificar un artista diferente.
+        El artesano se obtiene del perfil del usuario autenticado.
+        No se permite especificar un artesano diferente.
         
         Esto asegura que:
         1. Artesanos solo crean productos bajo su propio perfil
         2. No se puede crear productos para otros artesanos
-        3. La relación artista-producto es siempre correcta
+        3. La relación artesano-producto es siempre correcta
         
         Args:
             serializer: Serializer validado con los datos del producto
         """
-        serializer.save(artist=self.request.user.artist_profile)
+        serializer.save(artisan=self.request.user.artisan_profile)

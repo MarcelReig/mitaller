@@ -6,6 +6,32 @@ Herramientas y scripts auxiliares para facilitar el desarrollo.
 
 ## 🔧 Scripts Disponibles
 
+### `reset_database.sh`
+Script para resetear completamente la base de datos en desarrollo.
+
+**⚠️ ADVERTENCIA: NO usar en producción. Solo para desarrollo local.**
+
+**Uso:**
+```bash
+cd backend
+./scripts/dev/reset_database.sh
+```
+
+**Lo que hace:**
+1. Elimina TODAS las migraciones de las apps
+2. Elimina la base de datos PostgreSQL
+3. Crea la base de datos desde cero
+4. Genera nuevas migraciones
+5. Aplica todas las migraciones
+6. Crea superusuario (admin@mitaller.art)
+
+**Cuándo usarlo:**
+- Has hecho cambios grandes en modelos y quieres empezar de cero
+- Tienes conflictos de migraciones difíciles de resolver
+- Quieres probar el setup inicial limpio
+
+---
+
 ### `update_deps.sh`
 Script bash para gestión segura de dependencias Python.
 

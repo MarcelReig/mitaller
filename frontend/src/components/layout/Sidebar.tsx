@@ -84,8 +84,8 @@ export default function Sidebar() {
   // Iniciales del artesano
   const getInitials = () => {
     if (!user) return 'A';
-    if (user.artist_profile?.display_name) {
-      const names = user.artist_profile.display_name.split(' ');
+    if (user.artisan_profile?.display_name) {
+      const names = user.artisan_profile.display_name.split(' ');
       return names.length > 1
         ? `${names[0][0]}${names[1][0]}`.toUpperCase()
         : names[0][0].toUpperCase();
@@ -101,14 +101,14 @@ export default function Sidebar() {
         <div className="flex items-center space-x-3">
           <Avatar className="h-12 w-12">
             <AvatarImage
-              src={user?.artist_profile?.avatar || undefined}
-              alt={user?.artist_profile?.display_name || user?.username}
+              src={user?.artisan_profile?.avatar || undefined}
+              alt={user?.artisan_profile?.display_name || user?.username}
             />
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold truncate">
-              {user?.artist_profile?.display_name || user?.username}
+              {user?.artisan_profile?.display_name || user?.username}
             </p>
             <p className="text-xs text-muted-foreground truncate">
               {user?.email}
@@ -145,9 +145,9 @@ export default function Sidebar() {
       {/* Bottom Actions */}
       <div className="p-4 border-t space-y-2">
         {/* Ver Perfil Público */}
-        {user?.artist_profile && (
+        {user?.artisan_profile && (
           <Link
-            href={`/artesanos/${user.artist_profile.slug}`}
+            href={`/artesanos/${user.artisan_profile.slug}`}
             target="_blank"
             onClick={() => setMobileOpen(false)}
           >

@@ -25,7 +25,7 @@ export interface Work extends WorkFormData {
   created_at: string;
   updated_at: string;
   total_images: number;
-  artist: {
+  artisan: {
     id: number;
     slug: string;
     display_name: string;

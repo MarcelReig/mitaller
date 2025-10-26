@@ -21,11 +21,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useMyArtistProfile } from '@/lib/hooks/useArtists';
+import { useMyArtisanProfile } from '@/lib/hooks/useArtisans';
 
 export default function DashboardPage() {
-  // Obtener perfil del artista para construir URL del portfolio
-  const { data: artist } = useMyArtistProfile();
+  // Obtener perfil del artesano para construir URL del portfolio
+  const { data: artisan } = useMyArtisanProfile();
   return (
     <div className="space-y-6">
       
@@ -208,7 +208,7 @@ export default function DashboardPage() {
             
             {/* Actividad 1 */}
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center shrink-0">
                 <Receipt className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
               <div className="flex-1 min-w-0">
@@ -223,12 +223,12 @@ export default function DashboardPage() {
             
             {/* Actividad 2 */}
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center shrink-0">
                 <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm">
-                  <strong>Nuevo comentario</strong> en "Cala en Turqueta"
+                  <strong>Nuevo comentario</strong> en &ldquo;Cala en Turqueta&rdquo;
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Hace 5 horas
@@ -238,7 +238,7 @@ export default function DashboardPage() {
             
             {/* Actividad 3 */}
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950 flex items-center justify-center shrink-0">
                 <Heart className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
               <div className="flex-1 min-w-0">
@@ -253,7 +253,7 @@ export default function DashboardPage() {
             
             {/* Actividad 4 */}
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center shrink-0">
                 <Eye className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
@@ -296,9 +296,9 @@ export default function DashboardPage() {
                 Ver Pedidos
               </Link>
             </Button>
-            {artist?.slug && (
+            {artisan?.slug && (
               <Button variant="outline" asChild>
-                <Link href={`/artesanos/${artist.slug}`} target="_blank">
+                <Link href={`/artesanos/${artisan.slug}`} target="_blank">
                   <Eye className="mr-2 h-4 w-4" />
                   Ver perfil público
                 </Link>

@@ -14,11 +14,11 @@ import Image from 'next/image';
 import { MapPin, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { avatarUrl, coverUrl } from '@/lib/cloudinary';
-import { CRAFT_TYPE_LABELS, LOCATION_LABELS } from '@/types/artist';
-import type { Artist } from '@/types/artist';
+import { CRAFT_TYPE_LABELS, LOCATION_LABELS } from '@/types/artisan';
+import type { Artisan } from '@/types/artisan';
 
 interface ArtistHeaderProps {
-  artist: Artist;
+  artist: Artisan;
   className?: string;
 }
 
@@ -54,7 +54,7 @@ export function ArtistHeader({ artist, className }: ArtistHeaderProps) {
               quality={90}
             />
             {/* Overlay oscuro para mejor legibilidad */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-background/95" />
+            <div className="absolute inset-0 bg-linear-to-b from-black/20 via-black/10 to-background/95" />
           </>
         ) : (
           /* Placeholder minimalista sin cover */

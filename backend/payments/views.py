@@ -27,7 +27,7 @@ class IsArtist(permissions.BasePermission):
     """
     Permiso custom para verificar que el usuario es artesano.
     
-    Verifica que el usuario autenticado tiene un artist_profile asociado.
+    Verifica que el usuario autenticado tiene un artisan_profile asociado.
     """
     
     def has_permission(self, request, view):
@@ -35,7 +35,7 @@ class IsArtist(permissions.BasePermission):
         return (
             request.user and
             request.user.is_authenticated and
-            hasattr(request.user, 'artist_profile')
+            hasattr(request.user, 'artisan_profile')
         )
 
 
@@ -75,10 +75,10 @@ class StripeConnectViewSet(viewsets.ViewSet):
             200: {'onboarding_url': 'https://connect.stripe.com/...'}
             400: Si ya completó onboarding o faltan parámetros
         """
-        artist = request.user.artist_profile
+        artisan = request.user.artisan_profile
         
         # Verificar si ya completó onboarding
-        if artist.stripe_onboarding_completed and artist.can_receive_payments:
+        if artisan.stripe_onboarding_completed and artisan.can_receive_payments:
             return Response(
                 {'error': 'Ya has completado el proceso de verificación en Stripe.'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -96,7 +96,7 @@ class StripeConnectViewSet(viewsets.ViewSet):
         
         try:
             # Crear cuenta Express si no existe
-            if not artist.stripe_account_id:
+            if not artisan.stripe_account_id:
                 account = stripe.Account.create(
                     type='express',
                     country='ES',
@@ -107,24 +107,24 @@ class StripeConnectViewSet(viewsets.ViewSet):
                     },
                 )
                 
-                artist.stripe_account_id = account.id
-                artist.save()
+                artisan.stripe_account_id = account.id
+                artisan.save()
                 
-                logger.info(f"Created Stripe account {account.id} for artist {artist.id}")
+                logger.info(f"Created Stripe account {account.id} for artisan {artisan.id}")
             
             # Crear AccountLink para onboarding
             account_link = stripe.AccountLink.create(
-                account=artist.stripe_account_id,
+                account=artisan.stripe_account_id,
                 refresh_url=refresh_url,
                 return_url=success_url,
                 type='account_onboarding',
             )
             
             # Guardar URL de onboarding (temporal, expira en pocas horas)
-            artist.stripe_onboarding_url = account_link.url
-            artist.save()
+            artisan.stripe_onboarding_url = account_link.url
+            artisan.save()
             
-            logger.info(f"Created onboarding link for artist {artist.id}")
+            logger.info(f"Created onboarding link for artisan {artisan.id}")
             
             return Response({
                 'onboarding_url': account_link.url,
@@ -150,9 +150,9 @@ class StripeConnectViewSet(viewsets.ViewSet):
             200: {'onboarding_url': 'https://connect.stripe.com/...'}
             400: Si no tiene cuenta Stripe
         """
-        artist = request.user.artist_profile
+        artisan = request.user.artisan_profile
         
-        if not artist.stripe_account_id:
+        if not artisan.stripe_account_id:
             return Response(
                 {'error': 'No tienes una cuenta de Stripe. Inicia el proceso primero.'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -170,16 +170,16 @@ class StripeConnectViewSet(viewsets.ViewSet):
         try:
             # Crear nuevo AccountLink
             account_link = stripe.AccountLink.create(
-                account=artist.stripe_account_id,
+                account=artisan.stripe_account_id,
                 refresh_url=refresh_url,
                 return_url=return_url,
                 type='account_onboarding',
             )
             
-            artist.stripe_onboarding_url = account_link.url
-            artist.save()
+            artisan.stripe_onboarding_url = account_link.url
+            artisan.save()
             
-            logger.info(f"Refreshed onboarding link for artist {artist.id}")
+            logger.info(f"Refreshed onboarding link for artisan {artisan.id}")
             
             return Response({
                 'onboarding_url': account_link.url,
@@ -208,9 +208,9 @@ class StripeConnectViewSet(viewsets.ViewSet):
                 'details_submitted': True
             }
         """
-        artist = request.user.artist_profile
+        artisan = request.user.artisan_profile
         
-        if not artist.stripe_account_id:
+        if not artisan.stripe_account_id:
             return Response({
                 'status': 'pending',
                 'charges_enabled': False,
@@ -220,30 +220,30 @@ class StripeConnectViewSet(viewsets.ViewSet):
         
         try:
             # Obtener estado actual desde Stripe
-            account = stripe.Account.retrieve(artist.stripe_account_id)
+            account = stripe.Account.retrieve(artisan.stripe_account_id)
             
             # Actualizar campos en ArtistProfile
-            artist.stripe_charges_enabled = account.charges_enabled
-            artist.stripe_payouts_enabled = account.payouts_enabled
+            artisan.stripe_charges_enabled = account.charges_enabled
+            artisan.stripe_payouts_enabled = account.payouts_enabled
             
             # Actualizar estado según capabilities
             if account.charges_enabled and account.payouts_enabled:
-                artist.stripe_account_status = 'active'
-                artist.stripe_onboarding_completed = True
+                artisan.stripe_account_status = 'active'
+                artisan.stripe_onboarding_completed = True
             elif account.details_submitted:
                 # Submitted pero aún no activo (en revisión)
-                artist.stripe_account_status = 'pending'
+                artisan.stripe_account_status = 'pending'
             else:
-                artist.stripe_account_status = 'pending'
+                artisan.stripe_account_status = 'pending'
             
-            artist.save()
+            artisan.save()
             
-            logger.info(f"Updated account status for artist {artist.id}")
+            logger.info(f"Updated account status for artisan {artisan.id}")
             
             return Response({
-                'status': artist.stripe_account_status,
-                'charges_enabled': artist.stripe_charges_enabled,
-                'payouts_enabled': artist.stripe_payouts_enabled,
+                'status': artisan.stripe_account_status,
+                'charges_enabled': artisan.stripe_charges_enabled,
+                'payouts_enabled': artisan.stripe_payouts_enabled,
                 'details_submitted': account.details_submitted,
             })
             
@@ -269,10 +269,10 @@ class PaymentViewSet(viewsets.ReadOnlyModelViewSet):
     - POST /api/v1/payments/payments/create-checkout-session/ - Crear sesión checkout
     """
     
-    queryset = Payment.objects.select_related('order', 'artist').all()
+    queryset = Payment.objects.select_related('order', 'artisan').all()
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
-    filterset_fields = ['artist', 'status']
+    filterset_fields = ['artisan', 'status']
     
     def get_queryset(self):
         """
@@ -287,8 +287,8 @@ class PaymentViewSet(viewsets.ReadOnlyModelViewSet):
         if user.is_staff or user.is_superuser:
             return self.queryset
         
-        if hasattr(user, 'artist_profile'):
-            return self.queryset.filter(artist=user.artist_profile)
+        if hasattr(user, 'artisan_profile'):
+            return self.queryset.filter(artisan=user.artisan_profile)
         
         # Otros usuarios no ven nada
         return Payment.objects.none()

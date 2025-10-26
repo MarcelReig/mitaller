@@ -17,11 +17,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { avatarUrl } from '@/lib/cloudinary';
-import { CRAFT_TYPE_LABELS } from '@/types/artist';
-import type { Artist } from '@/types/artist';
+import { CRAFT_TYPE_LABELS } from '@/types/artisan';
+import type { Artisan } from '@/types/artisan';
 
 interface ArtisanHeaderProps {
-  artisan: Artist;
+  artisan: Artisan;
 }
 
 export function ArtisanHeader({ artisan }: ArtisanHeaderProps) {
@@ -42,7 +42,7 @@ export function ArtisanHeader({ artisan }: ArtisanHeaderProps) {
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
           
           {/* Avatar */}
-          <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-xl flex-shrink-0">
+          <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-xl shrink-0">
             <AvatarImage 
               src={optimizedAvatar || undefined} 
               alt={artisan.display_name}
@@ -72,14 +72,14 @@ export function ArtisanHeader({ artisan }: ArtisanHeaderProps) {
               {/* Ubicación y especialidad */}
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Palette className="w-4 h-4 flex-shrink-0" />
+                  <Palette className="w-4 h-4 shrink-0" />
                   <span className="text-sm md:text-base">
                     {CRAFT_TYPE_LABELS[artisan.craft_type]}
                   </span>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 flex-shrink-0" />
+                  <MapPin className="w-4 h-4 shrink-0" />
                   <span className="text-sm md:text-base">
                     {artisan.full_location}
                   </span>

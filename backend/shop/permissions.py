@@ -8,7 +8,7 @@ Implementa lógica de permisos para productos de la tienda:
 from rest_framework import permissions
 
 
-class IsArtistOwnerOrReadOnly(permissions.BasePermission):
+class IsArtisanOwnerOrReadOnly(permissions.BasePermission):
     """
     Permiso personalizado para productos de la tienda.
     
@@ -21,7 +21,7 @@ class IsArtistOwnerOrReadOnly(permissions.BasePermission):
     
     2. **Escritura (POST, PUT, PATCH, DELETE)**: Solo el artesano dueño
        - Usuario debe estar autenticado
-       - Usuario debe tener un ArtistProfile (role=ARTISAN)
+       - Usuario debe tener un ArtisanProfile (role=ARTISAN)
        - Para editar/eliminar: el usuario debe ser el dueño del producto
     
     Casos de uso:
@@ -59,7 +59,7 @@ class IsArtistOwnerOrReadOnly(permissions.BasePermission):
             return False
         
         # Verificar que el usuario tenga un perfil de artesano
-        if not hasattr(request.user, 'artist_profile'):
+        if not hasattr(request.user, 'artisan_profile'):
             return False
         
         # Usuario autenticado con perfil de artesano puede crear productos
@@ -87,6 +87,6 @@ class IsArtistOwnerOrReadOnly(permissions.BasePermission):
             return True
         
         # Para escritura, verificar que sea el artesano dueño
-        # obj.artist es ArtistProfile, necesitamos comparar con el user
-        return obj.artist.user == request.user
+        # obj.artisan es el User artesano
+        return obj.artisan == request.user
 

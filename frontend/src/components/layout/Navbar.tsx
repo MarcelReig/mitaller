@@ -128,7 +128,7 @@ export default function Navbar() {
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                     <Avatar className="h-9 w-9">
                       <SafeImage
-                        src={avatarUrl(user.artist_profile?.avatar)}
+                        src={avatarUrl(user.artisan_profile?.avatar)}
                         alt={user.username}
                         fallbackType="avatar"
                         fallbackId={user.id}
@@ -156,10 +156,10 @@ export default function Navbar() {
                           Mi taller
                         </Link>
                       </DropdownMenuItem>
-                      {user.artist_profile && (
+                      {user.artisan_profile && (
                         <DropdownMenuItem asChild>
                           <Link 
-                            href={`/artesanos/${user.artist_profile.slug}`}
+                            href={`/artesanos/${user.artisan_profile.slug}`}
                             className="cursor-pointer"
                           >
                             <User className="mr-2 h-4 w-4" />

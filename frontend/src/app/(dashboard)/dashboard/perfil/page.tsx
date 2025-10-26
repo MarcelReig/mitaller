@@ -20,20 +20,20 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ProfileForm } from '@/components/profile/ProfileForm';
-import { useMyArtistProfile } from '@/lib/hooks/useArtists';
+import { useMyArtisanProfile } from '@/lib/hooks/useArtisans';
 import { useUserRole } from '@/stores/authStore';
 
 export default function ProfileEditPage() {
   const router = useRouter();
-  const { data: artist, isLoading, error } = useMyArtistProfile();
-  const { isArtisan, hasArtistProfile } = useUserRole();
+  const { data: artisan, isLoading, error } = useMyArtisanProfile();
+  const { isArtisan, hasArtisanProfile } = useUserRole();
 
   /**
    * Callback después de guardar exitosamente
    */
   const handleSuccess = () => {
     // Opción 1: Redirigir al perfil público
-    // router.push(`/artesanos/${artist?.slug}`);
+    // router.push(`/artesanos/${artisan?.slug}`);
     
     // Opción 2: Mantener en la página (el toast ya muestra éxito)
     // No hacer nada, el usuario puede seguir editando
@@ -81,8 +81,8 @@ export default function ProfileEditPage() {
     );
   }
 
-  // Error: No tiene perfil de artista
-  if (!hasArtistProfile || !artist) {
+  // Error: No tiene perfil de artesano
+  if (!hasArtisanProfile || !artisan) {
     return (
       <div className="container max-w-3xl py-8">
         <Alert variant="destructive">
@@ -90,19 +90,19 @@ export default function ProfileEditPage() {
           <AlertTitle>Perfil no encontrado</AlertTitle>
           <AlertDescription className="space-y-4">
             <p>
-              No tienes un perfil de artista asociado. Esto puede ocurrir si:
+              No tienes un perfil de artesano asociado. Esto puede ocurrir si:
             </p>
             <ul className="list-disc list-inside space-y-1 mt-2">
               <li>Tu cuenta fue creada antes de que se implementara el sistema de perfiles</li>
               <li>Hubo un error durante el registro</li>
             </ul>
             <p className="mt-4">
-              <strong>Solución:</strong> Contacta al administrador para que te cree un perfil de artista.
+              <strong>Solución:</strong> Contacta al administrador para que te cree un perfil de artesano.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
               El administrador puede ejecutar este comando en el servidor:
               <code className="block mt-1 p-2 bg-muted rounded text-xs">
-                python manage.py fix_artist_profile --email tu@email.com
+                python manage.py fix_artisan_profile --email tu@email.com
               </code>
             </p>
             <div className="flex gap-2 mt-4">
@@ -154,7 +154,7 @@ export default function ProfileEditPage() {
 
       {/* Formulario */}
       <ProfileForm
-        artist={artist}
+        artisan={artisan}
         onSuccess={handleSuccess}
         onCancel={handleCancel}
       />

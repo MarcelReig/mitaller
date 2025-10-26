@@ -1,18 +1,18 @@
 from rest_framework import serializers
 from accounts.models import User
-from artists.models import ArtistProfile
+from artisans.models import ArtisanProfile
 
 
-class AdminArtistSerializer(serializers.ModelSerializer):
+class AdminArtisanSerializer(serializers.ModelSerializer):
     """
-    Serializer para gestión admin de artistas.
+    Serializer para gestión admin de artesanos.
     Incluye counts y validación de eliminación.
     """
-    # Campos de ArtistProfile
-    slug = serializers.CharField(source='artist_profile.slug', read_only=True)
-    bio = serializers.CharField(source='artist_profile.bio', read_only=True)
-    avatar = serializers.URLField(source='artist_profile.avatar', read_only=True)
-    cover_image = serializers.URLField(source='artist_profile.cover_image', read_only=True)
+    # Campos de ArtisanProfile
+    slug = serializers.CharField(source='artisan_profile.slug', read_only=True)
+    bio = serializers.CharField(source='artisan_profile.bio', read_only=True)
+    avatar = serializers.URLField(source='artisan_profile.avatar', read_only=True)
+    cover_image = serializers.URLField(source='artisan_profile.cover_image', read_only=True)
     
     # Counts (se agregan via annotate en ViewSet)
     works_count = serializers.IntegerField(read_only=True)

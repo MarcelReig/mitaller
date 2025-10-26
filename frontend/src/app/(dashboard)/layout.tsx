@@ -76,13 +76,13 @@ export default function DashboardLayout({
   // Usuario autenticado: preparar datos para el header
   const userData = {
     id: user.id,
-    display_name: user.artist_profile?.display_name || 
+    display_name: user.artisan_profile?.display_name || 
       (user.first_name && user.last_name 
         ? `${user.first_name} ${user.last_name}`.trim()
         : user.username),
     email: user.email,
-    slug: user.artist_profile?.slug || user.artist_slug || user.username,
-    avatar: user.artist_profile?.avatar || null,
+    slug: user.artisan_profile?.slug || user.artisan_slug || user.username,
+    avatar: user.artisan_profile?.avatar || null,
   };
 
   console.log('[DASHBOARD] Renderizando con usuario:', userData.email);

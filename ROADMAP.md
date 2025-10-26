@@ -42,6 +42,93 @@ Transformar el MVP actual (Marina) en **mitaller.art** - un marketplace SaaS don
 - [ ] Crear dashboard de artista (obras, productos)
 - [ ] Integrar Cloudinary para upload de imágenes
 
+### 🔐 Phase 3.5: Sistema de Aprobación Híbrido (3-5 días)
+**Objetivo:** Implementar flujo profesional de onboarding para artesanos
+
+**Estado actual:**
+- ✅ Auto-aprobación en desarrollo (`AUTO_APPROVE_ARTISANS=True`)
+- ✅ Aprobación manual básica en producción
+- ❌ Falta flujo completo de verificación
+
+**Por implementar:**
+
+#### Backend:
+- [ ] **Verificación de email**
+  - Integrar Django Allauth o sistema custom con tokens
+  - Email de bienvenida con link de verificación
+  - Endpoint para verificar email
+  
+- [ ] **Modelo ArtisanProfile extendido**
+  ```python
+  profile_completed = BooleanField(default=False)
+  approval_requested_at = DateTimeField(null=True)
+  approved_at = DateTimeField(null=True)
+  rejection_reason = TextField(blank=True)
+  ```
+
+- [ ] **Endpoint de solicitud de aprobación**
+  - POST `/api/v1/artisans/me/request-approval/`
+  - Validar: bio completa, avatar, mínimo 2 obras
+  - Enviar email al admin con link al perfil
+  - Cambiar estado a "pendiente de revisión"
+
+- [ ] **Sistema de notificaciones**
+  - Email al admin cuando artesano solicita aprobación
+  - Email al artesano cuando es aprobado/rechazado
+  - Dashboard de admin con lista de pendientes
+
+- [ ] **Endpoint de aprobación/rechazo (Admin)**
+  - POST `/api/v1/admin/artisans/{id}/approve/`
+  - POST `/api/v1/admin/artisans/{id}/reject/`
+  - Con campo opcional `feedback` para dar razón del rechazo
+
+#### Frontend:
+- [ ] **Página de verificación de email**
+  - `/verify-email/[token]`
+  - Mensaje de éxito/error
+  - Redirección al dashboard
+
+- [ ] **Dashboard con wizard de onboarding**
+  - Paso 1: Completar perfil básico (bio, avatar, ubicación)
+  - Paso 2: Subir mínimo 2 obras para mostrar trabajo
+  - Paso 3: Botón "Solicitar aprobación" (si cumple requisitos)
+  - Progress bar visual del proceso
+
+- [ ] **Estados visuales del perfil**
+  - 🟡 "Perfil incompleto" - completar información
+  - 🟠 "Listo para solicitar" - cumple requisitos mínimos
+  - 🔵 "En revisión" - esperando aprobación del admin
+  - 🟢 "Aprobado" - puede vender
+  - 🔴 "Rechazado" - mostrar feedback del admin
+
+- [ ] **Panel de admin**
+  - Lista de artesanos pendientes de aprobación
+  - Vista previa del perfil y obras
+  - Botones: Aprobar / Rechazar con feedback
+  - Historial de aprobaciones
+
+#### Emails (Django templates):
+- [ ] Email de verificación de cuenta
+- [ ] Email de bienvenida post-verificación
+- [ ] Email al admin: "Nuevo artesano pendiente de aprobación"
+- [ ] Email al artesano: "Tu perfil ha sido aprobado"
+- [ ] Email al artesano: "Tu perfil necesita mejoras" (con feedback)
+
+**Flujo completo:**
+```
+1. Usuario se registra → Email de verificación
+2. Verifica email → Acceso al dashboard
+3. Completa perfil + sube obras → Botón "Solicitar aprobación"
+4. Solicita aprobación → Email al admin
+5. Admin revisa → Aprueba/Rechaza con feedback
+6. Si aprobado → Perfil público + puede vender
+7. Si rechazado → Feedback para mejorar y volver a solicitar
+```
+
+**Configuración:**
+- Desarrollo: `AUTO_APPROVE_ARTISANS=True` (bypass completo)
+- Producción: `AUTO_APPROVE_ARTISANS=False` (flujo híbrido completo)
+
 ### 🚀 Phase 4: Optimización (1 semana) - *Cuando sea necesario*
 - [ ] Añadir Redis para caché de sesiones
 - [ ] Optimizar queries con select_related/prefetch_related

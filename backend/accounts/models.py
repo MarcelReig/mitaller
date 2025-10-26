@@ -6,10 +6,15 @@ from django.utils.translation import gettext_lazy as _
 class UserRole(models.TextChoices):
     """
     Roles disponibles en la plataforma.
-    Solo artesanos y admins tienen cuenta - compradores son invitados.
+    - ADMIN: Administrador del sistema
+    - ARTISAN: Artesano (craftsperson - productos físicos)
+    - ARTIST: Artista (futura implementación - arte, música, performance)
+    - CUSTOMER: Cliente (futura implementación - compradores registrados)
     """
-    ARTISAN = 'artisan', _('Artesano')
     ADMIN = 'admin', _('Administrador')
+    ARTISAN = 'artisan', _('Artesano')
+    ARTIST = 'artist', _('Artista')
+    CUSTOMER = 'customer', _('Cliente')
 
 
 class CustomUserManager(BaseUserManager):
@@ -132,6 +137,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_artisan(self):
         """Verifica si el usuario es artesano."""
         return self.role == UserRole.ARTISAN
+    
+    @property
+    def is_artist(self):
+        """Verifica si el usuario es artista."""
+        return self.role == UserRole.ARTIST
+    
+    @property
+    def is_creator(self):
+        """Verifica si el usuario es creador (artesano o artista)."""
+        return self.role in [UserRole.ARTISAN, UserRole.ARTIST]
     
     @property
     def is_admin(self):

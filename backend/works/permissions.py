@@ -6,7 +6,7 @@ Permisos personalizados para gestión de obras
 from rest_framework import permissions
 
 
-class IsArtistOwnerOrAdmin(permissions.BasePermission):
+class IsArtisanOwnerOrAdmin(permissions.BasePermission):
     """
     Permiso personalizado para obras:
     
@@ -14,7 +14,7 @@ class IsArtistOwnerOrAdmin(permissions.BasePermission):
     - Escritura (POST/PUT/DELETE): Solo propietario o admin
     
     A nivel de objeto:
-    - El artista solo puede modificar sus propias obras
+    - El artesano solo puede modificar sus propias obras
     - Los admins pueden modificar cualquier obra
     """
     
@@ -26,11 +26,11 @@ class IsArtistOwnerOrAdmin(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         
-        # Métodos de escritura: solo artistas autenticados o admins
+        # Métodos de escritura: solo artesanos autenticados o admins
         return (
             request.user and 
             request.user.is_authenticated and
-            (hasattr(request.user, 'artist_profile') or request.user.is_staff)
+            (hasattr(request.user, 'artisan_profile') or request.user.is_staff)
         )
     
     def has_object_permission(self, request, view, obj):
@@ -45,8 +45,8 @@ class IsArtistOwnerOrAdmin(permissions.BasePermission):
         if request.user.is_staff:
             return True
         
-        # Artista solo puede modificar sus propias obras
-        if hasattr(request.user, 'artist_profile'):
-            return obj.artist == request.user.artist_profile
+        # Artesano solo puede modificar sus propias obras
+        if hasattr(request.user, 'artisan_profile'):
+            return obj.artisan == request.user
         
         return False

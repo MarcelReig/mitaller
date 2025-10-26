@@ -13,7 +13,7 @@ class ProductSerializer(serializers.ModelSerializer):
     Usado en vistas de detalle y creación/edición de productos.
     Incluye validación de imágenes, precio, stock y representación anidada del artesano.
     
-    El artista se muestra con información básica para contexto,
+    El artesano se muestra con información básica para contexto,
     pero no es editable (se asigna automáticamente al crear).
     
     Validaciones implementadas:
@@ -22,8 +22,8 @@ class ProductSerializer(serializers.ModelSerializer):
     - stock: Debe ser mayor o igual a 0
     """
     
-    # Artista anidado con información básica (solo lectura)
-    artist = serializers.SerializerMethodField()
+    # Artesano anidado con información básica (solo lectura)
+    artisan = serializers.SerializerMethodField()
     
     # Campos calculados (propiedades del modelo)
     is_available = serializers.ReadOnlyField()
@@ -33,7 +33,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = (
             'id',
-            'artist',
+            'artisan',
             'name',
             'description',
             'category',
@@ -49,14 +49,14 @@ class ProductSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             'id',
-            'artist',
+            'artisan',
             'is_available',
             'formatted_price',
             'created_at',
             'updated_at',
         )
     
-    def get_artist(self, obj: Product) -> dict:
+    def get_artisan(self, obj: Product) -> dict:
         """
         Retorna información básica del artesano asociado.
         Incluye datos necesarios para mostrar el perfil del artesano.
@@ -67,12 +67,21 @@ class ProductSerializer(serializers.ModelSerializer):
         Returns:
             dict: Información básica del artesano
         """
-        return {
-            'id': obj.artist.id,
-            'slug': obj.artist.slug,
-            'display_name': obj.artist.display_name,
-            'avatar': obj.artist.avatar.url if obj.artist.avatar else None,
-        }
+        try:
+            artisan_profile = obj.artisan.artisan_profile
+            return {
+                'id': artisan_profile.id,
+                'slug': artisan_profile.slug,
+                'display_name': artisan_profile.display_name,
+                'avatar': artisan_profile.avatar if artisan_profile.avatar else None,
+            }
+        except Exception:
+            return {
+                'id': obj.artisan.id,
+                'slug': obj.artisan.username,
+                'display_name': obj.artisan.username,
+                'avatar': None,
+            }
     
     def validate_images(self, value):
         """

@@ -48,8 +48,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.prefetch_related(
         'items',
         'items__product',
-        'items__artist',
-        'items__artist__user'
+        'items__artisan',
+        'items__artisan__user'
     )
     
     filter_backends = [
@@ -119,9 +119,9 @@ class OrderViewSet(viewsets.ModelViewSet):
             return queryset
         
         # Artesanos solo ven pedidos con sus productos
-        if hasattr(user, 'artist_profile'):
+        if hasattr(user, 'artisan_profile'):
             return queryset.filter(
-                items__artist=user.artist_profile
+                items__artisan=user.artisan_profile
             ).distinct()
         
         # Otros usuarios no ven nada
@@ -174,7 +174,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             Response con lista de OrderItems del artesano
         """
         # Verificar que el usuario sea artesano
-        if not hasattr(request.user, 'artist_profile'):
+        if not hasattr(request.user, 'artisan_profile'):
             return Response(
                 {'detail': 'Solo artesanos pueden ver sus ventas'},
                 status=status.HTTP_403_FORBIDDEN
@@ -182,12 +182,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         
         # Obtener OrderItems del artesano
         order_items = OrderItem.objects.filter(
-            artist=request.user.artist_profile
+            artisan=request.user.artisan_profile
         ).select_related(
             'order',
             'product',
-            'artist',
-            'artist__user'
+            'artisan',
+            'artisan__user'
         ).order_by('-created_at')
         
         # Aplicar filtros opcionales

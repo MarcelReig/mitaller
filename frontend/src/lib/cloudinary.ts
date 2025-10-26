@@ -138,7 +138,7 @@ export function thumbUrl(url: string | null | undefined): string {
  * 
  * @example
  * ```ts
- * <Image src={coverUrl(artist.cover_image)} alt="..." />
+ * <Image src={coverUrl(artisan.cover_image)} alt="..." />
  * ```
  */
 export function coverUrl(url: string | null | undefined): string {
@@ -158,7 +158,7 @@ export function coverUrl(url: string | null | undefined): string {
  * 
  * @example
  * ```ts
- * <Image src={avatarUrl(artist.avatar)} alt="..." />
+ * <Image src={avatarUrl(artisan.avatar)} alt="..." />
  * ```
  */
 export function avatarUrl(url: string | null | undefined): string {

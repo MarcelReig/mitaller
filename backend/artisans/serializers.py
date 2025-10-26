@@ -1,12 +1,12 @@
 """
-Serializers para la app artists.
+Serializers para la app artisans.
 Maneja la serialización de perfiles de artesanos para la API pública.
 """
 from rest_framework import serializers
-from .models import ArtistProfile, CraftType, MenorcaLocation
+from .models import ArtisanProfile, CraftType, MenorcaLocation
 
 
-class ArtistProfileBasicSerializer(serializers.ModelSerializer):
+class ArtisanProfileBasicSerializer(serializers.ModelSerializer):
     """
     Serializer básico para artesanos.
     
@@ -17,7 +17,7 @@ class ArtistProfileBasicSerializer(serializers.ModelSerializer):
     """
     
     class Meta:
-        model = ArtistProfile
+        model = ArtisanProfile
         fields = (
             'id',
             'slug',
@@ -27,7 +27,7 @@ class ArtistProfileBasicSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class ArtistProfileUpdateSerializer(serializers.ModelSerializer):
+class ArtisanProfileUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer para edición de perfil de artesano.
     
@@ -43,7 +43,7 @@ class ArtistProfileUpdateSerializer(serializers.ModelSerializer):
     """
     
     class Meta:
-        model = ArtistProfile
+        model = ArtisanProfile
         fields = (
             'display_name',
             'bio',
@@ -68,11 +68,11 @@ class ArtistProfileUpdateSerializer(serializers.ModelSerializer):
         return value
 
 
-class ArtistProfileSerializer(serializers.ModelSerializer):
+class ArtisanProfileSerializer(serializers.ModelSerializer):
     """
     Serializer completo para perfiles de artesanos.
     
-    Usado en vistas de detalle (/artistas/{slug}/).
+    Usado en vistas de detalle (/artesanos/{slug}/).
     Incluye toda la información pública del artesano:
     - Datos básicos del usuario
     - Información del taller
@@ -89,7 +89,7 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
     full_location = serializers.ReadOnlyField()
     
     class Meta:
-        model = ArtistProfile
+        model = ArtisanProfile
         fields = (
             'id',
             'user',
@@ -121,7 +121,7 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
             'full_location',
         )
     
-    def get_user(self, obj: ArtistProfile) -> dict:
+    def get_user(self, obj: ArtisanProfile) -> dict:
         """
         Retorna información básica del usuario asociado.
         Solo campos necesarios para perfil público (sin info sensible).
@@ -132,22 +132,22 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
         }
 
 
-class ArtistProfileListSerializer(serializers.ModelSerializer):
+class ArtisanProfileListSerializer(serializers.ModelSerializer):
     """
     Serializer simplificado para listados de artesanos.
     
-    Usado en vistas de listado (/artistas/).
+    Usado en vistas de listado (/artesanos/).
     Solo incluye campos esenciales para tarjetas/previews:
     - Identificación básica
     - Imágenes
     - Estadísticas resumidas
     
-    Más ligero que ArtistProfileSerializer para optimizar
+    Más ligero que ArtisanProfileSerializer para optimizar
     respuestas con múltiples artesanos.
     """
     
     class Meta:
-        model = ArtistProfile
+        model = ArtisanProfile
         fields = (
             'slug',
             'display_name',

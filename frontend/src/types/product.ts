@@ -1,11 +1,11 @@
 // Tipos para productos de la tienda
 
-import type { CraftType } from './artist';
+import type { CraftType } from './artisan';
 
 /**
- * Referencia simplificada al artista en un producto
+ * Referencia simplificada al artesano en un producto
  */
-export type ProductArtist = {
+export type ProductArtisan = {
   id: number;
   slug: string;
   display_name: string;
@@ -17,7 +17,7 @@ export type ProductArtist = {
  */
 export type Product = {
   id: number;
-  artist: ProductArtist;
+  artisan: ProductArtisan;
   name: string;
   description: string;
   category: CraftType;
@@ -50,7 +50,7 @@ export type ProductFormData = {
  * Filtros para búsqueda de productos
  */
 export type ProductFilters = {
-  artist?: string; // Slug del artista
+  artisan?: string; // Slug del artesano
   category?: CraftType;
   min_price?: number;
   max_price?: number;

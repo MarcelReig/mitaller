@@ -21,7 +21,7 @@ Ejemplo:
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
-from artists.models import ArtistProfile
+from artisans.models import ArtisanProfile
 
 
 class ProductCategory(models.TextChoices):
@@ -68,8 +68,8 @@ class Product(models.Model):
     """
     
     # Relación con el artesano
-    artist = models.ForeignKey(
-        ArtistProfile,
+    artisan = models.ForeignKey(
+        ArtisanProfile,
         on_delete=models.CASCADE,
         related_name='products',
         verbose_name=_('artesano'),
@@ -172,16 +172,16 @@ class Product(models.Model):
         ordering = ['-created_at']
         indexes = [
             # Índice para filtros por artesano y estado
-            models.Index(fields=['artist', 'is_active']),
+            models.Index(fields=['artisan', 'is_active']),
             # Índice para filtros por artesano y categoría
-            models.Index(fields=['artist', 'category']),
+            models.Index(fields=['artisan', 'category']),
             # Índice para listados públicos (activos, recientes primero)
             models.Index(fields=['is_active', '-created_at']),
         ]
     
     def __str__(self) -> str:
         """Retorna representación legible del producto."""
-        return f'{self.artist.display_name} - {self.name}'
+        return f'{self.artisan.display_name} - {self.name}'
     
     @property
     def is_available(self) -> bool:

@@ -19,7 +19,7 @@ App de Django REST Framework para gestionar productos artesanales disponibles pa
 
 ```python
 Product
-├── artist (ForeignKey → ArtistProfile)
+├── artisan (ForeignKey → ArtisanProfile)  # ⚠️ ARTISAN, no artist
 ├── name (CharField, max_length=200)
 ├── description (TextField, opcional)
 ├── category (CharField, choices=ProductCategory)
@@ -33,6 +33,8 @@ Product
 ├── created_at (DateTimeField)
 └── updated_at (DateTimeField)
 ```
+
+**⚠️ Nota:** Los productos pertenecen a **artesanos** (`ArtisanProfile`), no a artistas. Ver [ARTISTS_VS_ARTISANS.md](../docs/ARTISTS_VS_ARTISANS.md).
 
 ### Properties
 - `is_available`: `is_active and stock > 0`
@@ -65,7 +67,7 @@ DELETE /api/v1/shop/{id}/
 
 ```bash
 # Por artesano
-GET /api/v1/shop/?artist=1
+GET /api/v1/shop/?artisan=1
 
 # Por categoría
 GET /api/v1/shop/?category=ceramics
@@ -96,7 +98,7 @@ GET /api/v1/shop/?ordering=name       # Alfabético
 
 ## 🔐 Permisos
 
-### IsArtistOwnerOrReadOnly
+### IsArtisanOwnerOrReadOnly
 - **Lectura**: Pública (cualquiera puede ver productos disponibles)
 - **Escritura**: Solo el artesano dueño del producto
 
@@ -131,16 +133,16 @@ En lugar de `ImageField`, usamos `URLField` porque:
 
 ## 🔄 Signals
 
-Los signals en `artists/signals.py` mantienen sincronizado el contador:
+Los signals en `artisans/signals.py` mantienen sincronizado el contador:
 
 ```python
 @receiver(post_save, sender='shop.Product')
 def update_product_count_on_save(sender, instance, created, **kwargs):
-    # Actualiza ArtistProfile.total_products al crear/editar
+    # Actualiza ArtisanProfile.total_products al crear/editar
     
 @receiver(post_delete, sender='shop.Product')
 def update_product_count_on_delete(sender, instance, **kwargs):
-    # Actualiza ArtistProfile.total_products al eliminar
+    # Actualiza ArtisanProfile.total_products al eliminar
 ```
 
 ## 🧪 Tests
@@ -246,11 +248,12 @@ def is_available(self) -> bool:
 
 ## 📝 Notas
 
-- El campo `artist` se asigna automáticamente al crear (no es editable)
+- El campo `artisan` se asigna automáticamente al crear (no es editable)
 - Los productos con stock=0 no aparecen en listados públicos
 - Los productos inactivos solo los ve el artesano dueño
 - Las imágenes deben subirse a Cloudinary antes de crear el producto
 - Los signals mantienen sincronizado automáticamente el contador `total_products`
+- **IMPORTANTE:** Los productos pertenecen a `artisans.ArtisanProfile`, NO a `artists.ArtistProfile`
 
 ---
 

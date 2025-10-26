@@ -71,14 +71,14 @@ export function ProfileImageUpload({
       description: 'Imagen cuadrada (recomendado 400x400px)',
       aspectRatio: 'aspect-square',
       maxHeight: 'max-h-[240px]', // Avatar más compacto
-      folder: 'artists/avatars',
+      folder: 'artisans/avatars',
     },
     cover: {
       label: 'Imagen de portada',
       description: 'Imagen horizontal (recomendado 1200x400px)',
       aspectRatio: 'aspect-[3/1]',
       maxHeight: 'max-h-[300px]', // Límite razonable para cover
-      folder: 'artists/covers',
+      folder: 'artisans/covers',
     },
   }[type];
 

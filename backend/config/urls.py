@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -34,8 +35,11 @@ urlpatterns = [
     # JWT Token verification
     path('api/v1/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # Artists API (perfiles públicos de artesanos)
-    path('api/v1/artists/', include('artists.urls')),
+    # Artisans API (perfiles públicos de artesanos)
+    path('api/v1/artisans/', include('artisans.urls')),
+    
+    # Redirect temporal para compatibilidad (artists → artisans)
+    path('api/v1/artists/', RedirectView.as_view(url='/api/v1/artisans/', permanent=False)),
     
     # Works API (portfolio de obras de artesanos)
     path('api/v1/works/', include('works.urls')),

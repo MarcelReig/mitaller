@@ -2,6 +2,16 @@
 
 Backend del marketplace multi-vendor de artesanos, construido con Django 5 y Django REST Framework.
 
+## ⚠️ IMPORTANTE: Nomenclatura Artists vs Artisans
+
+Este proyecto diferencia entre **ARTISANS** (artesanos con taller - FOCO ACTUAL) y **ARTISTS** (artistas visuales/performers - modelo futuro).
+
+**Lectura obligatoria:** [ARTISTS_VS_ARTISANS.md](docs/ARTISTS_VS_ARTISANS.md)
+
+**Regla simple:**
+- 🛠️ **Productos, pedidos, tienda** → usar `artisan` y `ArtisanProfile` (app `artisans`)
+- 🎨 **Servicios, encargos** (futuro) → usar `artist` y `ArtistProfile` (app `artists`)
+
 ## 📋 Stack Tecnológico
 
 - **Django 5.0.1** - Framework web
@@ -82,15 +92,22 @@ backend/
 │   ├── wsgi.py            # WSGI para deployment
 │   └── asgi.py            # ASGI para async
 ├── accounts/              # App de usuarios y autenticación
-├── artists/               # App de perfiles de artistas
-├── works/                 # App de obras de arte
-├── shop/                  # App de productos y órdenes
+├── artisans/              # App de perfiles de artesanos (FOCO ACTUAL)
+├── artists/               # App de perfiles de artistas (FUTURO)
+├── works/                 # App de obras/portfolio
+├── shop/                  # App de productos para venta
+├── orders/                # App de pedidos y compras
+├── payments/              # App de pagos y Stripe Connect
+├── admin_panel/           # App de panel administrativo
+├── profiles/              # Base abstracta para perfiles
 ├── manage.py              # CLI de Django
 ├── requirements.txt       # Dependencias Python
 ├── env.example            # Ejemplo de variables de entorno
 ├── .gitignore            # Archivos ignorados por Git
 └── docker-compose.yml     # PostgreSQL container
 ```
+
+**⚠️ Nota importante:** El proyecto diferencia entre **Artisans** (artesanos con taller que venden productos) y **Artists** (artistas visuales/performers, modelo futuro). Ver [ARTISTS_VS_ARTISANS.md](docs/ARTISTS_VS_ARTISANS.md) para detalles.
 
 ## 🔑 Endpoints JWT Disponibles
 
@@ -157,26 +174,46 @@ user.is_admin    # True si es admin
 user.can_sell    # True si puede vender (artesano aprobado o admin)
 ```
 
-## 📦 Próximos Pasos
+## 📦 Apps Implementadas
 
-1. **Crear serializers y endpoints para accounts**:
-   - Registro de artesanos
-   - Login/Logout
-   - Perfil de usuario
-   - Cambio de contraseña
+### ✅ Completadas
 
-2. **Definir modelos** en otras apps:
-   - `artists`: Perfil de artista (OneToOne con User), portfolio, bio
-   - `works`: Obras de arte del portfolio, categorías
-   - `shop`: Productos a la venta, órdenes, items de orden
+1. **accounts**: Sistema de autenticación con JWT
+   - Custom User model (email como login)
+   - Roles: ARTISAN, ADMIN
+   - Registro y login de artesanos
 
-3. **Implementar ViewSets** y endpoints CRUD para cada app
+2. **artisans**: Perfiles públicos de artesanos
+   - ArtisanProfile con taller y ubicación
+   - API pública para listados
+   - Integración con Stripe Connect
 
-4. **Agregar tests** unitarios y de integración
+3. **shop**: Productos para venta
+   - Product model con precio y stock
+   - API CRUD con permisos
+   - Integración Cloudinary para imágenes
 
-5. **Integrar Stripe Connect** para pagos multi-vendor
+4. **orders**: Sistema de pedidos
+   - Compras sin registro (guest checkout)
+   - Reducción automática de stock
+   - Vistas filtradas por artesano
 
-6. **Configurar Cloudinary** para media storage
+5. **works**: Portfolio/obras artísticas
+   - Work model para colecciones de imágenes
+   - API pública
+   - Cloudinary para galería
+
+6. **payments**: Integración Stripe Connect
+   - Onboarding de artesanos
+   - Payment model para historial
+   - Webhooks de Stripe
+
+### 🔮 Futuras
+
+7. **artists**: Perfiles de artistas (no artesanos)
+   - Para artistas visuales/performers
+   - Modelo de negocio diferente (servicios vs productos)
+   - Ver [ARTISTS_VS_ARTISANS.md](docs/ARTISTS_VS_ARTISANS.md)
 
 ## 🧪 Testing
 

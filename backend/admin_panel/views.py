@@ -8,7 +8,7 @@ from accounts.models import User
 from works.models import Work
 from shop.models import Product
 from orders.models import Order
-from .serializers import AdminArtistSerializer
+from .serializers import AdminArtisanSerializer
 from .permissions import IsAdminUser
 from .services import delete_artist_cascade
 
@@ -19,7 +19,7 @@ class AdminArtistViewSet(viewsets.ModelViewSet):
     Requiere role='admin'
     """
     permission_classes = [IsAdminUser]
-    serializer_class = AdminArtistSerializer
+    serializer_class = AdminArtisanSerializer
     
     def get_queryset(self):
         """
@@ -27,14 +27,14 @@ class AdminArtistViewSet(viewsets.ModelViewSet):
         Incluye filtros y búsqueda.
         """
         queryset = User.objects.filter(role='artisan').annotate(
-            works_count=Count('work', distinct=True),
-            products_count=Count('product', distinct=True),
+            works_count=Count('works', distinct=True),
+            products_count=Count('products', distinct=True),
             completed_orders_count=Count(
-                'order',
-                filter=Q(order__status='completed'),
+                'sales',
+                filter=Q(sales__order__status='completed'),
                 distinct=True
             )
-        ).select_related('artist_profile')
+        ).select_related('artisan_profile')
         
         # Filtro por estado de aprobación
         status_filter = self.request.query_params.get('status')

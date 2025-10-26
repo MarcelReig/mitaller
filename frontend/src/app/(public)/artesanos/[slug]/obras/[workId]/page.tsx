@@ -28,7 +28,7 @@ async function getWork(workId: string): Promise<Work | null> {
   try {
     const res = await fetch(`${API_URL}/api/v1/works/${workId}/`, {
       next: { 
-        revalidate: process.env.NODE_ENV === 'development' ? 60 : 3600 
+        revalidate: process.env.NODE_ENV === 'development' ? 0 : 3600 
       },
     });
 
@@ -56,24 +56,24 @@ async function getWork(workId: string): Promise<Work | null> {
 }
 
 /**
- * Verificar que el artista corresponde al slug
+ * Verificar que el artesano corresponde al slug
  */
-async function verifyArtistSlug(work: Work, slug: string): Promise<boolean> {
-  return work.artist?.slug === slug;
+async function verifyArtisanSlug(work: Work, slug: string): Promise<boolean> {
+  return work.artisan?.slug === slug;
 }
 
 interface PageParams {
-  params: {
+  params: Promise<{
     slug: string;
     workId: string;
-  };
+  }>;
 }
 
 /**
  * Server Component principal
  */
 export default async function WorkDetailPage({ params }: PageParams) {
-  const { slug, workId } = params;
+  const { slug, workId } = await params;
 
   // Fetch obra
   const work = await getWork(workId);
@@ -83,9 +83,9 @@ export default async function WorkDetailPage({ params }: PageParams) {
     notFound();
   }
 
-  // Verificar que el artista corresponde al slug de la URL
-  const isCorrectArtist = await verifyArtistSlug(work, slug);
-  if (!isCorrectArtist) {
+  // Verificar que el artesano corresponde al slug de la URL
+  const isCorrectArtisan = await verifyArtisanSlug(work, slug);
+  if (!isCorrectArtisan) {
     notFound();
   }
 
@@ -114,7 +114,7 @@ export default async function WorkDetailPage({ params }: PageParams) {
               href={`/artesanos/${slug}`}
               className="hover:text-primary transition-colors"
             >
-              {work.artist?.display_name || 'Artesano'}
+              {work.artisan?.display_name || 'Artesano'}
             </Link>
             <span>/</span>
             <span className="text-foreground font-medium line-clamp-1">
@@ -139,7 +139,7 @@ export default async function WorkDetailPage({ params }: PageParams) {
  * Metadata dinámica para SEO
  */
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
-  const { workId } = params;
+  const { workId } = await params;
   const work = await getWork(workId);
 
   if (!work) {
@@ -150,13 +150,13 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
 
   const description = work.description
     ? work.description.slice(0, 160) + (work.description.length > 160 ? '...' : '')
-    : `Galería de ${work.title} por ${work.artist?.display_name}`;
+    : `Galería de ${work.title} por ${work.artisan?.display_name}`;
 
   // Usar primera imagen para Open Graph
   const ogImage = work.images[0] || work.thumbnail_url;
 
   return {
-    title: `${work.title} - ${work.artist?.display_name} | Mitaller.art`,
+    title: `${work.title} - ${work.artisan?.display_name} | Mitaller.art`,
     description,
     openGraph: {
       title: work.title,

@@ -1,18 +1,18 @@
 """
-Management command para verificar y crear ArtistProfile faltantes.
+Management command para verificar y crear ArtisanProfile faltantes.
 Útil cuando un usuario ARTISAN fue creado antes de implementar las señales.
 
 Uso:
-    python manage.py fix_artist_profile
-    python manage.py fix_artist_profile --email user@example.com
+    python manage.py fix_artisan_profile
+    python manage.py fix_artisan_profile --email user@example.com
 """
 from django.core.management.base import BaseCommand
 from accounts.models import User, UserRole
-from artists.models import ArtistProfile, CraftType, MenorcaLocation
+from artisans.models import ArtisanProfile, CraftType, MenorcaLocation
 
 
 class Command(BaseCommand):
-    help = 'Verifica y crea ArtistProfile para usuarios ARTISAN que no lo tengan'
+    help = 'Verifica y crea ArtisanProfile para usuarios ARTISAN que no lo tengan'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -73,8 +73,8 @@ class Command(BaseCommand):
         self.stdout.write(f'   Aprobado: {"✅" if user.is_approved else "❌"}')
         
         # Verificar si ya tiene perfil
-        if hasattr(user, 'artist_profile'):
-            profile = user.artist_profile
+        if hasattr(user, 'artisan_profile'):
+            profile = user.artisan_profile
             self.stdout.write(
                 self.style.SUCCESS(
                     f'   ✅ Ya tiene perfil: {profile.display_name} (@{profile.slug})'
@@ -93,10 +93,10 @@ class Command(BaseCommand):
         
         # Crear perfil
         self.stdout.write(
-            self.style.WARNING('   ❌ No tiene ArtistProfile. Creando...')
+            self.style.WARNING('   ❌ No tiene ArtisanProfile. Creando...')
         )
         
-        profile = ArtistProfile.objects.create(
+        profile = ArtisanProfile.objects.create(
             user=user,
             slug=user.username,
             display_name=user.get_full_name() or user.username,

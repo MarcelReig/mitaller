@@ -25,10 +25,10 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = [
         'id',
         'order',
-        'artist',
+        'artisan',
         'amount',
         'marketplace_fee',
-        'artist_amount',
+        'artisan_amount',
         'status',
         'paid_at',
         'created_at',
@@ -36,27 +36,27 @@ class PaymentAdmin(admin.ModelAdmin):
     
     list_filter = [
         'status',
-        'artist',
+        'artisan',
         'created_at',
         'paid_at',
     ]
     
     search_fields = [
         'order__order_number',
-        'artist__display_name',
+        'artisan__display_name',
         'stripe_payment_intent_id',
         'stripe_charge_id',
     ]
     
     readonly_fields = [
         'order',
-        'artist',
+        'artisan',
         'amount',
         'marketplace_fee',
-        'artist_amount',
+        'artisan_amount',
         'formatted_amount',
         'formatted_marketplace_fee',
-        'formatted_artist_amount',
+        'formatted_artisan_amount',
         'stripe_payment_intent_id',
         'stripe_charge_id',
         'stripe_transfer_id',
@@ -72,7 +72,7 @@ class PaymentAdmin(admin.ModelAdmin):
             {
                 'fields': [
                     'order',
-                    'artist',
+                    'artisan',
                 ]
             }
         ),
@@ -82,10 +82,10 @@ class PaymentAdmin(admin.ModelAdmin):
                 'fields': [
                     'amount',
                     'marketplace_fee',
-                    'artist_amount',
+                    'artisan_amount',
                     'formatted_amount',
                     'formatted_marketplace_fee',
-                    'formatted_artist_amount',
+                    'formatted_artisan_amount',
                 ]
             }
         ),

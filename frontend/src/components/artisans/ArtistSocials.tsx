@@ -13,10 +13,10 @@
 import { ExternalLink, Instagram, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import type { Artist } from '@/types/artist';
+import type { Artisan } from '@/types/artisan';
 
 interface ArtistSocialsProps {
-  artist: Artist;
+  artist: Artisan;
 }
 
 export function ArtistSocials({ artist }: ArtistSocialsProps) {

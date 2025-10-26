@@ -6,7 +6,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 
 from accounts.models import User
-from artists.models import ArtistProfile
+from artisans.models import ArtisanProfile
 from works.models import Work
 from orders.models import Order
 
@@ -74,15 +74,15 @@ def delete_artist_cascade(artist_id: str) -> dict:
     works_count = 0
     
     try:
-        profile = user.artist_profile
+        profile = user.artisan_profile
         if profile.avatar:
             images_to_delete.append(profile.avatar)
         if profile.cover_image:
             images_to_delete.append(profile.cover_image)
-    except ArtistProfile.DoesNotExist:
+    except ArtisanProfile.DoesNotExist:
         profile = None
     
-    works = Work.objects.filter(artist=user)
+    works = Work.objects.filter(artisan=user)
     works_count = works.count()
     
     for work in works:
@@ -107,7 +107,7 @@ def delete_artist_cascade(artist_id: str) -> dict:
     # 4. ELIMINAR DE BD (con transacción)
     with transaction.atomic():
         # Orden importante: obras → perfil → usuario
-        Work.objects.filter(artist=user).delete()
+        Work.objects.filter(artisan=user).delete()
         
         if profile:
             profile.delete()

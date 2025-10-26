@@ -7,8 +7,8 @@ Diferencia clave:
 - Product (shop): Productos disponibles para compra con precio y stock
 """
 from django.db import models
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
-from artists.models import ArtistProfile
 
 
 class WorkCategory(models.TextChoices):
@@ -34,7 +34,7 @@ class Work(models.Model):
     Portfolio público (NO venta directa - para eso está shop.Product).
     Permite a los artesanos mostrar su trabajo, técnicas y proceso creativo.
     
-    Cada obra pertenece a un artesano (ArtistProfile).
+    Cada obra pertenece a un artesano (User con role ARTISAN).
     Las obras se muestran en el perfil público del artesano.
     Soporta reordenamiento mediante display_order (drag & drop en frontend).
     
@@ -44,10 +44,11 @@ class Work(models.Model):
     """
     
     # Relación con el artesano
-    artist = models.ForeignKey(
-        ArtistProfile,
+    artisan = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='works',
+        limit_choices_to={'role': 'artisan'},
         verbose_name=_('artesano'),
         help_text=_('Artesano creador de esta obra')
     )
@@ -121,11 +122,11 @@ class Work(models.Model):
     class Meta:
         verbose_name = _('Obra')
         verbose_name_plural = _('Obras')
-        # Ordenar por artista, luego por display_order, luego más recientes primero
-        ordering = ['artist', 'display_order', '-created_at']
+        # Ordenar por artesano, luego por display_order, luego más recientes primero
+        ordering = ['artisan', 'display_order', '-created_at']
         indexes = [
-            # Índice para búsquedas por artista y orden
-            models.Index(fields=['artist', 'display_order']),
+            # Índice para búsquedas por artesano y orden
+            models.Index(fields=['artisan', 'display_order']),
             # Índice para filtros por categoría
             models.Index(fields=['category']),
             # Índice para obras destacadas
@@ -134,7 +135,7 @@ class Work(models.Model):
     
     def __str__(self) -> str:
         """Retorna representación legible de la obra."""
-        return f'{self.artist.display_name} - {self.title}'
+        return f'{self.artisan.username} - {self.title}'
     
     def save(self, *args, **kwargs) -> None:
         """
@@ -146,7 +147,7 @@ class Work(models.Model):
         """
         if self.display_order == 0:
             # Obtener el max display_order actual para este artesano
-            max_order = Work.objects.filter(artist=self.artist).aggregate(
+            max_order = Work.objects.filter(artisan=self.artisan).aggregate(
                 models.Max('display_order')
             )['display_order__max']
             

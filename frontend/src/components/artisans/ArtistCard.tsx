@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import type { Artist } from '@/types';
+import type { Artisan } from '@/types';
 import { CRAFT_TYPE_LABELS, LOCATION_LABELS } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,7 +12,7 @@ import { MapPin, Sparkles } from 'lucide-react';
  * Props del componente ArtistCard
  */
 interface ArtistCardProps {
-  artist: Artist;
+  artist: Artisan;
 }
 
 /**

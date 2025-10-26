@@ -84,9 +84,9 @@ Los artesanos **solo ven pedidos** que contienen sus productos:
 def get_queryset(self):
     if user.is_staff:
         return queryset  # Admins ven todo
-    if hasattr(user, 'artist_profile'):
+    if hasattr(user, 'artisan_profile'):
         return queryset.filter(
-            items__artist=user.artist_profile
+            items__artisan=user.artisan_profile
         ).distinct()
     return queryset.none()  # Otros no ven nada
 ```
@@ -120,11 +120,13 @@ Línea individual dentro de un pedido.
 **Campos principales:**
 - `order`: FK a Order
 - `product`: FK a Product (PROTECT)
-- `artist`: FK a ArtistProfile (desnormalizado para queries)
+- `artisan`: FK a ArtisanProfile (desnormalizado para queries)  # ⚠️ ARTISAN
 - `product_name`: Snapshot del nombre
 - `product_price`: Snapshot del precio
 - `quantity`: Cantidad comprada
 - `subtotal`: Calculado automáticamente (price * quantity)
+
+**⚠️ Nota:** Los items de pedido relacionan con **artesanos** (`ArtisanProfile`), no artistas. Ver [ARTISTS_VS_ARTISANS.md](../docs/ARTISTS_VS_ARTISANS.md).
 
 ### OrderStatus
 
@@ -447,7 +449,7 @@ sales.results.forEach(sale => {
                  ↓
 ┌─────────────────────────────────────────────┐
 │         OrderViewSet.get_queryset()         │
-│  - Filtra por items__artist=user.profile    │
+│  - Filtra por items__artisan=user.artisan_profile │
 └────────────────┬────────────────────────────┘
                  │
                  └─→ Solo ve pedidos con SUS productos

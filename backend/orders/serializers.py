@@ -10,7 +10,7 @@ from django.db import transaction
 from decimal import Decimal
 from .models import Order, OrderItem, OrderStatus
 from shop.models import Product
-from artists.serializers import ArtistProfileBasicSerializer
+from artisans.serializers import ArtisanProfileBasicSerializer
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     """
     
     # Nested serializer para mostrar info básica del artesano
-    artist = ArtistProfileBasicSerializer(read_only=True)
+    artisan = ArtisanProfileBasicSerializer(read_only=True)
     
     # Info mínima del producto (FK)
     product = serializers.SerializerMethodField()
@@ -32,7 +32,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'product',
-            'artist',
+            'artisan',
             'product_name',
             'product_price',
             'quantity',
@@ -310,13 +310,13 @@ class OrderCreateSerializer(serializers.Serializer):
             # Capturar snapshot del producto en este momento
             product_name = product.name
             product_price = product.price
-            artist = product.artist
+            artisan = product.artisan
             
             # Crear OrderItem con snapshot
             order_item = OrderItem.objects.create(
                 order=order,
                 product=product,
-                artist=artist,
+                artisan=artisan,
                 product_name=product_name,
                 product_price=product_price,
                 quantity=quantity

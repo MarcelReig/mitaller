@@ -371,7 +371,7 @@ function SortableWorkCard({ work, onDelete }: SortableWorkCardProps) {
               title="Ver en portfolio público"
             >
               <Link 
-                href={`/artesanos/${work.artist.slug}/obras/${work.id}`} 
+                href={`/artesanos/${work.artisan.slug}/obras/${work.id}`} 
                 target="_blank"
                 rel="noopener noreferrer"
               >

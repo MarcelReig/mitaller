@@ -1,15 +1,22 @@
-# App Artists - Perfiles Públicos de Artesanos
+# App Artisans - Perfiles Públicos de Artesanos
+
+## ⚠️ IMPORTANTE: Nomenclatura
+
+Esta app se llama **`artisans`** y gestiona **artesanos con taller físico** que venden productos tangibles.
+
+**NO confundir con `artists`** (modelo futuro para artistas visuales/performers).  
+Ver [ARTISTS_VS_ARTISANS.md](../docs/ARTISTS_VS_ARTISANS.md) para la diferencia completa.
 
 ## Descripción General
 
-La app `artists` gestiona los **perfiles públicos de artesanos** en la plataforma MiTaller. Cada artesano registrado en la plataforma (usuarios con `role=ARTISAN`) tiene automáticamente un perfil público que los compradores pueden ver.
+La app `artisans` gestiona los **perfiles públicos de artesanos** en la plataforma MiTaller. Cada artesano registrado en la plataforma (usuarios con `role=ARTISAN`) tiene automáticamente un perfil público que los compradores pueden ver.
 
 ## Arquitectura
 
-### Relación User ↔ ArtistProfile
+### Relación User ↔ ArtisanProfile
 
 ```
-User (accounts)           ArtistProfile (artists)
+User (accounts)           ArtisanProfile (artisans)
 ┌─────────────┐          ┌──────────────────┐
 │ id          │──1:1────→│ user_id          │
 │ email       │          │ slug (único)     │
@@ -24,21 +31,21 @@ User (accounts)           ArtistProfile (artists)
 ```
 
 **Relación 1:1:**
-- Un `User` con `role=ARTISAN` tiene **un** `ArtistProfile`
-- Los usuarios `ADMIN` **no tienen** `ArtistProfile`
-- La relación se define con `OneToOneField` con `related_name='artist_profile'`
+- Un `User` con `role=ARTISAN` tiene **un** `ArtisanProfile`
+- Los usuarios `ADMIN` **no tienen** `ArtisanProfile`
+- La relación se define con `OneToOneField` con `related_name='artisan_profile'`
 
 ### Creación Automática con Signals
 
 El perfil de artesano se crea **automáticamente** cuando se registra un nuevo usuario artesano:
 
 ```python
-# En artists/signals.py
+# En artisans/signals.py
 @receiver(post_save, sender=User)
-def create_artist_profile(sender, instance, created, **kwargs):
+def create_artisan_profile(sender, instance, created, **kwargs):
     """
     Signal que detecta cuando se crea un User con role=ARTISAN
-    y crea automáticamente su ArtistProfile.
+    y crea automáticamente su ArtisanProfile.
     """
 ```
 
@@ -47,7 +54,7 @@ def create_artist_profile(sender, instance, created, **kwargs):
 1. Usuario se registra → `POST /api/v1/auth/register/`
 2. Se crea `User` con `role=ARTISAN`
 3. Signal `post_save` detecta la creación
-4. Se crea `ArtistProfile` con valores por defecto:
+4. Se crea `ArtisanProfile` con valores por defecto:
    - `slug`: generado desde `username`
    - `display_name`: `get_full_name()` o `username`
    - `craft_type`: `OTHER` (artesano lo completa después)
@@ -85,7 +92,7 @@ Define los municipios de Menorca donde pueden ubicarse los talleres:
 | `sant_lluis` | Sant Lluís |
 | `other` | Otro |
 
-### 3. ArtistProfile (Model)
+### 3. ArtisanProfile (Model)
 
 Perfil público del artesano con toda la información visible para compradores.
 
@@ -102,8 +109,8 @@ Perfil público del artesano con toda la información visible para compradores.
 - `location`: Ubicación en Menorca (choices de MenorcaLocation)
 
 **Imágenes:**
-- `avatar`: Foto de perfil (`artists/avatars/`)
-- `cover_image`: Imagen de portada (`artists/covers/`)
+- `avatar`: Foto de perfil (`artisans/avatars/`)
+- `cover_image`: Imagen de portada (`artisans/covers/`)
 
 **Contacto y Redes:**
 - `website`: Sitio web personal (opcional)
@@ -170,18 +177,18 @@ ordering = ['-is_featured', '-created_at']
 
 ### Endpoints Públicos
 
-La API de artistas es **pública** (sin autenticación requerida):
+La API de artesanos es **pública** (sin autenticación requerida):
 
 ```
-GET /api/v1/artists/              → Lista de artesanos
-GET /api/v1/artists/{slug}/       → Detalle de un artesano
+GET /api/v1/artisans/              → Lista de artesanos
+GET /api/v1/artisans/{slug}/       → Detalle de un artesano
 ```
 
-### ViewSet: ArtistProfileViewSet
+### ViewSet: ArtisanProfileViewSet
 
 ```python
-class ArtistProfileViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ArtistProfile.objects.all()
+class ArtisanProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ArtisanProfile.objects.all()
     lookup_field = 'slug'  # Buscar por slug, no por ID
     permission_classes = [AllowAny]  # Acceso público
 ```
@@ -199,44 +206,44 @@ class ArtistProfileViewSet(viewsets.ReadOnlyModelViewSet):
 
 **Listar todos los artesanos:**
 ```http
-GET /api/v1/artists/
+GET /api/v1/artisans/
 ```
 
 **Buscar ceramistas:**
 ```http
-GET /api/v1/artists/?search=cerámica
+GET /api/v1/artisans/?search=cerámica
 ```
 
 **Filtrar por tipo de artesanía:**
 ```http
-GET /api/v1/artists/?craft_type=ceramics
+GET /api/v1/artisans/?craft_type=ceramics
 ```
 
 **Filtrar por ubicación:**
 ```http
-GET /api/v1/artists/?location=mao
+GET /api/v1/artisans/?location=mao
 ```
 
 **Solo artesanos destacados:**
 ```http
-GET /api/v1/artists/?is_featured=true
+GET /api/v1/artisans/?is_featured=true
 ```
 
 **Ordenar por nombre:**
 ```http
-GET /api/v1/artists/?ordering=display_name
+GET /api/v1/artisans/?ordering=display_name
 ```
 
 **Ver perfil específico:**
 ```http
-GET /api/v1/artists/juan-ceramista/
+GET /api/v1/artisans/juan-ceramista/
 ```
 
 ### Serializers
 
-#### ArtistProfileListSerializer
+#### ArtisanProfileListSerializer
 
-Usado en **listados** (`GET /api/v1/artists/`):
+Usado en **listados** (`GET /api/v1/artisans/`):
 
 ```json
 {
@@ -244,7 +251,7 @@ Usado en **listados** (`GET /api/v1/artists/`):
   "display_name": "Juan Pérez",
   "craft_type": "ceramics",
   "location": "mao",
-  "avatar": "/media/artists/avatars/juan.jpg",
+  "avatar": "/media/artisans/avatars/juan.jpg",
   "total_works": 15,
   "total_products": 8,
   "is_featured": true
@@ -253,9 +260,9 @@ Usado en **listados** (`GET /api/v1/artists/`):
 
 **Campos incluidos:** Solo info esencial para tarjetas/previews.
 
-#### ArtistProfileSerializer
+#### ArtisanProfileSerializer
 
-Usado en **detalles** (`GET /api/v1/artists/{slug}/`):
+Usado en **detalles** (`GET /api/v1/artisans/{slug}/`):
 
 ```json
 {
@@ -269,8 +276,8 @@ Usado en **detalles** (`GET /api/v1/artists/{slug}/`):
   "bio": "Artesano ceramista con 20 años de experiencia...",
   "craft_type": "ceramics",
   "location": "mao",
-  "avatar": "/media/artists/avatars/juan.jpg",
-  "cover_image": "/media/artists/covers/juan-cover.jpg",
+  "avatar": "/media/artisans/avatars/juan.jpg",
+  "cover_image": "/media/artisans/covers/juan-cover.jpg",
   "website": "https://juanceramista.com",
   "instagram": "juan_ceramista",
   "instagram_url": "https://instagram.com/juan_ceramista",
@@ -286,7 +293,7 @@ Usado en **detalles** (`GET /api/v1/artists/{slug}/`):
 
 ## Admin de Django
 
-### ArtistProfileAdmin
+### ArtisanProfileAdmin
 
 Panel de administración para gestionar perfiles:
 
@@ -368,7 +375,7 @@ Content-Type: application/json
 Los compradores pueden ver el perfil inmediatamente:
 
 ```http
-GET /api/v1/artists/maria-joyera/
+GET /api/v1/artisans/maria-joyera/
 ```
 
 **Respuesta:**
@@ -402,7 +409,7 @@ GET /api/v1/artists/maria-joyera/
 En futuras iteraciones, los artesanos podrán actualizar su perfil:
 
 ```http
-PATCH /api/v1/artists/me/
+PATCH /api/v1/artisans/me/
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -419,18 +426,19 @@ Content-Type: application/json
 
 ## Testing
 
-Se incluye un script de prueba completo en `test_artist_profile.py`:
+Ejecutar los tests de la app artisans:
 
 ```bash
-python test_artist_profile.py
+python manage.py test artisans
 ```
 
 **Tests incluidos:**
-1. ✅ Creación automática de ArtistProfile al registrar artesano
-2. ✅ Properties del modelo (`full_location`, `instagram_url`, etc.)
+1. ✅ Creación automática de ArtisanProfile al registrar artesano
+2. ✅ Properties del modelo (`full_location`, `can_receive_payments`, etc.)
 3. ✅ Unicidad de slugs
-4. ✅ Admins NO reciben ArtistProfile
+4. ✅ Admins NO reciben ArtisanProfile
 5. ✅ Ordenamiento del queryset (destacados primero)
+6. ✅ API pública funcional
 
 ## Integración con Otras Apps
 
@@ -458,25 +466,25 @@ python test_artist_profile.py
 
 ## Próximos Pasos
 
-1. **Endpoint de actualización de perfil** (`PATCH /api/v1/artists/me/`)
-2. **Upload de imágenes** (avatar y cover_image)
-3. **Integración con Stripe Connect** para onboarding
-4. **Signals desde `works` y `shop`** para actualizar contadores
+1. **Endpoint de actualización de perfil** (`PATCH /api/v1/artisans/me/`)
+2. **Upload de imágenes** (avatar y cover_image con Cloudinary)
+3. **Mejoras en onboarding de Stripe Connect**
+4. **Dashboard de artesano** con estadísticas de ventas
 5. **Panel de artesano** en frontend para gestionar perfil
-6. **Página pública** `/artistas/{slug}/` en Next.js
+6. **Página pública** `/artesanos/{slug}/` en Next.js
 
 ## Migraciones
 
 ```bash
 # Generar migraciones
-python manage.py makemigrations artists
+python manage.py makemigrations artisans
 
 # Aplicar migraciones
-python manage.py migrate artists
+python manage.py migrate artisans
 ```
 
 **Migración inicial:** `0001_initial.py`
-- Crea tabla `artists_artistprofile`
+- Crea tabla `artisans_artisanprofile`
 - Define índices optimizados
 - Establece relación 1:1 con User
 
@@ -508,7 +516,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 ```python
 urlpatterns = [
-    path('api/v1/artists/', include('artists.urls')),
+    path('api/v1/artisans/', include('artisans.urls')),
 ]
 
 # Servir media files en desarrollo
@@ -541,7 +549,7 @@ if settings.DEBUG:
 
 ### ¿Por qué slug en vez de ID?
 
-- URLs amigables: `/artistas/juan-ceramista/` vs `/artistas/1/`
+- URLs amigables: `/artesanos/juan-ceramista/` vs `/artesanos/1/`
 - SEO mejorado
 - Más profesional y memorable
 - Se auto-genera desde username

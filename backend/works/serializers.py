@@ -7,22 +7,39 @@ from rest_framework import serializers
 from .models import Work
 
 
-class ArtistMinimalSerializer(serializers.Serializer):
+class ArtisanMinimalSerializer(serializers.Serializer):
     """
-    Serializer mínimo para artista (solo info necesaria en obras)
+    Serializer mínimo para artesano (solo info necesaria en obras)
+    Lee desde work.artisan (User) -> work.artisan.artisan_profile (ArtisanProfile)
     """
-    id = serializers.IntegerField(read_only=True)
-    slug = serializers.CharField(read_only=True)
-    display_name = serializers.CharField(read_only=True)
-    avatar = serializers.CharField(read_only=True, allow_null=True)
+    id = serializers.SerializerMethodField()
+    slug = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    
+    def get_id(self, obj):
+        """Obtener ID del perfil de artesano"""
+        return obj.artisan_profile.id if hasattr(obj, 'artisan_profile') else None
+    
+    def get_slug(self, obj):
+        """Obtener slug del perfil de artesano"""
+        return obj.artisan_profile.slug if hasattr(obj, 'artisan_profile') else None
+    
+    def get_display_name(self, obj):
+        """Obtener nombre para mostrar del perfil de artesano"""
+        return obj.artisan_profile.display_name if hasattr(obj, 'artisan_profile') else obj.username
+    
+    def get_avatar(self, obj):
+        """Obtener avatar del perfil de artesano"""
+        return obj.artisan_profile.avatar if hasattr(obj, 'artisan_profile') else None
 
 
 class WorkListSerializer(serializers.ModelSerializer):
     """
-    Serializer ligero para listar obras (sin artista).
+    Serializer ligero para listar obras (sin artesano).
     Usado en listados públicos de obras de un artesano.
     
-    Usado en: GET /api/v1/artists/{slug}/works/
+    Usado en: GET /api/v1/artisans/{slug}/works/
     """
     total_images = serializers.SerializerMethodField()
     
@@ -52,11 +69,11 @@ class WorkListSerializer(serializers.ModelSerializer):
 class WorkDetailSerializer(serializers.ModelSerializer):
     """
     Serializer para lectura de obras.
-    Incluye información del artista y campos calculados.
+    Incluye información del artesano y campos calculados.
     
     Usado en: GET /api/v1/works/ y GET /api/v1/works/{id}/
     """
-    artist = ArtistMinimalSerializer(read_only=True)
+    artisan = ArtisanMinimalSerializer(read_only=True)
     total_images = serializers.SerializerMethodField()
     
     class Meta:
@@ -74,14 +91,14 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             'total_images',
             'created_at',
             'updated_at',
-            'artist',
+            'artisan',
         ]
         read_only_fields = [
             'id', 
             'created_at', 
             'updated_at', 
             'display_order', 
-            'artist',
+            'artisan',
             'is_active'
         ]
     

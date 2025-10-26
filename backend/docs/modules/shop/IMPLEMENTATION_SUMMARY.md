@@ -60,7 +60,7 @@ App completa de tienda de productos artesanales para MiTaller.art. Permite a los
   - Optimizado para rendimiento
 
 ### 4. `permissions.py`
-- **IsArtistOwnerOrReadOnly**: Permiso personalizado
+- **IsArtisanOwnerOrReadOnly**: Permiso personalizado
   - Lectura pública (GET, HEAD, OPTIONS)
   - Escritura solo para artesano dueño
   - Valida autenticación y propiedad del objeto

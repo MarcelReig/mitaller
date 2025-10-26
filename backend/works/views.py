@@ -11,7 +11,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from .models import Work
 from .serializers import WorkDetailSerializer, WorkCreateUpdateSerializer
-from .permissions import IsArtistOwnerOrAdmin
+from .permissions import IsArtisanOwnerOrAdmin
 
 
 class WorkViewSet(viewsets.ModelViewSet):
@@ -27,7 +27,7 @@ class WorkViewSet(viewsets.ModelViewSet):
     - PUT /api/v1/works/reorder/      - Reordenar obras (solo propietario)
     """
     
-    permission_classes = [IsAuthenticatedOrReadOnly, IsArtistOwnerOrAdmin]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsArtisanOwnerOrAdmin]
     
     def get_serializer_class(self):
         """
@@ -50,18 +50,18 @@ class WorkViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return Work.objects.filter(
                 is_active=True
-            ).select_related('artist').order_by('display_order', '-created_at')
+            ).select_related('artisan').order_by('display_order', '-created_at')
         
-        # Artista: solo sus obras
-        if hasattr(user, 'artist_profile'):
+        # Artesano: solo sus obras
+        if hasattr(user, 'artisan_profile'):
             return Work.objects.filter(
-                artist=user.artist_profile
-            ).select_related('artist').order_by('display_order', '-created_at')
+                artisan=user
+            ).select_related('artisan').order_by('display_order', '-created_at')
         
         # Admin: todas las obras
         if user.is_staff:
             return Work.objects.all().select_related(
-                'artist'
+                'artisan'
             ).order_by('display_order', '-created_at')
         
         # Otros usuarios autenticados: ninguna obra
@@ -76,10 +76,10 @@ class WorkViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         
-        # Verificar que el usuario tiene perfil de artista
-        if not hasattr(user, 'artist_profile'):
+        # Verificar que el usuario tiene perfil de artesano
+        if not hasattr(user, 'artisan_profile'):
             error_msg = (
-                f"Solo los artistas pueden crear obras. "
+                f"Solo los artesanos pueden crear obras. "
                 f"Usuario actual: {user.email} (role: {user.get_role_display()}). "
                 f"Necesitas tener un ArtistProfile asociado."
             )
@@ -87,14 +87,14 @@ class WorkViewSet(viewsets.ModelViewSet):
         
         # Calcular siguiente display_order
         last_work = Work.objects.filter(
-            artist=user.artist_profile
+            artisan=user
         ).order_by('-display_order').first()
         
         next_order = (last_work.display_order + 1) if last_work else 1
         
-        # Guardar con artista y display_order
+        # Guardar con artesano y display_order
         serializer.save(
-            artist=user.artist_profile,
+            artisan=user,
             display_order=next_order,
             is_active=True
         )
@@ -109,10 +109,10 @@ class WorkViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         # Verificar ownership
-        if hasattr(user, 'artist_profile'):
-            if work.artist != user.artist_profile and not user.is_staff:
+        if hasattr(user, 'artisan_profile'):
+            if work.artisan != user and not user.is_staff:
                 raise PermissionDenied(
-                    "No puedes editar obras de otros artistas"
+                    "No puedes editar obras de otros artesanos"
                 )
         elif not user.is_staff:
             raise PermissionDenied("No tienes permisos para editar obras")
@@ -128,10 +128,10 @@ class WorkViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         # Verificar ownership
-        if hasattr(user, 'artist_profile'):
-            if instance.artist != user.artist_profile and not user.is_staff:
+        if hasattr(user, 'artisan_profile'):
+            if instance.artisan != user and not user.is_staff:
                 raise PermissionDenied(
-                    "No puedes eliminar obras de otros artistas"
+                    "No puedes eliminar obras de otros artesanos"
                 )
         elif not user.is_staff:
             raise PermissionDenied("No tienes permisos para eliminar obras")
@@ -159,10 +159,10 @@ class WorkViewSet(viewsets.ModelViewSet):
         """
         user = request.user
         
-        # Verificar que el usuario es artista
-        if not hasattr(user, 'artist_profile'):
+        # Verificar que el usuario es artesano
+        if not hasattr(user, 'artisan_profile'):
             return Response(
-                {"error": "Solo los artistas pueden reordenar obras"},
+                {"error": "Solo los artesanos pueden reordenar obras"},
                 status=status.HTTP_403_FORBIDDEN
             )
         
@@ -191,7 +191,7 @@ class WorkViewSet(viewsets.ModelViewSet):
             try:
                 work = Work.objects.get(
                     id=work_id,
-                    artist=user.artist_profile
+                    artisan=user
                 )
                 work.display_order = index
                 work.save(update_fields=['display_order'])

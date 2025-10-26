@@ -37,14 +37,14 @@ export const productKeys = {
 /**
  * Hook para obtener lista de productos
  * 
- * @param artistId - Slug del artista (opcional). Si se proporciona, filtra por artista
+ * @param artisanId - Slug del artesano (opcional). Si se proporciona, filtra por artesano
  * @param filters - Filtros adicionales (categoría, precio, disponibilidad, búsqueda)
  * @returns Query con lista de productos
  * 
  * @example
  * ```tsx
- * function ProductsGrid({ artistSlug }) {
- *   const { data: products, isLoading } = useProducts(artistSlug, {
+ * function ProductsGrid({ artisanSlug }) {
+ *   const { data: products, isLoading } = useProducts(artisanSlug, {
  *     category: 'ceramics',
  *     is_available: true
  *   });
@@ -56,14 +56,14 @@ export const productKeys = {
  * ```
  */
 export function useProducts(
-  artistId?: string,
+  artisanId?: string,
   filters?: ProductFilters
 ): UseQueryResult<Product[], Error> {
   return useQuery({
-    queryKey: productKeys.list({ artist: artistId, ...filters }),
+    queryKey: productKeys.list({ artisan: artisanId, ...filters }),
     queryFn: async () => {
       const params = {
-        ...(artistId && { artist: artistId }),
+        ...(artisanId && { artisan: artisanId }),
         ...filters,
       };
 

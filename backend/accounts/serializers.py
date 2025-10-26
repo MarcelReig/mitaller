@@ -115,19 +115,24 @@ class RegisterSerializer(serializers.ModelSerializer):
         
         Por defecto:
         - role = ARTISAN
-        - is_approved = False (necesita aprobación manual)
+        - is_approved = según configuración (auto en dev, manual en prod)
         - password hasheado con set_password()
         """
+        from django.conf import settings
+        
         # Eliminar password_confirm (no se guarda en BD)
         validated_data.pop('password_confirm')
         
         # Extraer password para procesarlo
         password = validated_data.pop('password')
         
+        # Auto-aprobar en desarrollo, manual en producción
+        is_approved = getattr(settings, 'AUTO_APPROVE_ARTISANS', False)
+        
         # Crear usuario con role ARTISAN por defecto
         user = User(
             role=UserRole.ARTISAN,
-            is_approved=False,
+            is_approved=is_approved,
             **validated_data
         )
         
@@ -144,9 +149,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         return UserSerializer(instance).data
 
 
-class ArtistProfileBasicSerializer(serializers.Serializer):
+class ArtisanProfileBasicSerializer(serializers.Serializer):
     """
-    Serializer básico para el perfil de artista anidado en UserSerializer.
+    Serializer básico para el perfil de artesano anidado en UserSerializer.
     Solo incluye campos esenciales para el frontend.
     """
     id = serializers.IntegerField()
@@ -160,12 +165,33 @@ class ArtistProfileBasicSerializer(serializers.Serializer):
     stripe_account_status = serializers.CharField()
 
 
+class ArtistProfileBasicSerializer(serializers.Serializer):
+    """
+    Serializer básico para el perfil de artista (FUTURO) anidado en UserSerializer.
+    Solo incluye campos esenciales para el frontend.
+    """
+    id = serializers.IntegerField()
+    slug = serializers.CharField()
+    display_name = serializers.CharField()
+    avatar = serializers.URLField(allow_null=True)
+    discipline = serializers.CharField()
+    bio = serializers.CharField(allow_null=True)
+
+
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer para representación de datos de usuario.
     Usado en perfiles y respuestas de autenticación.
+    Soporta ambos tipos de perfiles: artesanos y artistas.
     """
     can_sell = serializers.SerializerMethodField()
+    
+    # Campos para artesanos (craftspeople)
+    has_artisan_profile = serializers.SerializerMethodField()
+    artisan_slug = serializers.SerializerMethodField()
+    artisan_profile = serializers.SerializerMethodField()
+    
+    # Campos para artistas (artists) - futura implementación
     has_artist_profile = serializers.SerializerMethodField()
     artist_slug = serializers.SerializerMethodField()
     artist_profile = serializers.SerializerMethodField()
@@ -182,6 +208,11 @@ class UserSerializer(serializers.ModelSerializer):
             'is_approved',
             'is_active',
             'can_sell',
+            # Artesano fields
+            'has_artisan_profile',
+            'artisan_slug',
+            'artisan_profile',
+            # Artista fields
             'has_artist_profile',
             'artist_slug',
             'artist_profile',
@@ -192,6 +223,9 @@ class UserSerializer(serializers.ModelSerializer):
             'role',
             'is_approved',
             'can_sell',
+            'has_artisan_profile',
+            'artisan_slug',
+            'artisan_profile',
             'has_artist_profile',
             'artist_slug',
             'artist_profile',
@@ -205,25 +239,37 @@ class UserSerializer(serializers.ModelSerializer):
         """
         return obj.can_sell
     
+    # Métodos para artesanos (ARTISAN)
+    def get_has_artisan_profile(self, obj: User) -> bool:
+        """Retorna si el usuario tiene un ArtisanProfile asociado."""
+        return hasattr(obj, 'artisan_profile')
+    
+    def get_artisan_slug(self, obj: User) -> str | None:
+        """Retorna el slug del perfil de artesano si existe."""
+        if hasattr(obj, 'artisan_profile'):
+            return obj.artisan_profile.slug
+        return None
+    
+    def get_artisan_profile(self, obj: User) -> dict | None:
+        """Retorna el perfil completo del artesano si existe."""
+        if hasattr(obj, 'artisan_profile'):
+            profile = obj.artisan_profile
+            return ArtisanProfileBasicSerializer(profile).data
+        return None
+    
+    # Métodos para artistas (ARTIST) - futura implementación
     def get_has_artist_profile(self, obj: User) -> bool:
-        """
-        Retorna si el usuario tiene un ArtistProfile asociado.
-        """
+        """Retorna si el usuario tiene un ArtistProfile asociado."""
         return hasattr(obj, 'artist_profile')
     
     def get_artist_slug(self, obj: User) -> str | None:
-        """
-        Retorna el slug del perfil de artista si existe.
-        """
+        """Retorna el slug del perfil de artista si existe."""
         if hasattr(obj, 'artist_profile'):
             return obj.artist_profile.slug
         return None
     
     def get_artist_profile(self, obj: User) -> dict | None:
-        """
-        Retorna el perfil completo del artista si existe.
-        Incluye avatar para mostrar en el navbar.
-        """
+        """Retorna el perfil completo del artista si existe."""
         if hasattr(obj, 'artist_profile'):
             profile = obj.artist_profile
             return ArtistProfileBasicSerializer(profile).data
@@ -244,30 +290,51 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         """
         Valida credenciales y retorna tokens + datos de usuario.
         """
-        # DEBUG: Log para ver qué credenciales se están validando
         import logging
         logger = logging.getLogger(__name__)
+        
         email = attrs.get(self.username_field, 'NO_EMAIL')
         logger.info(f"[LOGIN] Intentando autenticar usuario con email: {email}")
         
-        # Obtener tokens del serializer padre
-        data = super().validate(attrs)
+        try:
+            # Obtener tokens del serializer padre
+            # Esto lanza AuthenticationFailed si las credenciales son incorrectas
+            data = super().validate(attrs)
+        except Exception as e:
+            # El serializer padre ya maneja el error correctamente
+            # Solo logueamos y re-lanzamos
+            logger.warning(f"[LOGIN] Fallo de autenticación para {email}: {str(e)}")
+            raise
         
-        # El usuario autenticado está disponible en self.user después de super().validate()
-        logger.info(f"[LOGIN] Usuario autenticado: {self.user.email} (ID: {self.user.id})")
-        
-        # Optimizar query para cargar artist_profile si existe
-        from .models import User
-        user_with_profile = User.objects.select_related('artist_profile').get(id=self.user.id)
-        
-        # Agregar datos del usuario a la respuesta (con artist_profile incluido)
-        user_data = UserSerializer(user_with_profile).data
-        data['user'] = user_data
-        
-        # DEBUG: Verificar que el usuario sea el correcto
-        logger.info(f"[LOGIN] Datos del usuario en respuesta: email={user_data.get('email')}, id={user_data.get('id')}")
-        
-        return data
+        try:
+            # El usuario autenticado está disponible en self.user después de super().validate()
+            logger.info(f"[LOGIN] Usuario autenticado: {self.user.email} (ID: {self.user.id})")
+            
+            # Optimizar query para cargar artisan_profile y artist_profile si existen
+            from .models import User
+            user_with_profiles = User.objects.select_related(
+                'artisan_profile', 
+                'artist_profile'
+            ).get(id=self.user.id)
+            
+            # Agregar datos del usuario a la respuesta (con perfiles incluidos)
+            user_data = UserSerializer(user_with_profiles).data
+            data['user'] = user_data
+            
+            logger.info(f"[LOGIN] Login exitoso para {user_data.get('email')}")
+            
+            return data
+            
+        except User.DoesNotExist:
+            logger.error(f"[LOGIN] Usuario {self.user.id} no encontrado en BD (inconsistencia)")
+            raise serializers.ValidationError(
+                'Error interno: usuario no encontrado. Contacta al administrador.'
+            )
+        except Exception as e:
+            logger.error(f"[LOGIN] Error inesperado al procesar login: {str(e)}", exc_info=True)
+            raise serializers.ValidationError(
+                'Error al procesar el login. Por favor, intenta nuevamente.'
+            )
 
 
 class LoginSerializer(serializers.Serializer):

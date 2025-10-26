@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Sparkles, Heart, ArrowRight } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
-import type { Artist } from '@/types';
+import type { Artisan } from '@/types';
 import { CRAFT_TYPE_LABELS } from '@/types';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -25,8 +25,8 @@ export default function HomePage() {
   const { data: featuredArtists, isLoading: isLoadingArtists } = useQuery({
     queryKey: ['artists', 'featured'],
     queryFn: async () => {
-      const response = await axiosInstance.get<{ results: Artist[] }>(
-        '/api/v1/artists/',
+      const response = await axiosInstance.get<{ results: Artisan[] }>(
+        '/api/v1/artisans/',
         {
           params: {
             is_featured: true,

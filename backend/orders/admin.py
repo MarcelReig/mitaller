@@ -25,7 +25,7 @@ class OrderItemInline(admin.TabularInline):
         'quantity',
         'subtotal',
         'formatted_subtotal',
-        'artist'
+        'artisan'
     ]
     readonly_fields = ['formatted_subtotal', 'subtotal']
     extra = 0  # No mostrar filas vacías adicionales
@@ -34,7 +34,7 @@ class OrderItemInline(admin.TabularInline):
     def get_queryset(self, request):
         """Optimizar queries con select_related."""
         qs = super().get_queryset(request)
-        return qs.select_related('product', 'artist', 'artist__user')
+        return qs.select_related('product', 'artisan', 'artisan__user')
 
 
 @admin.register(Order)
@@ -138,8 +138,8 @@ class OrderAdmin(admin.ModelAdmin):
         return qs.prefetch_related(
             'items',
             'items__product',
-            'items__artist',
-            'items__artist__user'
+            'items__artisan',
+            'items__artisan__user'
         )
 
 
@@ -154,7 +154,7 @@ class OrderItemAdmin(admin.ModelAdmin):
     
     list_display = [
         'order',
-        'artist',
+        'artisan',
         'product_name',
         'quantity',
         'product_price',
@@ -163,7 +163,7 @@ class OrderItemAdmin(admin.ModelAdmin):
     ]
     
     list_filter = [
-        'artist',
+        'artisan',
         'order__status',
         'created_at'
     ]
@@ -171,8 +171,8 @@ class OrderItemAdmin(admin.ModelAdmin):
     search_fields = [
         'order__order_number',
         'product_name',
-        'artist__display_name',
-        'artist__user__email'
+        'artisan__display_name',
+        'artisan__user__email'
     ]
     
     readonly_fields = [
@@ -196,7 +196,7 @@ class OrderItemAdmin(admin.ModelAdmin):
             'description': 'Estos campos son snapshot del momento de compra'
         }),
         ('Artesano', {
-            'fields': ('artist',)
+            'fields': ('artisan',)
         }),
         ('Cálculos', {
             'fields': (
@@ -215,7 +215,7 @@ class OrderItemAdmin(admin.ModelAdmin):
         return qs.select_related(
             'order',
             'product',
-            'artist',
-            'artist__user'
+            'artisan',
+            'artisan__user'
         )
 

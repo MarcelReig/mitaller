@@ -26,9 +26,9 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArtistHeader, ArtistSocials } from '@/components/artists';
+import { ArtistHeader, ArtistSocials } from '@/components/artisans';
 import { WorkGrid } from '@/components/works';
-import type { Artist } from '@/types/artist';
+import type { Artisan } from '@/types/artisan';
 import type { WorkListItem } from '@/types/work';
 
 // Base URL del backend
@@ -37,12 +37,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 /**
  * Fetch datos del artesano desde Django
  */
-async function getArtisan(slug: string): Promise<Artist | null> {
+async function getArtisan(slug: string): Promise<Artisan | null> {
   try {
-    const res = await fetch(`${API_URL}/api/v1/artists/${slug}/`, {
-      // Revalidar según entorno: 60s en dev, 1h en prod
+    const res = await fetch(`${API_URL}/api/v1/artisans/${slug}/`, {
+      // Revalidar: sin caché en dev, 1 hora en prod (se revalida on-demand al actualizar)
       next: { 
-        revalidate: process.env.NODE_ENV === 'development' ? 60 : 3600 
+        revalidate: process.env.NODE_ENV === 'development' ? 0 : 3600 
       },
     });
 
@@ -68,10 +68,10 @@ async function getArtisan(slug: string): Promise<Artist | null> {
  */
 async function getArtisanWorks(slug: string): Promise<WorkListItem[]> {
   try {
-    const res = await fetch(`${API_URL}/api/v1/artists/${slug}/works/`, {
-      // Revalidar según entorno: 60s en dev, 1h en prod
+    const res = await fetch(`${API_URL}/api/v1/artisans/${slug}/works/`, {
+      // Revalidar: sin caché en dev, 1 hora en prod (se revalida on-demand al actualizar)
       next: { 
-        revalidate: process.env.NODE_ENV === 'development' ? 60 : 3600 
+        revalidate: process.env.NODE_ENV === 'development' ? 0 : 3600 
       },
     });
 
@@ -100,16 +100,16 @@ async function getArtisanWorks(slug: string): Promise<WorkListItem[]> {
  * Params del componente
  */
 interface PageParams {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 /**
  * Server Component principal
  */
 export default async function ArtisanProfilePage({ params }: PageParams) {
-  const { slug } = params;
+  const { slug } = await params;
 
   // Fetch paralelo de artista y obras
   const [artisan, works] = await Promise.all([
@@ -187,7 +187,7 @@ export default async function ArtisanProfilePage({ params }: PageParams) {
  * Metadata dinámica para SEO
  */
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   const artisan = await getArtisan(slug);
 
   if (!artisan) {
@@ -230,11 +230,11 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
 /*
 export async function generateStaticParams() {
   try {
-    const res = await fetch(`${API_URL}/api/v1/artists/?is_featured=true`);
+    const res = await fetch(`${API_URL}/api/v1/artisans/?is_featured=true`);
     const data = await res.json();
     
-    return data.results?.map((artist: Artist) => ({
-      slug: artist.slug,
+    return data.results?.map((artisan: Artisan) => ({
+      slug: artisan.slug,
     })) || [];
   } catch (error) {
     console.error('Error generating static params:', error);

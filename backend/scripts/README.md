@@ -18,6 +18,7 @@ scripts/
 │
 └── dev/                    (herramientas de desarrollo)
     ├── README.md
+    ├── reset_database.sh   (⚠️ reset completo DB)
     └── update_deps.sh
 ```
 

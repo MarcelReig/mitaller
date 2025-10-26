@@ -62,7 +62,7 @@ class WorkCategory(TextChoices):
 
 ## 🔒 Sistema de Permisos
 
-### `IsArtistOwnerOrReadOnly`
+### `IsArtisanOwnerOrReadOnly`
 
 **Lógica:**
 ```
@@ -78,15 +78,15 @@ class WorkCategory(TextChoices):
 
 **Implementación:**
 ```python
-class IsArtistOwnerOrReadOnly(permissions.BasePermission):
+class IsArtisanOwnerOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         # Lectura pública
         if request.method in SAFE_METHODS:
             return True
         
-        # Escritura: usuario autenticado con ArtistProfile
+        # Escritura: usuario autenticado con ArtisanProfile
         return (request.user.is_authenticated and 
-                hasattr(request.user, 'artist_profile'))
+                hasattr(request.user, 'artisan_profile'))
     
     def has_object_permission(self, request, view, obj):
         # Lectura pública
@@ -348,9 +348,9 @@ work2 = Work.objects.create(
 ```python
 @admin.register(Work)
 class WorkAdmin(admin.ModelAdmin):
-    list_display = ('title', 'artist', 'category', 'is_featured', 'display_order', 'created_at')
-    list_filter = ('artist', 'category', 'is_featured', 'created_at')
-    search_fields = ('title', 'description', 'artist__display_name')
+    list_display = ('title', 'artisan', 'category', 'is_featured', 'display_order', 'created_at')
+    list_filter = ('artisan', 'category', 'is_featured', 'created_at')
+    search_fields = ('title', 'description', 'artisan__artisan_profile__display_name')
     list_editable = ('display_order', 'is_featured')
     
     fieldsets = (

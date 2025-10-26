@@ -15,11 +15,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-# Cargar variables de entorno desde .env
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Cargar variables de entorno desde .env (después de definir BASE_DIR)
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -29,9 +29,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+# Acepta: True, true, 1, yes, YES como valores verdaderos
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
+# Auto-aprobar artesanos en desarrollo (desactivar en producción)
+# En desarrollo: los usuarios se aprueban automáticamente al registrarse
+# En producción: requieren aprobación manual del admin
+AUTO_APPROVE_ARTISANS = os.getenv('AUTO_APPROVE_ARTISANS', str(DEBUG)).lower() in ('true', '1', 'yes')
 
 
 # Application definition
@@ -53,7 +59,9 @@ INSTALLED_APPS = [
     
     # Local apps
     'accounts',
-    'artists',
+    'profiles',  # Modelos base abstractos
+    'artisans',
+    'artists',   # Artistas (futura implementación)
     'works',
     'shop',
     'orders',

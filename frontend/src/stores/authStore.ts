@@ -397,8 +397,9 @@ export const useUserRole = () => {
     isCustomer: user?.role === 'customer',
     isApproved: user?.is_approved === true,
     canSell: user?.role === 'artisan' && user?.is_approved === true,
-    hasArtistProfile: user?.has_artist_profile === true,
-    canCreateWorks: user?.role === 'artisan' && user?.has_artist_profile === true,
+    hasArtisanProfile: user?.has_artisan_profile === true,
+    hasArtistProfile: user?.has_artist_profile === true, // Para artistas (futuro)
+    canCreateWorks: user?.role === 'artisan' && user?.has_artisan_profile === true,
   };
 };
 

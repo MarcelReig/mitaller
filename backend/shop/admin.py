@@ -24,7 +24,7 @@ class ProductAdmin(admin.ModelAdmin):
     # Campos mostrados en la vista de lista
     list_display = (
         'name',
-        'artist',
+        'artisan',
         'category',
         'price',
         'stock',
@@ -35,7 +35,7 @@ class ProductAdmin(admin.ModelAdmin):
     
     # Filtros laterales
     list_filter = (
-        'artist',
+        'artisan',
         'category',
         'is_active',
         'created_at',
@@ -45,7 +45,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = (
         'name',
         'description',
-        'artist__display_name',
+        'artisan__display_name',
     )
     
     # Campos de solo lectura
@@ -65,7 +65,7 @@ class ProductAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Información Básica', {
             'fields': (
-                'artist',
+                'artisan',
                 'name',
                 'description',
                 'category',
@@ -111,8 +111,8 @@ class ProductAdmin(admin.ModelAdmin):
         Optimiza las queries con select_related para evitar N+1.
         
         Carga de forma anticipada las relaciones necesarias:
-        - artist: para mostrar display_name
-        - artist__user: para acceder al usuario del artesano
+        - artisan: para mostrar display_name
+        - artisan__user: para acceder al usuario del artesano
         """
         queryset = super().get_queryset(request)
-        return queryset.select_related('artist', 'artist__user')
+        return queryset.select_related('artisan', 'artisan__user')

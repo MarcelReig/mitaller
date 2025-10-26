@@ -11,7 +11,7 @@ import random
 import string
 from datetime import datetime
 from shop.models import Product
-from artists.models import ArtistProfile
+from artisans.models import ArtisanProfile
 from payments.models import PaymentStatus
 
 
@@ -190,8 +190,8 @@ class OrderItem(models.Model):
         related_name='order_items',
         help_text='Producto comprado (PROTECT para mantener historial)'
     )
-    artist = models.ForeignKey(
-        'artists.ArtistProfile',
+    artisan = models.ForeignKey(
+        'artisans.ArtisanProfile',
         on_delete=models.PROTECT,
         related_name='sales',
         help_text='Artesano vendedor (desnormalizado para queries eficientes)'
@@ -229,7 +229,7 @@ class OrderItem(models.Model):
         ordering = ['order', '-created_at']
         indexes = [
             models.Index(fields=['order']),
-            models.Index(fields=['artist', '-created_at']),
+            models.Index(fields=['artisan', '-created_at']),
             models.Index(fields=['product']),
         ]
         verbose_name = 'Artículo de pedido'

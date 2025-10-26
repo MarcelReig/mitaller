@@ -2,17 +2,18 @@
 
 /**
  * Roles disponibles en el sistema
- * - artisan: Artesano que puede vender productos
  * - admin: Administrador del marketplace
- * - customer: Cliente que solo compra (no se registra, compra como invitado)
+ * - artisan: Artesano que vende productos físicos (cerámica, joyería, etc.)
+ * - artist: Artista que ofrece servicios/arte (pintura, música, etc.) - FUTURO
+ * - customer: Cliente registrado (compras como invitado por ahora)
  */
-export type UserRole = 'artisan' | 'admin' | 'customer';
+export type UserRole = 'admin' | 'artisan' | 'artist' | 'customer';
 
 /**
- * Perfil del artista asociado al usuario
+ * Perfil del artesano asociado al usuario
  * Solo disponible si el usuario tiene role='artisan'
  */
-export interface ArtistProfile {
+export interface ArtisanProfile {
   id: number;
   slug: string;
   display_name: string;
@@ -25,6 +26,20 @@ export interface ArtistProfile {
 }
 
 /**
+ * Perfil del artista asociado al usuario
+ * Solo disponible si el usuario tiene role='artist' - FUTURO
+ */
+export interface ArtistProfile {
+  id: number;
+  slug: string;
+  discipline: string;
+  avatar: string | null;
+  bio: string | null;
+  available_for_commissions: boolean;
+  available_for_events: boolean;
+}
+
+/**
  * Usuario autenticado en el sistema
  */
 export interface User {
@@ -34,13 +49,16 @@ export interface User {
   first_name?: string;
   last_name?: string;
   role: UserRole;
-  is_approved?: boolean; // Solo para artesanos
+  is_approved?: boolean; // Solo para artesanos/artistas
   is_active: boolean;
   can_sell?: boolean; // true si es artesano aprobado
+  has_artisan_profile?: boolean; // true si tiene ArtisanProfile asociado
   has_artist_profile?: boolean; // true si tiene ArtistProfile asociado
-  artist_slug?: string | null; // slug del perfil si tiene
+  artisan_slug?: string | null; // slug del perfil artesano
+  artist_slug?: string | null; // slug del perfil artista
   date_joined?: string;
-  artist_profile?: ArtistProfile; // Perfil completo (opcional, solo en algunos endpoints)
+  artisan_profile?: ArtisanProfile; // Perfil artesano (opcional)
+  artist_profile?: ArtistProfile; // Perfil artista (opcional)
 }
 
 /**

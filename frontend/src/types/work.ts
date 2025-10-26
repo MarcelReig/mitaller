@@ -30,9 +30,10 @@ export const WORK_CATEGORY_LABELS: Record<WorkCategory, string> = {
 };
 
 /**
- * Referencia simplificada al artista en una obra
+ * Referencia simplificada al artesano en una obra
+ * (Las obras son creadas por artesanos)
  */
-export type WorkArtist = {
+export type WorkArtisan = {
   id: number;
   slug: string;
   display_name: string;
@@ -53,13 +54,13 @@ export type WorkListItem = {
 };
 
 /**
- * Obra completa de arte/portfolio del artista (WorkSerializer)
+ * Obra completa de arte/portfolio del artesano (WorkSerializer)
  * No está a la venta, solo se muestra en el portfolio
  * Incluye galería completa de imágenes
  */
 export type Work = {
   id: number;
-  artist: WorkArtist;
+  artisan: WorkArtisan;
   title: string;
   description: string;
   category: WorkCategory | null;
@@ -89,7 +90,7 @@ export type WorkFormData = {
  * Filtros para búsqueda de obras
  */
 export type WorkFilters = {
-  artist?: number;                 // ID del artista
+  artisan?: number;                 // ID del artesano
   category?: WorkCategory;
   is_featured?: boolean;
   search?: string;

@@ -22,7 +22,7 @@ class WorkAdmin(admin.ModelAdmin):
     # Columnas visibles en la lista
     list_display = (
         'title',
-        'artist',
+        'artisan',
         'category',
         'is_featured',
         'display_order',
@@ -31,7 +31,7 @@ class WorkAdmin(admin.ModelAdmin):
     
     # Filtros disponibles en la barra lateral
     list_filter = (
-        'artist',
+        'artisan',
         'category',
         'is_featured',
         'created_at',
@@ -41,7 +41,7 @@ class WorkAdmin(admin.ModelAdmin):
     search_fields = (
         'title',
         'description',
-        'artist__display_name',
+        'artisan__artisan_profile__display_name',
     )
     
     # Campos de solo lectura
@@ -60,7 +60,7 @@ class WorkAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Información Básica', {
             'fields': (
-                'artist',
+                'artisan',
                 'title',
                 'description',
                 'category',
@@ -96,7 +96,7 @@ class WorkAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """
         Optimiza queries con select_related para evitar N+1 queries.
-        Pre-carga la relación con ArtistProfile.
+        Pre-carga la relación con el User artesano y su perfil.
         """
         queryset = super().get_queryset(request)
-        return queryset.select_related('artist', 'artist__user')
+        return queryset.select_related('artisan', 'artisan__artisan_profile')

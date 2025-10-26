@@ -28,25 +28,25 @@ class PaymentSerializer(serializers.ModelSerializer):
     order = serializers.SerializerMethodField()
     
     # Información anidada del artesano
-    artist = serializers.SerializerMethodField()
+    artisan = serializers.SerializerMethodField()
     
     # Campos formateados
     formatted_amount = serializers.CharField(read_only=True)
     formatted_marketplace_fee = serializers.CharField(read_only=True)
-    formatted_artist_amount = serializers.CharField(read_only=True)
+    formatted_artisan_amount = serializers.CharField(read_only=True)
     
     class Meta:
         model = Payment
         fields = [
             'id',
             'order',
-            'artist',
+            'artisan',
             'amount',
             'marketplace_fee',
-            'artist_amount',
+            'artisan_amount',
             'formatted_amount',
             'formatted_marketplace_fee',
-            'formatted_artist_amount',
+            'formatted_artisan_amount',
             'status',
             'stripe_payment_intent_id',
             'failure_message',
@@ -65,13 +65,21 @@ class PaymentSerializer(serializers.ModelSerializer):
             'customer_name': obj.order.customer_name,
         }
     
-    def get_artist(self, obj: Payment) -> dict:
+    def get_artisan(self, obj: Payment) -> dict:
         """Retorna información básica del artesano."""
-        return {
-            'id': obj.artist.id,
-            'slug': obj.artist.slug,
-            'display_name': obj.artist.display_name,
-        }
+        try:
+            artisan_profile = obj.artisan.artisan_profile
+            return {
+                'id': artisan_profile.id,
+                'slug': artisan_profile.slug,
+                'display_name': artisan_profile.display_name,
+            }
+        except Exception:
+            return {
+                'id': obj.artisan.id,
+                'slug': obj.artisan.username,
+                'display_name': obj.artisan.username,
+            }
 
 
 class CheckoutSessionSerializer(serializers.Serializer):
@@ -108,7 +116,7 @@ class CheckoutSessionSerializer(serializers.Serializer):
         """
         # Verificar que el pedido existe
         try:
-            order = Order.objects.prefetch_related('items__artist').get(id=value)
+            order = Order.objects.prefetch_related('items__artisan__artisan_profile').get(id=value)
         except Order.DoesNotExist:
             raise serializers.ValidationError("El pedido no existe.")
         
@@ -123,17 +131,18 @@ class CheckoutSessionSerializer(serializers.Serializer):
         # Verificar que todos los artesanos pueden recibir pagos
         # NOTA: Asumimos pedidos mono-artesano (todos los items del mismo artesano)
         # Para multi-artesano se necesitaría lógica más compleja con split payments
-        artist = order.items.first().artist
+        artisan = order.items.first().artisan
+        artisan_profile = artisan.artisan_profile
         
-        if not artist.can_receive_payments:
+        if not artisan_profile.can_receive_payments:
             raise serializers.ValidationError(
-                f"El artesano {artist.display_name} aún no puede recibir pagos. "
+                f"El artesano {artisan_profile.display_name} aún no puede recibir pagos. "
                 "Debe completar el proceso de verificación en Stripe."
             )
         
         # Guardar el order en el contexto para usarlo en create()
         self.context['order'] = order
-        self.context['artist'] = artist
+        self.context['artisan'] = artisan
         
         return value
     
@@ -158,15 +167,16 @@ class CheckoutSessionSerializer(serializers.Serializer):
             ValidationError: Si falla la creación en Stripe
         """
         order = self.context['order']
-        artist = self.context['artist']
+        artisan = self.context['artisan']
         
         # Crear Payment con comisiones calculadas
+        artisan_profile = artisan.artisan_profile
         payment = Payment(
             order=order,
-            artist=artist,
+            artisan=artisan,
             amount=order.total_amount,
             marketplace_fee=Decimal('0'),  # Temporal
-            artist_amount=Decimal('0'),  # Temporal
+            artisan_amount=Decimal('0'),  # Temporal
         )
         
         # Calcular comisiones antes de guardar
@@ -186,7 +196,7 @@ class CheckoutSessionSerializer(serializers.Serializer):
                 
                 # Transfer automático al artesano
                 transfer_data={
-                    'destination': artist.stripe_account_id,
+                    'destination': artisan_profile.stripe_account_id,
                 },
                 
                 # Comisión del marketplace
@@ -196,8 +206,8 @@ class CheckoutSessionSerializer(serializers.Serializer):
                 metadata={
                     'order_id': order.id,
                     'order_number': order.order_number,
-                    'artist_id': artist.id,
-                    'artist_slug': artist.slug,
+                    'artisan_id': artisan_profile.id,
+                    'artisan_slug': artisan_profile.slug,
                     'marketplace_name': 'MiTaller.art',
                 },
             )

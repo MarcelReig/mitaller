@@ -224,7 +224,7 @@ COMMIT (o ROLLBACK si falla)
 - Filtrado de queryset adicional por rol
 
 ### Filtrado
-- Artesanos: `items__artist=user.artist_profile`
+- Artesanos: `items__artisan=user.artisan_profile`
 - Admin: Todo
 - Otros: Empty queryset
 
@@ -241,8 +241,8 @@ COMMIT (o ROLLBACK si falla)
 queryset = Order.objects.prefetch_related(
     'items',
     'items__product',
-    'items__artist',
-    'items__artist__user'
+    'items__artisan',
+    'items__artisan__user'
 )
 ```
 
@@ -250,7 +250,7 @@ queryset = Order.objects.prefetch_related(
 ```python
 def get_queryset(self, request):
     return super().get_queryset(request).prefetch_related(
-        'items', 'items__product', 'items__artist'
+        'items', 'items__product', 'items__artisan'
     )
 ```
 

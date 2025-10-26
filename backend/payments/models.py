@@ -45,7 +45,7 @@ class Payment(models.Model):
     """
     Modelo para gestionar pagos del marketplace con Stripe Connect.
     
-    Cada pago está asociado a un pedido (Order) y a un artesano (ArtistProfile).
+    Cada pago está asociado a un pedido (Order) y a un artesano (ArtisanProfile).
     El monto total se divide entre el artesano y la comisión del marketplace.
     
     Flow:
@@ -66,10 +66,11 @@ class Payment(models.Model):
         help_text='Pedido asociado a este pago'
     )
     
-    artist = models.ForeignKey(
-        'artists.ArtistProfile',
+    artisan = models.ForeignKey(
+        'accounts.User',
         on_delete=models.PROTECT,
         related_name='payments',
+        limit_choices_to={'role': 'artisan'},
         verbose_name='Artesano',
         help_text='Artesano que recibe el pago (desnormalizado para queries)'
     )
@@ -89,7 +90,7 @@ class Payment(models.Model):
         help_text='Comisión del marketplace en EUR'
     )
     
-    artist_amount = models.DecimalField(
+    artisan_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         verbose_name='Monto artesano',
@@ -171,7 +172,7 @@ class Payment(models.Model):
         verbose_name_plural = 'Pagos'
         indexes = [
             models.Index(fields=['order']),
-            models.Index(fields=['artist']),
+            models.Index(fields=['artisan']),
             models.Index(fields=['status']),
             models.Index(fields=['stripe_payment_intent_id']),
             models.Index(fields=['-created_at']),
@@ -191,9 +192,9 @@ class Payment(models.Model):
         return f"{self.marketplace_fee} EUR"
     
     @property
-    def formatted_artist_amount(self) -> str:
+    def formatted_artisan_amount(self) -> str:
         """Retorna el monto del artesano formateado."""
-        return f"{self.artist_amount} EUR"
+        return f"{self.artisan_amount} EUR"
     
     def calculate_fees(self, marketplace_fee_percent: Decimal = None) -> None:
         """
@@ -207,7 +208,7 @@ class Payment(models.Model):
             >>> payment.calculate_fees(marketplace_fee_percent=Decimal('10.0'))
             >>> payment.marketplace_fee
             Decimal('10.00')
-            >>> payment.artist_amount
+            >>> payment.artisan_amount
             Decimal('90.00')
         """
         if marketplace_fee_percent is None:
@@ -217,5 +218,5 @@ class Payment(models.Model):
         self.marketplace_fee = (self.amount * marketplace_fee_percent) / Decimal('100')
         
         # Calcular monto para el artesano
-        self.artist_amount = self.amount - self.marketplace_fee
+        self.artisan_amount = self.amount - self.marketplace_fee
 

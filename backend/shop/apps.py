@@ -19,8 +19,8 @@ class ShopConfig(AppConfig):
         """
         Se ejecuta cuando Django carga la app.
         
-        Importa los signals de artists para registrar los receivers
+        Importa los signals de artisans para registrar los receivers
         de Product (actualización de total_products).
         """
         # Importar signals para registrarlos
-        import artists.signals
+        import artisans.signals

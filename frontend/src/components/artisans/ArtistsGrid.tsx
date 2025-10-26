@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import type { Artist, CraftType, Location } from '@/types';
+import type { Artisan, CraftType, Location } from '@/types';
 import axiosInstance from '@/lib/axios';
 import ArtistCard from './ArtistCard';
 import { Card, CardContent } from '@/components/ui/card';
@@ -69,8 +69,8 @@ export default function ArtistsGrid({
       if (search) params.search = search;
       if (featured !== undefined) params.is_featured = featured;
 
-      const response = await axiosInstance.get<{ results: Artist[] }>(
-        '/api/v1/artists/',
+      const response = await axiosInstance.get<{ results: Artisan[] }>(
+        '/api/v1/artisans/',
         { params }
       );
       

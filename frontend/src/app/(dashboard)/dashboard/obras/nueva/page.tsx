@@ -18,7 +18,7 @@ import Link from 'next/link';
 
 export default function NewWorkPage() {
   const createWork = useCreateWork();
-  const { isArtisan, hasArtistProfile, canCreateWorks } = useUserRole();
+  const { isArtisan, hasArtisanProfile, canCreateWorks } = useUserRole();
 
   const handleSubmit = async (data: WorkFormData) => {
     // Log para debugging
@@ -50,22 +50,22 @@ export default function NewWorkPage() {
             {!isArtisan && (
               <p>Solo los usuarios con rol de artesano pueden crear obras.</p>
             )}
-            {isArtisan && !hasArtistProfile && (
+            {isArtisan && !hasArtisanProfile && (
               <>
                 <p>
-                  Tu cuenta no tiene un perfil de artista asociado. Esto puede ocurrir si:
+                  Tu cuenta no tiene un perfil de artesano asociado. Esto puede ocurrir si:
                 </p>
                 <ul className="list-disc list-inside space-y-1 mt-2">
                   <li>Tu cuenta fue creada antes de que se implementara el sistema de perfiles</li>
                   <li>Hubo un error durante el registro</li>
                 </ul>
                 <p className="mt-4">
-                  <strong>Solución:</strong> Contacta al administrador para que te cree un perfil de artista.
+                  <strong>Solución:</strong> Contacta al administrador para que te cree un perfil de artesano.
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
                   Puedes ejecutar este comando en el servidor:
                   <code className="block mt-1 p-2 bg-muted rounded text-xs">
-                    python manage.py fix_artist_profile --email tu@email.com
+                    python manage.py fix_artisan_profile --email tu@email.com
                   </code>
                 </p>
               </>

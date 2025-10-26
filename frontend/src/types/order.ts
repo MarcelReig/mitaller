@@ -31,9 +31,9 @@ export type OrderItemProduct = {
 };
 
 /**
- * Referencia al artista en un item de orden
+ * Referencia al artesano en un item de orden
  */
-export type OrderItemArtist = {
+export type OrderItemArtisan = {
   id: number;
   slug: string;
   display_name: string;
@@ -46,7 +46,7 @@ export type OrderItemArtist = {
 export type OrderItem = {
   id: number;
   product: OrderItemProduct;
-  artist: OrderItemArtist;
+  artisan: OrderItemArtisan;
   product_name: string;    // Nombre del producto en el momento de la compra
   product_price: string;   // Precio del producto en el momento de la compra
   quantity: number;

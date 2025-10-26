@@ -26,13 +26,13 @@ interface WorkDetailHeaderProps {
 
 export function WorkDetailHeader({ work, artisanSlug }: WorkDetailHeaderProps) {
   // Optimizar avatar con Cloudinary
-  const optimizedAvatar = work.artist?.avatar 
-    ? avatarUrl(work.artist.avatar) 
+  const optimizedAvatar = work.artisan?.avatar 
+    ? avatarUrl(work.artisan.avatar) 
     : null;
 
-  // Iniciales del artista para fallback
-  const artistInitials = work.artist?.display_name
-    ? work.artist.display_name
+  // Iniciales del artesano para fallback
+  const artisanInitials = work.artisan?.display_name
+    ? work.artisan.display_name
         .split(' ')
         .map((n: string) => n[0])
         .join('')
@@ -87,16 +87,16 @@ export function WorkDetailHeader({ work, artisanSlug }: WorkDetailHeaderProps) {
             </p>
           )}
 
-          {/* Info del artista */}
-          {work.artist && (
+          {/* Info del artesano */}
+          {work.artisan && (
             <div className="flex items-center gap-3 pt-4 border-t border-border">
               <Avatar className="h-10 w-10">
                 <AvatarImage 
                   src={optimizedAvatar || undefined}
-                  alt={work.artist.display_name}
+                  alt={work.artisan.display_name}
                 />
                 <AvatarFallback className="text-sm">
-                  {artistInitials}
+                  {artisanInitials}
                 </AvatarFallback>
               </Avatar>
               
@@ -106,7 +106,7 @@ export function WorkDetailHeader({ work, artisanSlug }: WorkDetailHeaderProps) {
                   href={`/artesanos/${artisanSlug}`}
                   className="font-medium text-foreground hover:text-primary transition-colors"
                 >
-                  {work.artist.display_name}
+                  {work.artisan.display_name}
                 </Link>
               </div>
             </div>

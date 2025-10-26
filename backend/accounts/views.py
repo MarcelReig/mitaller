@@ -43,17 +43,28 @@ class RegisterView(APIView):
             201: Usuario creado exitosamente
             400: Errores de validación
         """
+        from django.conf import settings
+        
         serializer = RegisterSerializer(data=request.data)
         
         if serializer.is_valid():
             user = serializer.save()
             
+            # Mensaje dinámico según configuración
+            if getattr(settings, 'AUTO_APPROVE_ARTISANS', False):
+                message = (
+                    '¡Registro exitoso! Tu cuenta ha sido activada automáticamente. '
+                    'Ya puedes comenzar a crear tu perfil y subir obras.'
+                )
+            else:
+                message = (
+                    'Registro exitoso. Tu cuenta está pendiente de aprobación. '
+                    'Recibirás un email cuando puedas comenzar a vender.'
+                )
+            
             return Response(
                 {
-                    'message': (
-                        'Registro exitoso. Tu cuenta está pendiente de aprobación. '
-                        'Recibirás un email cuando puedas comenzar a vender.'
-                    ),
+                    'message': message,
                     'user': serializer.data
                 },
                 status=status.HTTP_201_CREATED
@@ -101,25 +112,36 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 },
                 status=status.HTTP_200_OK
             )
-        except serializers.ValidationError:
+        except serializers.ValidationError as e:
             # Errores de validación (credenciales incorrectas)
+            # Personalizar mensaje para que sea más claro
+            error_detail = serializer.errors
+            
+            # Verificar si es error de credenciales vs error de campo
+            if 'non_field_errors' in error_detail or 'detail' in error_detail:
+                message = 'Email o contraseña incorrectos. Por favor, verifica tus credenciales.'
+            else:
+                message = 'Error en el login. Verifica los datos ingresados.'
+            
             return Response(
                 {
-                    'message': 'Error en el login.',
-                    'errors': serializer.errors
+                    'message': message,
+                    'errors': error_detail
                 },
                 status=status.HTTP_401_UNAUTHORIZED
             )
         except Exception as e:
             # Errores inesperados - log para debugging
+            import logging
             import traceback
-            print(f"Error inesperado en login: {str(e)}")
-            print(traceback.format_exc())
+            logger = logging.getLogger(__name__)
+            logger.error(f"[LOGIN] Error inesperado en vista: {str(e)}")
+            logger.error(traceback.format_exc())
             
             return Response(
                 {
-                    'message': 'Error interno del servidor al procesar el login.',
-                    'detail': str(e)
+                    'message': 'Error al procesar el login. Por favor, intenta nuevamente.',
+                    'detail': 'Si el problema persiste, contacta al administrador.'
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -141,11 +163,11 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self) -> User:
         """
         Retorna el usuario autenticado.
-        Optimiza con select_related para cargar artist_profile en una sola query.
+        Optimiza con select_related para cargar artisan_profile y artist_profile en una sola query.
         """
         user_id = self.request.user.id
         try:
-            return User.objects.select_related('artist_profile').get(id=user_id)
+            return User.objects.select_related('artisan_profile', 'artist_profile').get(id=user_id)
         except User.DoesNotExist:
             return self.request.user
     

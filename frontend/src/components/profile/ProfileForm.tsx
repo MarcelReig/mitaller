@@ -18,6 +18,7 @@
 
 'use client';
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -43,9 +44,9 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProfileImageUpload } from './ProfileImageUpload';
-import { CRAFT_TYPE_LABELS, LOCATION_LABELS } from '@/types/artist';
-import type { Artist, CraftType, Location } from '@/types/artist';
-import { useUpdateMyArtistProfile } from '@/lib/hooks/useArtists';
+import { CRAFT_TYPE_LABELS, LOCATION_LABELS } from '@/types/artisan';
+import type { Artisan, CraftType, Location } from '@/types/artisan';
+import { useUpdateArtisanProfile } from '@/lib/hooks/useArtisans';
 
 /**
  * Schema de validación con Zod
@@ -110,8 +111,8 @@ const profileFormSchema = z.object({
 type ProfileFormData = z.infer<typeof profileFormSchema>;
 
 interface ProfileFormProps {
-  /** Datos actuales del artista */
-  artist: Artist;
+  /** Datos actuales del artesano */
+  artisan: Artisan;
   
   /** Callback al guardar exitosamente */
   onSuccess?: () => void;
@@ -120,24 +121,42 @@ interface ProfileFormProps {
   onCancel?: () => void;
 }
 
-export function ProfileForm({ artist, onSuccess, onCancel }: ProfileFormProps) {
-  const updateProfile = useUpdateMyArtistProfile();
+export function ProfileForm({ artisan, onSuccess, onCancel }: ProfileFormProps) {
+  const updateProfile = useUpdateArtisanProfile();
 
   // Inicializar formulario con datos actuales
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      display_name: artist.display_name,
-      bio: artist.bio || '',
-      craft_type: artist.craft_type as CraftType,
-      location: artist.location as Location,
-      instagram: artist.instagram || '',
-      website: artist.website || '',
+      display_name: artisan.display_name,
+      bio: artisan.bio || '',
+      craft_type: artisan.craft_type as CraftType,
+      location: artisan.location as Location,
+      instagram: artisan.instagram || '',
+      website: artisan.website || '',
       phone: '', // El backend no devuelve phone en el serializer actual
-      avatar: artist.avatar,
-      cover_image: artist.cover_image,
+      avatar: artisan.avatar,
+      cover_image: artisan.cover_image,
     },
   });
+
+  /**
+   * Actualizar formulario cuando cambien los datos del artesano
+   * Esto permite que las imágenes se actualicen después de guardar
+   */
+  useEffect(() => {
+    form.reset({
+      display_name: artisan.display_name,
+      bio: artisan.bio || '',
+      craft_type: artisan.craft_type as CraftType,
+      location: artisan.location as Location,
+      instagram: artisan.instagram || '',
+      website: artisan.website || '',
+      phone: '',
+      avatar: artisan.avatar,
+      cover_image: artisan.cover_image,
+    });
+  }, [artisan, form]);
 
   /**
    * Manejar submit del formulario
@@ -160,11 +179,12 @@ export function ProfileForm({ artist, onSuccess, onCancel }: ProfileFormProps) {
 
       await updateProfile.mutateAsync(payload);
       
+      // Ejecutar callback de éxito si existe
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
-      // El hook ya muestra el toast de error
+      // El hook ya maneja el toast de error automáticamente
       console.error('Error updating profile:', error);
     }
   };
@@ -426,7 +446,7 @@ export function ProfileForm({ artist, onSuccess, onCancel }: ProfileFormProps) {
             type="button"
             variant="outline"
             onClick={() => {
-              window.open(`/artesanos/${artist.slug}`, '_blank');
+              window.open(`/artesanos/${artisan.slug}`, '_blank');
             }}
             disabled={isSubmitting}
           >

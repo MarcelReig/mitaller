@@ -219,6 +219,7 @@ function SortableImageItem({
         
         {/* Drag handle */}
         <button
+          type="button"
           {...attributes}
           {...listeners}
           className={cn(
@@ -242,6 +243,7 @@ function SortableImageItem({
 
         {/* Delete button */}
         <Button
+          type="button"
           size="sm"
           variant="destructive"
           className="absolute bottom-2 right-2 h-8 w-8 p-0"
