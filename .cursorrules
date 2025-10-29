@@ -10,19 +10,20 @@ Marketplace multi-vendor SaaS para artesanos de Menorca. Los artesanos pueden:
 ## Stack Tecnológico
 
 ### Backend (Django)
-- Framework: Django 5.0 + Django REST Framework
+- Framework: Django 5.2.7 + Django REST Framework 3.16.1
 - Database: PostgreSQL 15
 - Auth: JWT (djangorestframework-simplejwt)
-- Media: Cloudinary (futuro)
-- Payments: Stripe Connect Express (futuro)
+- Media: Cloudinary (implementado)
+- Payments: Stripe Connect Express (implementado)
+- Monitoring: Sentry
 - Deploy: Railway
 
 ### Frontend (Next.js)
-- Framework: Next.js 14 (App Router)
+- Framework: Next.js 15.5.4 (App Router) + React 19
 - Language: TypeScript (strict mode)
-- Styling: Tailwind CSS + shadcn/ui
+- Styling: Tailwind CSS 4 + shadcn/ui
 - HTTP: Axios + TanStack Query
-- State: Zustand (auth + global state)
+- State: Zustand (auth + cart)
 - Deploy: Vercel
 
 ## Estructura del Monorepo
@@ -31,29 +32,35 @@ mitaller/
 ├── backend/          # Django REST API
 │   ├── config/       # Settings del proyecto
 │   ├── accounts/     # Custom User + Auth
-│   ├── artists/      # Perfiles de artesanos
+│   ├── artisans/     # Perfiles de artesanos (antes artists)
 │   ├── works/        # Portfolio items
-│   └── shop/         # Productos + Orders
+│   ├── shop/         # Productos
+│   ├── orders/       # Pedidos
+│   ├── payments/     # Stripe Connect
+│   └── admin_panel/  # Panel admin
 └── frontend/         # Next.js App Router
     └── src/
         ├── app/      # Routes (App Router)
         ├── components/
         ├── lib/      # Utils + API client
-        └── stores/   # Zustand stores
+        ├── stores/   # Zustand stores
+        └── types/    # TypeScript types
 
 ## Apps Django y Responsabilidades
 
 ### accounts (Auth + Users)
 - Custom User model (email como username)
-- Roles: CUSTOMER, ARTISAN_PENDING, ARTISAN_VERIFIED, ADMIN
+- Roles: ADMIN, ARTISAN, CUSTOMER
 - JWT authentication (register, login, refresh, logout)
+- is_approved: Aprobación manual por admin antes de vender
 - Email verification (futuro)
 
-### artists (Perfiles Públicos)
-- ArtistProfile model (1:1 con User)
-- Campos: slug, display_name, bio, avatar, location (pueblo Menorca), craft_type
-- Stripe: stripe_account_id, onboarding_completed (futuro)
-- URLs públicas: /api/artists/, /api/artists/{slug}/
+### artisans (Perfiles Públicos) - ANTES: artists
+- ArtisanProfile model (1:1 con User)
+- Campos: slug, display_name, bio, avatar, cover_image, location (pueblo Menorca), craft_type
+- Stripe: stripe_account_id, stripe_account_status, onboarding_completed
+- URLs públicas: /api/v1/artisans/, /api/v1/artisans/{slug}/
+- IMPORTANTE: Nomenclatura artisan (NO artist) en todo el código nuevo
 
 ### works (Portfolio)
 - Work model: título, descripción, categoría, media_urls[], thumbnail_url
@@ -62,10 +69,19 @@ mitaller/
 - Solo el artesano dueño puede editar sus obras
 
 ### shop (E-commerce)
-- Product model: nombre, precio, stock, imagen, shipping_options
-- Order model: multi-vendor, status, stripe_session_id
-- OrderItem: relaciona Order con Product y ArtistProfile (para comisiones)
+- Product model: nombre, precio, stock, thumbnail_url (Cloudinary), images (JSON)
+- Integración Stripe Connect: stripe_product_id, stripe_price_id
 - Solo el artesano dueño puede editar sus productos
+
+### orders (Pedidos)
+- Order model: multi-vendor, status, payment_status, customer_email (guest checkout)
+- OrderItem: relaciona Order con Product y Artisan (snapshot de precio para inmutabilidad)
+- order_number auto-generado: ORD-YYYYMMDD-XXXXXX
+
+### payments (Stripe Connect)
+- Payment model: historial de pagos, stripe_payment_id
+- Stripe Connect onboarding para artesanos
+- Webhooks para sincronización de estado
 
 ## Convenciones de Código
 
@@ -86,7 +102,8 @@ mitaller/
   * Variables/funciones: camelCase
   * Componentes: PascalCase
   * Constantes: UPPER_SNAKE_CASE
-  * Tipos/Interfaces: PascalCase con prefijo I (IUser, IArtist)
+  * Tipos/Interfaces: PascalCase SIN prefijo I (User, Artisan, not IUser)
+- Path aliases: `@/components/*`, `@/lib/*`, `@/types/*`, `@/stores/*`
 
 ### CSS (Tailwind)
 - Preferir utilities de Tailwind
@@ -511,6 +528,50 @@ refactor(shop): optimize product query with select_related
 - develop: Desarrollo activo (por ahora trabaja directo en main)
 - feature/nombre: Features nuevas (futuro)
 
+## 🚨 REGLA CRÍTICA: Verificación de Consistencia FE/BE
+
+**ANTES de finalizar cualquier cambio en backend o frontend, verifica:**
+
+### Si modificaste Backend (models.py, serializers.py, views.py):
+
+1. **¿Cambió la estructura de datos?**
+   - ✅ Actualiza el tipo TypeScript correspondiente en `frontend/src/types/`
+   - ✅ Verifica que los campos opcionales/requeridos coincidan
+   - ✅ Verifica que los tipos de datos coincidan (int → number, str → string)
+
+2. **¿Añadiste un nuevo endpoint?**
+   - ✅ Añade la función correspondiente en `frontend/src/lib/api/*.ts`
+   - ✅ Actualiza la tabla de endpoints en `docs/ai-assistants/CONTEXT_FOR_CLAUDE.md`
+
+3. **¿Cambió la lógica de permisos?**
+   - ✅ Verifica protección de rutas en `frontend/src/app/(dashboard)/**`
+   - ✅ Actualiza guards si es necesario
+
+### Si modificaste Frontend (types/, api/, components/):
+
+1. **¿Cambió un tipo TypeScript?**
+   - ✅ Verifica que el serializer de backend tenga los mismos campos
+   - ✅ Haz un request de prueba para confirmar la estructura
+
+2. **¿Añadiste un nuevo campo en un form?**
+   - ✅ Verifica que el serializer backend acepte ese campo
+   - ✅ Verifica validaciones en ambos lados
+
+### Errores Comunes a Prevenir:
+
+❌ **NO hacer:**
+- Añadir campo en backend pero olvidar el tipo en frontend
+- Crear endpoint nuevo sin API service
+- Cambiar tipo de dato (int → string) sin actualizar el otro lado
+- Hacer campo opcional en un lado pero requerido en el otro
+
+✅ **SÍ hacer:**
+- Cambiar backend Y frontend en el mismo commit
+- Verificar tipos después de cada cambio de serializer
+- Probar la integración completa FE/BE antes de commitear
+
+---
+
 ## Reglas de Generación de Código
 
 Cuando generes código, SIEMPRE:
@@ -581,207 +642,170 @@ Cuando generes código, SIEMPRE:
 
 ## Documentación
 
-### Estructura de Documentación
-El proyecto tiene 3 niveles de documentación organizados:
+### Estructura (3 niveles)
 
-```
-mitaller/
-├── docs/              # Documentación general del proyecto
-│   ├── README.md      # Índice principal
-│   ├── architecture/  # Diseño técnico, conceptos
-│   ├── auth/          # Sistema de autenticación
-│   ├── deployment/    # Deploy, dependencias
-│   ├── phases/        # Fases del proyecto
-│   ├── troubleshooting/ # Problemas resueltos
-│   └── .templates/    # Plantillas
-├── backend/docs/      # Documentación específica del backend
-│   ├── README.md      # Índice backend
-│   ├── modules/       # Por app Django (accounts, artists, etc.)
-│   └── config/        # Configuración backend
-└── frontend/docs/     # Documentación específica del frontend
-    ├── README.md      # Índice frontend
-    ├── auth/          # Auth frontend
-    ├── config/        # Env vars, setup
-    ├── guides/        # Hooks, types, layouts
-    ├── features/      # Features específicas
-    └── placeholders/  # Sistema de placeholders
-```
+- `docs/` - General (arquitectura, auth, troubleshooting)
+- `backend/docs/modules/{app}/` - Backend específico
+- `frontend/docs/` - Frontend específico
 
 ### Cuándo Documentar
 
-**SIEMPRE documenta:**
-- Nueva feature compleja (usa plantilla `feature-template.md`)
-- Problema resuelto que tomó >1h (usa plantilla `troubleshooting-template.md`)
-- Cambio arquitectónico significativo
-- Nueva integración (Stripe, Cloudinary, etc.)
-- Proceso de setup no obvio
+**SÍ documenta:**
+- Feature compleja (>1h) → Usa `docs/.templates/feature-template.md`
+- Bug resuelto (>1h) → Usa `docs/.templates/troubleshooting-template.md`
+- Cambio arquitectónico o nueva integración
 
-**NO hace falta documentar:**
-- CRUD simple siguiendo patrones existentes
-- Cambios menores de UI
-- Fixes triviales de typos o estilos
+**NO documenta:**
+- CRUD simple, cambios UI menores, typos
 
-### Dónde Colocar la Documentación
+### ⚠️ REGLA CRÍTICA: Mantén Docs Actualizadas
 
-**Documentación General** → `docs/`:
-- Arquitectura del sistema completo
-- Decisiones de diseño transversales
-- Autenticación (flujo completo backend+frontend)
-- Troubleshooting general
+**SIEMPRE:**
+1. Si cambias código, actualiza docs relacionadas INMEDIATAMENTE
+2. Busca refs: `grep -r "tu cambio" docs/`
+3. Actualiza ejemplos de código y fechas
+4. Nunca marques como "desactualizado", actualiza directamente
 
-**Backend específico** → `backend/docs/modules/{app}/`:
-- Guías de API de un módulo Django
-- Modelos complejos con lógica de negocio
-- Integraciones backend (Stripe Connect)
-- Cada app mantiene su README.md en la carpeta de la app
-
-**Frontend específico** → `frontend/docs/`:
-- Hooks personalizados complejos
-- Componentes reutilizables avanzados
-- Guías de tipos TypeScript
-- Setup de herramientas (Cloudinary upload)
-
-### Formato de Documentación
-
-**Estructura de archivo:**
-```markdown
-# Título Descriptivo
-
-> Breve descripción (1-2 líneas)
-
-## 📋 Contexto
-¿Qué problema resuelve? ¿Por qué es necesario?
-
-## 🛠️ Implementación
-### Backend (si aplica)
-- Código clave
-- Endpoints afectados
-
-### Frontend (si aplica)
-- Componentes principales
-- Hooks/utils usados
-
-## ✅ Uso
-Ejemplos prácticos de cómo usar
-
-## 🐛 Known Issues / Limitaciones
-(si hay)
-
----
-**Autor**: [nombre]  
-**Fecha**: [YYYY-MM-DD]
-```
-
-**Estilo:**
-- Emojis para secciones (📋 📊 🛠️ ✅ 🐛 ⚡)
-- Code blocks con sintaxis highlight
-- Enlaces internos a otros docs cuando sea relevante
-- Screenshots solo si aportan valor real
-
-### Plantillas Disponibles
-
-**Para nueva feature:**
-```bash
-cp docs/.templates/feature-template.md docs/features/mi-feature.md
-# O en módulo específico:
-cp docs/.templates/feature-template.md backend/docs/modules/payments/feature-name.md
-```
-
-**Para problema resuelto:**
-```bash
-cp docs/.templates/troubleshooting-template.md docs/troubleshooting/problema-xyz.md
-```
-
-### Ejemplo de Cuándo Usar Cada Ubicación
-
-**Caso 1: Nueva feature de galería con lightbox**
-- Afecta solo frontend
-- **Ubicación**: `frontend/docs/features/GALERIA_LIGHTBOX.md`
-- **Incluir**: Componentes, hooks, guía de uso
-
-**Caso 2: Integración Stripe Connect**
-- Afecta backend principalmente
-- **Ubicación**: `backend/docs/modules/payments/STRIPE_CONNECT_GUIDE.md`
-- **Incluir**: Webhooks, API calls, testing en dev
-
-**Caso 3: Sistema de autenticación JWT completo**
-- Afecta backend + frontend
-- **Ubicación**: `docs/auth/SISTEMA_AUTENTICACION.md`
-- **Incluir**: Flujo completo, decisiones arquitectónicas
-
-**Caso 4: Bug de logout que borraba tokens incorrectamente**
-- Problema específico resuelto
-- **Ubicación**: `docs/troubleshooting/PROBLEMA_LOGOUT.md`
-- **Incluir**: Síntomas, causa raíz, solución, verificación
-
-### Reglas para el AI
-
-Cuando generes código que requiera documentación:
-
-1. **Pregunta dónde documentar** si no está claro
-2. **Usa las plantillas** apropiadas
-3. **Actualiza índices** (README.md de cada docs/)
-4. **Enlaza desde el código** si es relevante:
-   ```python
-   # Ver documentación completa en backend/docs/modules/payments/STRIPE_CONNECT_GUIDE.md
-   ```
-5. **Mantén la documentación cerca del código conceptualmente**
-   - Feature de artists → backend/docs/modules/artists/
-   - No todo en docs/ raíz
-
-### ⚠️ REGLA CRÍTICA: Documentación Siempre Actualizada
-
-**NUNCA dejes documentación desactualizada:**
-
-1. **Cuando cambies código, actualiza la documentación relacionada INMEDIATAMENTE**
-   - Si cambias una API, actualiza su documentación
-   - Si corriges un bug documentado, actualiza el troubleshooting
-   - Si refactorizas, actualiza los ejemplos de código
-
-2. **NO marques documentos como "desactualizados" o "obsoletos"**
-   - ❌ MAL: Añadir "⚠️ DOCUMENTO DESACTUALIZADO"
-   - ✅ BIEN: Actualizar el contenido directamente
-   - Si necesitas refactorizar documentación, hazlo, no la marques
-
-3. **Busca documentos relacionados antes de terminar**
-   - Usa grep para buscar referencias al código que cambias
-   - Ejemplo: Si cambias signed uploads, busca "signed upload" en docs/
-   - Actualiza TODOS los documentos que mencionen la feature
-
-4. **Verifica la consistencia de ejemplos de código**
-   - Los code snippets deben reflejar el código actual
-   - Las configuraciones deben estar actualizadas
-   - Los comandos deben ser los correctos
-
-5. **Actualiza fechas y versiones**
-   - Cambia "Última actualización" al final de los docs
-   - Si cambias significativamente un doc, actualiza su fecha
-
-**Ejemplo de workflow correcto:**
-
-```
-1. Usuario pide cambiar código X
-2. Haces el cambio en el código
-3. ANTES de terminar, buscas: grep -r "código X" docs/
-4. Actualizas TODOS los docs que mencionan X
-5. Verificas que los ejemplos funcionen
-6. Actualizas fechas
-7. ENTONCES terminas la tarea
-```
-
-**Por qué es crítico:**
-- Documentación desactualizada es PEOR que no tener documentación
-- Causa confusión y pérdida de tiempo
-- Rompe la confianza en la documentación
-- El proyecto pierde su "fuente de verdad"
+**Por qué:** Docs desactualizadas son peor que no tener docs
 
 ## Contexto de Negocio (NO OLVIDAR)
 
-- Comisión: 12% fija en MVP (futuro: 15% free, 8% pro + 20€/mes)
-- Verificación: Manual por admin (cambiar role PENDING → VERIFIED)
-- Envíos: Cada artesano define precios (local/península/internacional)
-- MVP Scope: Auth + Artistas + Portfolio + Shop + Pagos (sin reviews, mapa, eventos)
-- Target: 10-15 artesanos piloto en 12 semanas
+- Comisión: 10% fija en MVP (configurable en settings.py)
+- Verificación: Manual por admin (is_approved: False → True)
+- Compradores: Guest checkout (sin registro), solo email y datos de envío
+- MVP Scope: Auth + Artesanos + Portfolio + Shop + Pagos (✅ implementado)
+- Pendiente: Sistema de reviews, mapa interactivo, eventos/talleres
+- Target: 10-15 artesanos piloto en Menorca
+
+---
+
+## 🏗️ ARQUITECTURA DEL MONOREPO - REGLAS ESENCIALES
+
+### Características Clave
+
+- **Monorepo manual** (sin Turborepo/Nx) - Backend Django + Frontend Next.js separados
+- **Comunicación:** REST API (`/api/v1/`) con JWT
+- **Deploy separado:** Railway (backend) + Vercel (frontend)
+- **Auth:** JWT con refresh token automático (cookies, NO localStorage)
+- **Imágenes:** Cloudinary signed uploads (cliente sube directo, Django genera signature)
+
+### 🎯 Decisiones Arquitectónicas (resumen)
+
+1. **NO Turborepo/Nx** - Backend Python, Frontend Node, tecnologías diferentes, deploy separado
+2. **REST > GraphQL** - DRF estándar Django, simple debuggear, HTTP caching out-of-the-box
+3. **Tipos manuales > Codegen** - Control total, sin dependencias, requiere verificación semanal
+4. **Deploy separado** - Railway (BE) + Vercel (FE), escalabilidad independiente
+5. **Cloudinary signed uploads** - Cliente sube directo, Django solo genera signature 1h
+
+**📖 Ver detalles completos:** `docs/ai-assistants/CONTEXT_FOR_CLAUDE.md` → Sección "Arquitectura del Monorepo"
+
+### ⚠️ CHECKLIST SEMANAL: Consistencia Frontend ↔ Backend
+
+**CRÍTICO:** Cuando cambies código en backend o frontend, verifica:
+
+#### 1. Modelos → Serializers → Tipos
+
+```bash
+# ¿Cambió el modelo User/Artisan/Product/Order?
+# → Verifica que el Serializer tenga los mismos campos
+# → Verifica que el tipo TypeScript coincida EXACTAMENTE
+# → Si añades campo en backend, añádelo en frontend INMEDIATAMENTE
+```
+
+**Ejemplo:**
+```python
+# backend/accounts/serializers.py
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('id', 'email', 'username', 'role', 'can_sell')
+```
+
+```typescript
+// frontend/src/types/user.ts
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  role: UserRole;
+  can_sell?: boolean;
+}
+```
+
+**✅ Campos deben coincidir 1:1**
+
+#### 2. Endpoints → API Services
+
+```bash
+# ¿Añadiste POST /api/v1/products/?
+# → Añade createProduct() en frontend/src/lib/api/products.ts
+# → Documenta en tabla de endpoints
+```
+
+#### 3. Permisos → Frontend Guards
+
+```bash
+# ¿Cambió la lógica de can_sell en backend?
+# → Verifica protección de rutas en frontend/src/app/(dashboard)/**
+# → Actualiza authStore si es necesario
+```
+
+#### 4. Errores Comunes a Detectar
+
+**❌ NUNCA:**
+- Campo nuevo en serializer pero NO en tipo TypeScript
+- Endpoint nuevo en backend pero NO en API service del frontend
+- Tipo de dato diferente (backend: `int` vs frontend: `string`)
+- Campo opcional en backend pero requerido en frontend (o viceversa)
+- Enum values diferentes entre backend y frontend
+
+**✅ SIEMPRE:**
+- Verificar tipos después de cambiar serializer
+- Añadir endpoint al API service cuando crees nueva vista
+- Mantener misma estructura de datos en FE y BE
+- Usar snake_case en backend, camelCase en frontend (consistente en cada lado)
+
+### 📦 Archivos que Cambian Juntos (recordatorio rápido)
+
+| Backend | Frontend | Acción |
+|---------|----------|--------|
+| `*/models.py` → `*/serializers.py` | `types/*.ts` | Actualizar tipos TypeScript |
+| `*/views.py` → `*/urls.py` | `lib/api/*.ts` | Añadir API service |
+| `settings.py` | `.env.local` | Sincronizar env vars |
+
+### 🚀 Comandos Desarrollo
+
+```bash
+# Terminal 1: Backend
+cd backend && python manage.py runserver  # :8000
+
+# Terminal 2: Frontend
+cd frontend && npm run dev  # :3000
+```
+
+---
+
+## 📖 REFERENCIA: docs/ai-assistants/CONTEXT_FOR_CLAUDE.md
+
+**Para información detallada que no necesitas en cada sesión, consulta:**
+
+`docs/ai-assistants/CONTEXT_FOR_CLAUDE.md` contiene:
+- 🏗️ Árbol completo del monorepo (ASCII, 2 niveles)
+- 🔄 Diagrama de flujo JWT completo con refresh token
+- 📊 Tabla de endpoints (mapeo FE ↔ BE)
+- ✅ Verificación de tipos (backend serializers vs frontend types)
+- 🚀 Estrategia de deploy (Railway + Vercel, env vars)
+- 🎯 10 decisiones arquitectónicas (detalladas con trade-offs)
+- 🗄️ Modelo de datos completo (relaciones, convenciones)
+- 📝 3 flujos críticos (registro, compra, upload Cloudinary)
+
+**Cuándo leer docs/ai-assistants/CONTEXT_FOR_CLAUDE.md:**
+- Necesitas entender arquitectura profunda
+- Vas a tomar decisiones arquitectónicas
+- Necesitas ver todos los endpoints
+- Quieres verificar tipos específicos
+- Necesitas contexto para Claude Web
+
+---
 
 ## Referencias
 
