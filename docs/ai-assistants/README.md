@@ -55,9 +55,13 @@ Los archivos de configuración están en la raíz del proyecto:
 3. Empieza a trabajar ✅
 
 ### Para Claude Code
-1. Usa `/rules` para cargar reglas del proyecto
-2. Usa `/context` para cargar contexto completo
-3. Usa `/sync` para verificar FE/BE están sincronizados
+1. **Setup inicial** (solo primera vez):
+   ```bash
+   cp .claude/settings.example.json .claude/settings.local.json
+   ```
+2. Usa `/rules` para cargar reglas del proyecto
+3. Usa `/context` para cargar contexto completo
+4. Usa `/sync` para verificar FE/BE están sincronizados
 
 ### Para Claude Web
 1. Comparte `CONTEXT_FOR_CLAUDE.md` al inicio de la conversación

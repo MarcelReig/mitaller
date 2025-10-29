@@ -1,0 +1,136 @@
+{
+  // ========================================
+  // CLAUDE CODE PERMISSIONS - EXAMPLE FILE
+  // ========================================
+  //
+  // Para usar este archivo:
+  // 1. Copia este archivo como: .claude/settings.local.json
+  //    cp .claude/settings.example.json .claude/settings.local.json
+  //
+  // 2. Ajusta los comandos según tus necesidades
+  //
+  // 3. Ver guía completa: .claude/PERMISSIONS_GUIDE.md
+  //
+  // ========================================
+
+  "permissions": {
+    "allow": [
+      // === Comandos de Lectura (siempre seguros) ===
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(pwd)",
+      "Bash(which:*)",
+      "Bash(tree:*)",
+
+      // === Git - Solo Lectura ===
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch)",
+      "Bash(git branch -a)",
+
+      // === Backend Django - Comandos Seguros ===
+      "Bash(cd backend && python manage.py runserver:*)",
+      "Bash(python manage.py runserver:*)",
+      "Bash(cd backend && python manage.py test:*)",
+      "Bash(python manage.py test:*)",
+      "Bash(cd backend && python manage.py shell)",
+      "Bash(python manage.py shell)",
+      "Bash(cd backend && python manage.py check)",
+      "Bash(python manage.py check)",
+      "Bash(cd backend && python manage.py showmigrations)",
+      "Bash(python manage.py showmigrations)",
+
+      // === Frontend Next.js - Comandos Seguros ===
+      "Bash(cd frontend && npm run dev)",
+      "Bash(npm run dev)",
+      "Bash(cd frontend && npm run build)",
+      "Bash(npm run build)",
+      "Bash(cd frontend && npm run type-check:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(cd frontend && npm run lint:*)",
+      "Bash(npm run lint:*)",
+      "Bash(cd frontend && npm test:*)",
+      "Bash(npm test:*)",
+
+      // === Docker - Lectura ===
+      "Bash(docker ps:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker-compose ps)",
+      "Bash(docker-compose logs:*)"
+    ],
+
+    "ask": [
+      // === Git - Modificación (pide confirmación) ===
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)",
+      "Bash(git reset:*)",
+
+      // === Backend Django - Modificación ===
+      "Bash(python manage.py migrate:*)",
+      "Bash(cd backend && python manage.py migrate:*)",
+      "Bash(python manage.py makemigrations:*)",
+      "Bash(cd backend && python manage.py makemigrations:*)",
+      "Bash(python manage.py createsuperuser:*)",
+      "Bash(cd backend && python manage.py createsuperuser:*)",
+      "Bash(python manage.py flush:*)",
+      "Bash(cd backend && python manage.py flush:*)",
+
+      // === Package Managers - Instalación (pide confirmación) ===
+      "Bash(pip install:*)",
+      "Bash(cd backend && pip install:*)",
+      "Bash(npm install:*)",
+      "Bash(cd frontend && npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(cd frontend && npm uninstall:*)",
+
+      // === File Operations - Escritura ===
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+
+      // === Docker - Modificación ===
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose restart:*)"
+    ],
+
+    "deny": [
+      // === Comandos Destructivos (bloqueados) ===
+      "Bash(rm -rf:*)",
+      "Bash(rm -rf *)",
+      "Bash(sudo rm:*)",
+
+      // === Git Peligrosos ===
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+
+      // === Database Destructivos ===
+      "Bash(python manage.py flush --no-input:*)",
+      "Bash(dropdb:*)",
+      "Bash(DROP DATABASE:*)",
+
+      // === Sistema ===
+      "Bash(sudo:*)",
+      "Bash(chmod 777:*)",
+      "Bash(chown:*)",
+
+      // === Package Managers Global ===
+      "Bash(npm install -g:*)",
+      "Bash(pip install --user:*)"
+    ]
+  }
+}

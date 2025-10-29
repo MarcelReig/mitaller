@@ -127,7 +127,19 @@ Cursor leerá el archivo y te explicará el contexto detallado.
 
 #### Configuración
 
-**✅ Ya está configurado** - Comandos creados en `.claude/commands/`
+**Setup inicial** (solo primera vez):
+
+```bash
+# 1. Copiar configuración de permissions
+cp .claude/settings.example.json .claude/settings.local.json
+
+# 2. (Opcional) Personalizar permissions según tus necesidades
+# vim .claude/settings.local.json
+
+# 3. Reiniciar Claude Code
+```
+
+**✅ Slash commands ya configurados** - Disponibles en `.claude/commands/`
 
 #### Comandos Disponibles
 
