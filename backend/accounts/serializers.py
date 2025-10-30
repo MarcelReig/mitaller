@@ -165,36 +165,18 @@ class ArtisanProfileBasicSerializer(serializers.Serializer):
     stripe_account_status = serializers.CharField()
 
 
-class ArtistProfileBasicSerializer(serializers.Serializer):
-    """
-    Serializer básico para el perfil de artista (FUTURO) anidado en UserSerializer.
-    Solo incluye campos esenciales para el frontend.
-    """
-    id = serializers.IntegerField()
-    slug = serializers.CharField()
-    display_name = serializers.CharField()
-    avatar = serializers.URLField(allow_null=True)
-    discipline = serializers.CharField()
-    bio = serializers.CharField(allow_null=True)
-
-
 class UserSerializer(serializers.ModelSerializer):
     """
-    Serializer para representación de datos de usuario.
-    Usado en perfiles y respuestas de autenticación.
-    Soporta ambos tipos de perfiles: artesanos y artistas.
+    Serializer for user data representation.
+    Used in profiles and authentication responses.
+    Supports artisan profiles.
     """
     can_sell = serializers.SerializerMethodField()
-    
-    # Campos para artesanos (craftspeople)
+
+    # Artisan (craftspeople) fields
     has_artisan_profile = serializers.SerializerMethodField()
     artisan_slug = serializers.SerializerMethodField()
     artisan_profile = serializers.SerializerMethodField()
-    
-    # Campos para artistas (artists) - futura implementación
-    has_artist_profile = serializers.SerializerMethodField()
-    artist_slug = serializers.SerializerMethodField()
-    artist_profile = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -208,14 +190,10 @@ class UserSerializer(serializers.ModelSerializer):
             'is_approved',
             'is_active',
             'can_sell',
-            # Artesano fields
+            # Artisan fields
             'has_artisan_profile',
             'artisan_slug',
             'artisan_profile',
-            # Artista fields
-            'has_artist_profile',
-            'artist_slug',
-            'artist_profile',
             'date_joined',
         )
         read_only_fields = (
@@ -226,9 +204,6 @@ class UserSerializer(serializers.ModelSerializer):
             'has_artisan_profile',
             'artisan_slug',
             'artisan_profile',
-            'has_artist_profile',
-            'artist_slug',
-            'artist_profile',
             'date_joined',
         )
     
@@ -255,24 +230,6 @@ class UserSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'artisan_profile'):
             profile = obj.artisan_profile
             return ArtisanProfileBasicSerializer(profile).data
-        return None
-    
-    # Métodos para artistas (ARTIST) - futura implementación
-    def get_has_artist_profile(self, obj: User) -> bool:
-        """Retorna si el usuario tiene un ArtistProfile asociado."""
-        return hasattr(obj, 'artist_profile')
-    
-    def get_artist_slug(self, obj: User) -> str | None:
-        """Retorna el slug del perfil de artista si existe."""
-        if hasattr(obj, 'artist_profile'):
-            return obj.artist_profile.slug
-        return None
-    
-    def get_artist_profile(self, obj: User) -> dict | None:
-        """Retorna el perfil completo del artista si existe."""
-        if hasattr(obj, 'artist_profile'):
-            profile = obj.artist_profile
-            return ArtistProfileBasicSerializer(profile).data
         return None
 
 
@@ -310,11 +267,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             # El usuario autenticado está disponible en self.user después de super().validate()
             logger.info(f"[LOGIN] Usuario autenticado: {self.user.email} (ID: {self.user.id})")
             
-            # Optimizar query para cargar artisan_profile y artist_profile si existen
+            # Optimize query to load artisan_profile if exists
             from .models import User
             user_with_profiles = User.objects.select_related(
-                'artisan_profile', 
-                'artist_profile'
+                'artisan_profile'
             ).get(id=self.user.id)
             
             # Agregar datos del usuario a la respuesta (con perfiles incluidos)

@@ -33,6 +33,7 @@
 
 ## 🎨 Features
 
+- [**TIENDA_MULTI_VENDOR.md**](./features/TIENDA_MULTI_VENDOR.md) - Sistema de tienda multi-vendor (NUEVO)
 - [**ON_DEMAND_REVALIDATION.md**](./features/ON_DEMAND_REVALIDATION.md) - Sistema de revalidación on-demand (ISR)
 - [**FASE2_GALERIA_LIGHTBOX.md**](./features/FASE2_GALERIA_LIGHTBOX.md) - Galería y lightbox (Fase 2)
 - [**MIGRACION_PORTFOLIO_FASE1.md**](./features/MIGRACION_PORTFOLIO_FASE1.md) - Migración del portfolio (Fase 1)
@@ -62,5 +63,5 @@
 
 ---
 
-**Última actualización**: 25 de Octubre, 2025
+**Última actualización**: 30 de Octubre, 2025
 

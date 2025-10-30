@@ -6,12 +6,12 @@ OrderItem (línea de pedido con snapshot del producto) y OrderStatus.
 """
 
 from django.db import models
+from django.conf import settings
 from decimal import Decimal
 import random
 import string
 from datetime import datetime
 from shop.models import Product
-from artisans.models import ArtisanProfile
 from payments.models import PaymentStatus
 
 
@@ -191,10 +191,11 @@ class OrderItem(models.Model):
         help_text='Producto comprado (PROTECT para mantener historial)'
     )
     artisan = models.ForeignKey(
-        'artisans.ArtisanProfile',
+        settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name='sales',
-        help_text='Artesano vendedor (desnormalizado para queries eficientes)'
+        limit_choices_to={'role': 'artisan'},
+        help_text='Artisan seller (denormalized for efficient queries)'
     )
     
     # Snapshot del producto en el momento de compra

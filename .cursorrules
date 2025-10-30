@@ -15,7 +15,7 @@ Marketplace multi-vendor SaaS para artesanos de Menorca. Los artesanos pueden:
 - Auth: JWT (djangorestframework-simplejwt)
 - Media: Cloudinary (implementado)
 - Payments: Stripe Connect Express (implementado)
-- Monitoring: Sentry
+- Monitoring: Sentry (monitoreo de errores en producción)
 - Deploy: Railway
 
 ### Frontend (Next.js)
@@ -41,7 +41,16 @@ mitaller/
 └── frontend/         # Next.js App Router
     └── src/
         ├── app/      # Routes (App Router)
+        │   ├── (admin)/     # Panel administración
+        │   ├── (public)/    # Páginas públicas
+        │   ├── (dashboard)/ # Dashboard artesano
+        │   └── (auth)/      # Login/Registro
         ├── components/
+        │   ├── admin/       # Admin dashboard
+        │   ├── cart/        # Carrito multi-vendor
+        │   ├── artisans/    # Artesanos
+        │   ├── products/    # Tienda
+        │   └── ...
         ├── lib/      # Utils + API client
         ├── stores/   # Zustand stores
         └── types/    # TypeScript types
@@ -130,6 +139,43 @@ mitaller/
   * Server: Next.js cache, TanStack Query
 - Forms: React Hook Form + zod validation
 - Error handling: Error boundaries + try/catch apropiados
+- **Route Groups:** Organización con `(admin)`, `(dashboard)`, `(public)`, `(auth)` para layouts específicos
+  * `(admin)/` - Panel de administración con AdminSidebar
+  * `(dashboard)/` - Dashboard del artesano con DashboardSidebar
+  * `(public)/` - Páginas públicas (artesanos, explorar, etc.)
+  * `(auth)/` - Login y registro
+  * Ventaja: Layouts y middleware específicos sin afectar URLs
+
+### Patrones Multi-Vendor
+
+**Filosofía:** "Juntos pero no revueltos" - cada artesano mantiene su independencia
+
+**Backend:**
+- Cada artesano tiene `shipping_cost` independiente (default 5.00€)
+- Productos pueden tener `pickup_available` y `pickup_instructions`
+- Productos `is_featured` se muestran primero en la tienda del artesano
+- Endpoint `/api/v1/artisans/{slug}/products/` para productos por artesano
+
+**Frontend:**
+- **Hooks personalizados:**
+  * `useArtisanProducts(slug, filters)` - Fetch productos de un artesano
+  * `useCartByArtisan()` - Agrupa items del carrito por artesano automáticamente
+  * `useMediaQuery(query)` - Detecta breakpoints para responsive UI
+- **Componentes de carrito:**
+  * `CartDrawer` - Drawer lateral con agrupación por artesano
+  * `CartItemRow` - Fila de producto con +/- (debounce 500ms)
+  * Actualización optimista con delay de 300ms
+- **Agrupación automática:**
+  * CartStore almacena items planos
+  * useCartByArtisan() transforma a `CartItemsByArtisan`
+  * Cada artesano muestra: subtotal productos + shipping_cost + total
+  * Grand total suma todos los artesanos
+
+**Convenciones:**
+- Debounce de 500ms en actualización de cantidad del carrito
+- Optimistic UI con delay de 300ms para mejor UX
+- Shipping cost calculado por artesano, no global
+- Cada pedido agrupa items por artesano para futuras split orders
 
 ## Calidad de Código y Mejores Prácticas
 
@@ -670,6 +716,11 @@ Cuando generes código, SIEMPRE:
 
 ## Contexto de Negocio (NO OLVIDAR)
 
+- **Nomenclatura:** SIEMPRE usar "artisan" / "artesano" (NUNCA "artist" / "artista")
+  * URLs: `/artesanos/{slug}` (español)
+  * Modelos: `ArtisanProfile` (NO `ArtistProfile`)
+  * Tipos: `Artisan` (NO `Artist`)
+  * Razón: Enfoque en artesanía tradicional menorquina, no arte contemporáneo
 - Comisión: 10% fija en MVP (configurable en settings.py)
 - Verificación: Manual por admin (is_approved: False → True)
 - Compradores: Guest checkout (sin registro), solo email y datos de envío

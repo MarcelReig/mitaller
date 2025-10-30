@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import type { ArtisanFilters } from '@/types';
-import ArtistsGrid from '@/components/artisans/ArtistsGrid';
-import ArtistFilters from '@/components/artisans/ArtistFilters';
+import ArtisansGrid from '@/components/artisans/ArtisansGrid';
+import ArtisanFilters from '@/components/artisans/ArtisanFilters';
 
 /**
  * Página del directorio de artesanos con filtros funcionales
@@ -42,7 +42,7 @@ export default function ArtesanosPage() {
 
           {/* Filtros */}
           <div className="bg-card border rounded-lg p-6 shadow-sm">
-            <ArtistFilters
+            <ArtisanFilters
               initialFilters={filters}
               onFilterChange={handleFilterChange}
             />
@@ -50,7 +50,7 @@ export default function ArtesanosPage() {
 
           {/* Grid de artesanos */}
           <div>
-            <ArtistsGrid
+            <ArtisansGrid
               search={filters.search}
               craftType={filters.craft_type}
               location={filters.location}

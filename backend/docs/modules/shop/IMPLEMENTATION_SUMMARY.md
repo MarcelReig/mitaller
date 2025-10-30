@@ -57,6 +57,8 @@ App completa de tienda de productos artesanales para MiTaller.art. Permite a los
   
 - **ProductListSerializer**: Serializer simplificado para listados
   - Solo campos esenciales para tarjetas/previews
+  - Incluye información básica del artesano (id, slug, display_name, avatar, shipping_cost)
+  - Incluye campos: description, images, formatted_price
   - Optimizado para rendimiento
 
 ### 4. `permissions.py`
@@ -124,25 +126,25 @@ En `artists/signals.py`:
 
 ### Públicos (sin autenticación):
 ```
-GET    /api/v1/shop/              # Lista productos disponibles (activos con stock)
-GET    /api/v1/shop/{id}/         # Detalle de un producto
+GET    /api/v1/shop/products/              # Lista productos disponibles (activos con stock)
+GET    /api/v1/shop/products/{id}/         # Detalle de un producto
 ```
 
 ### Privados (solo artesano dueño):
 ```
-POST   /api/v1/shop/              # Crear nuevo producto
-PUT    /api/v1/shop/{id}/         # Actualizar producto completo
-PATCH  /api/v1/shop/{id}/         # Actualizar producto parcial
-DELETE /api/v1/shop/{id}/         # Eliminar producto
+POST   /api/v1/shop/products/              # Crear nuevo producto
+PUT    /api/v1/shop/products/{id}/         # Actualizar producto completo
+PATCH  /api/v1/shop/products/{id}/         # Actualizar producto parcial
+DELETE /api/v1/shop/products/{id}/         # Eliminar producto
 ```
 
 ### Filtros y búsqueda:
 ```
-GET /api/v1/shop/?artist={id}           # Filtrar por artesano
-GET /api/v1/shop/?category={category}   # Filtrar por categoría
-GET /api/v1/shop/?is_active={bool}      # Filtrar por estado
-GET /api/v1/shop/?search={query}        # Buscar en nombre/descripción
-GET /api/v1/shop/?ordering={field}      # Ordenar (created_at, price, name)
+GET /api/v1/shop/products/?artist={id}           # Filtrar por artesano
+GET /api/v1/shop/products/?category={category}   # Filtrar por categoría
+GET /api/v1/shop/products/?is_active={bool}      # Filtrar por estado
+GET /api/v1/shop/products/?search={query}        # Buscar en nombre/descripción
+GET /api/v1/shop/products/?ordering={field}      # Ordenar (created_at, price, name)
 ```
 
 ## 🧪 Tests Ejecutados

@@ -59,9 +59,8 @@ INSTALLED_APPS = [
     
     # Local apps
     'accounts',
-    'profiles',  # Modelos base abstractos
+    'profiles',  # Base abstract models
     'artisans',
-    'artists',   # Artistas (futura implementación)
     'works',
     'shop',
     'orders',

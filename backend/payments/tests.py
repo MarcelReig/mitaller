@@ -17,7 +17,7 @@ from unittest.mock import patch, MagicMock
 import json
 
 from accounts.models import User
-from artists.models import ArtistProfile
+from artisans.models import ArtisanProfile
 from shop.models import Product
 from orders.models import Order, OrderItem, OrderStatus
 from .models import Payment, PaymentStatus, StripeAccountStatus
@@ -39,7 +39,7 @@ class StripeConnectOnboardingTests(TestCase):
         )
         
         # Obtener el perfil creado automáticamente por el signal
-        self.artist = self.user.artist_profile
+        self.artist = self.user.artisan_profile
         # Actualizar campos necesarios para tests
         self.artist.display_name = 'Test Artist'
         self.artist.craft_type = 'ceramics'
@@ -147,14 +147,14 @@ class CheckoutSessionTests(TestCase):
         """Configuración inicial para los tests."""
         # Crear artesano con Stripe configurado
         self.user = User.objects.create_user(
-            username='artist',
+            username='artisan',
             email='artist@test.com',
             password='test123',
             role='artisan'
         )
         
         # Obtener el perfil creado automáticamente por el signal
-        self.artist = self.user.artist_profile
+        self.artist = self.user.artisan_profile
         # Configurar para tests
         self.artist.display_name = 'Test Artist'
         self.artist.craft_type = 'ceramics'
@@ -168,7 +168,7 @@ class CheckoutSessionTests(TestCase):
         
         # Crear producto
         self.product = Product.objects.create(
-            artist=self.artist,
+            artisan=self.user,
             name='Test Product',
             description='Test description',
             price=Decimal('50.00'),
@@ -189,7 +189,7 @@ class CheckoutSessionTests(TestCase):
         OrderItem.objects.create(
             order=self.order,
             product=self.product,
-            artist=self.artist,
+            artisan=self.user,
             product_name=self.product.name,
             product_price=self.product.price,
             quantity=1,
@@ -220,12 +220,12 @@ class CheckoutSessionTests(TestCase):
         # Verificar que se creó el Payment
         payment = Payment.objects.get(order=self.order)
         self.assertEqual(payment.amount, Decimal('50.00'))
-        self.assertEqual(payment.artist, self.artist)
+        self.assertEqual(payment.artisan, self.user)
         self.assertEqual(payment.status, PaymentStatus.PENDING)
         
         # Verificar cálculo de comisiones (10% default)
         self.assertEqual(payment.marketplace_fee, Decimal('5.00'))
-        self.assertEqual(payment.artist_amount, Decimal('45.00'))
+        self.assertEqual(payment.artisan_amount, Decimal('45.00'))
     
     def test_create_checkout_requires_order_with_items(self):
         """Test que requiere un pedido con items."""
@@ -256,14 +256,14 @@ class CheckoutSessionTests(TestCase):
         )
         
         # Obtener el perfil creado automáticamente por el signal
-        artist2 = user2.artist_profile
+        artist2 = user2.artisan_profile
         artist2.display_name = 'Artist 2'
         artist2.craft_type = 'ceramics'
         artist2.location = 'mao'
         artist2.save()
         
         product2 = Product.objects.create(
-            artist=artist2,
+            artisan=user2,
             name='Product 2',
             price=Decimal('30.00'),
             stock=5,
@@ -281,7 +281,7 @@ class CheckoutSessionTests(TestCase):
         OrderItem.objects.create(
             order=order2,
             product=product2,
-            artist=artist2,
+            artisan=user2,
             product_name=product2.name,
             product_price=product2.price,
             quantity=1,
@@ -305,14 +305,14 @@ class StripeWebhookTests(TestCase):
         """Configuración inicial para los tests."""
         # Crear datos de prueba
         self.user = User.objects.create_user(
-            username='artist',
+            username='artisan',
             email='artist@test.com',
             password='test123',
             role='artisan'
         )
         
         # Obtener el perfil creado automáticamente por el signal
-        self.artist = self.user.artist_profile
+        self.artist = self.user.artisan_profile
         self.artist.display_name = 'Test Artist'
         self.artist.craft_type = 'ceramics'
         self.artist.location = 'mao'
@@ -330,10 +330,10 @@ class StripeWebhookTests(TestCase):
         
         self.payment = Payment.objects.create(
             order=self.order,
-            artist=self.artist,
+            artisan=self.user,
             amount=Decimal('100.00'),
             marketplace_fee=Decimal('10.00'),
-            artist_amount=Decimal('90.00'),
+            artisan_amount=Decimal('90.00'),
             stripe_payment_intent_id='pi_test123',
         )
         
@@ -433,15 +433,15 @@ class PaymentModelTests(TestCase):
     
     def setUp(self):
         """Configuración inicial."""
-        user = User.objects.create_user(
-            username='artist',
+        self.user = User.objects.create_user(
+            username='artisan',
             email='artist@test.com',
             password='test123',
             role='artisan'
         )
-        
+
         # Obtener el perfil creado automáticamente por el signal
-        self.artist = user.artist_profile
+        self.artist = self.user.artisan_profile
         self.artist.display_name = 'Test Artist'
         self.artist.craft_type = 'ceramics'
         self.artist.location = 'mao'
@@ -460,39 +460,39 @@ class PaymentModelTests(TestCase):
         """Test cálculo de comisiones con porcentaje default (10%)."""
         payment = Payment(
             order=self.order,
-            artist=self.artist,
+            artisan=self.user,
             amount=Decimal('100.00'),
         )
         
         payment.calculate_fees()
         
         self.assertEqual(payment.marketplace_fee, Decimal('10.00'))
-        self.assertEqual(payment.artist_amount, Decimal('90.00'))
+        self.assertEqual(payment.artisan_amount, Decimal('90.00'))
     
     def test_calculate_fees_custom(self):
         """Test cálculo de comisiones con porcentaje custom."""
         payment = Payment(
             order=self.order,
-            artist=self.artist,
+            artisan=self.user,
             amount=Decimal('100.00'),
         )
         
         payment.calculate_fees(marketplace_fee_percent=Decimal('15.0'))
         
         self.assertEqual(payment.marketplace_fee, Decimal('15.00'))
-        self.assertEqual(payment.artist_amount, Decimal('85.00'))
+        self.assertEqual(payment.artisan_amount, Decimal('85.00'))
     
     def test_formatted_properties(self):
         """Test properties formateadas."""
         payment = Payment.objects.create(
             order=self.order,
-            artist=self.artist,
+            artisan=self.user,
             amount=Decimal('100.00'),
             marketplace_fee=Decimal('10.00'),
-            artist_amount=Decimal('90.00'),
+            artisan_amount=Decimal('90.00'),
         )
         
         self.assertEqual(payment.formatted_amount, '100.00 EUR')
         self.assertEqual(payment.formatted_marketplace_fee, '10.00 EUR')
-        self.assertEqual(payment.formatted_artist_amount, '90.00 EUR')
+        self.assertEqual(payment.formatted_artisan_amount, '90.00 EUR')
 

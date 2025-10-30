@@ -42,7 +42,8 @@ export interface Artisan {
   user: ArtisanUser;
   slug: string;
   display_name: string;
-  bio: string;
+  short_description?: string; // Descripción corta para hero (1-2 líneas)
+  bio: string; // Biografía completa para página "Sobre mí"
   craft_type: CraftType;
   location: Location;
   avatar: string | null;
@@ -51,6 +52,9 @@ export interface Artisan {
   instagram: string | null;
   instagram_url: string | null;
   phone: string | null;
+  shipping_cost: string; // Decimal como string (EUR)
+  workshop_address: string;
+  pickup_instructions: string;
   full_location: string;
   total_works: number;
   total_products: number;
@@ -74,6 +78,7 @@ export type ArtisanSummary = {
 export interface ArtisanListItem {
   slug: string;
   display_name: string;
+  short_description?: string;
   craft_type: CraftType;
   location: Location;
   avatar: string | null;
@@ -87,6 +92,7 @@ export interface ArtisanListItem {
  */
 export type ArtisanFormData = {
   display_name: string;
+  short_description?: string;
   bio?: string;
   craft_type: CraftType;
   location: Location;
@@ -102,12 +108,16 @@ export type ArtisanFormData = {
  */
 export interface ArtisanUpdateData {
   display_name?: string;
+  short_description?: string;
   bio?: string;
   craft_type?: CraftType;
   location?: Location;
   website?: string;
   instagram?: string;
   phone?: string;
+  shipping_cost?: string;
+  workshop_address?: string;
+  pickup_instructions?: string;
   avatar?: string | null;
   cover_image?: string | null;
 }

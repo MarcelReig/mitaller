@@ -10,6 +10,7 @@ export type ProductArtisan = {
   slug: string;
   display_name: string;
   avatar: string | null;
+  shipping_cost: string; // Decimal como string (EUR)
 };
 
 /**
@@ -26,6 +27,8 @@ export type Product = {
   thumbnail_url: string;
   images: string[];
   is_active: boolean;
+  is_featured: boolean; // Producto destacado por el artesano
+  pickup_available: boolean; // Permite recogida en taller
   is_available: boolean;
   formatted_price: string; // Ej: "45.00 €"
   created_at: string;

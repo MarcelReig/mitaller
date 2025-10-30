@@ -8,7 +8,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from accounts.models import User, UserRole
-from artists.models import ArtistProfile, CraftType, MenorcaLocation
+from artisans.models import ArtisanProfile, CraftType, MenorcaLocation
 from .models import Product, ProductCategory
 
 
@@ -29,17 +29,17 @@ class ProductModelTestCase(TestCase):
         )
         
         # El signal crea automáticamente el ArtistProfile
-        self.artist_profile = self.user.artist_profile
+        self.artisan_profile = self.user.artisan_profile
         
         # Configurar perfil del artesano
-        self.artist_profile.craft_type = CraftType.CERAMICS
-        self.artist_profile.location = MenorcaLocation.MAO
-        self.artist_profile.save()
+        self.artisan_profile.craft_type = CraftType.CERAMICS
+        self.artisan_profile.location = MenorcaLocation.MAO
+        self.artisan_profile.save()
     
     def test_create_product(self):
         """Test: Crear un producto básico."""
         product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Tazas de Cerámica - Pack de 4',
             description='Hermosas tazas hechas a mano',
             category=ProductCategory.CERAMICS,
@@ -48,7 +48,7 @@ class ProductModelTestCase(TestCase):
             thumbnail_url='https://res.cloudinary.com/test/tazas.jpg'
         )
         
-        self.assertEqual(product.artist, self.artist_profile)
+        self.assertEqual(product.artisan, self.user)
         self.assertEqual(product.name, 'Tazas de Cerámica - Pack de 4')
         self.assertEqual(product.category, ProductCategory.CERAMICS)
         self.assertEqual(product.price, Decimal('23.50'))
@@ -60,20 +60,20 @@ class ProductModelTestCase(TestCase):
     def test_product_str_representation(self):
         """Test: Representación string de Product."""
         product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Collar de Plata',
             category=ProductCategory.JEWELRY,
             price=Decimal('45.00'),
             stock=5,
             thumbnail_url='https://res.cloudinary.com/test/collar.jpg'
         )
-        expected = f'{self.artist_profile.display_name} - Collar de Plata'
+        expected = f'{self.artisan_profile.display_name} - Collar de Plata'
         self.assertEqual(str(product), expected)
     
     def test_is_available_property_active_with_stock(self):
         """Test: Producto disponible si está activo y tiene stock."""
         product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Producto Disponible',
             category=ProductCategory.WOOD,
             price=Decimal('30.00'),
@@ -86,7 +86,7 @@ class ProductModelTestCase(TestCase):
     def test_is_available_property_active_no_stock(self):
         """Test: Producto NO disponible si está activo pero sin stock."""
         product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Producto Agotado',
             category=ProductCategory.WOOD,
             price=Decimal('30.00'),
@@ -99,7 +99,7 @@ class ProductModelTestCase(TestCase):
     def test_is_available_property_inactive_with_stock(self):
         """Test: Producto NO disponible si está inactivo aunque tenga stock."""
         product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Producto Inactivo',
             category=ProductCategory.WOOD,
             price=Decimal('30.00'),
@@ -112,7 +112,7 @@ class ProductModelTestCase(TestCase):
     def test_formatted_price_property(self):
         """Test: Propiedad formatted_price formatea correctamente."""
         product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Producto Test',
             category=ProductCategory.ACCESSORIES,
             price=Decimal('99.99'),
@@ -124,7 +124,7 @@ class ProductModelTestCase(TestCase):
     def test_product_with_images_gallery(self):
         """Test: Producto con galería de imágenes."""
         product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Producto con Galería',
             category=ProductCategory.CERAMICS,
             price=Decimal('50.00'),
@@ -142,7 +142,7 @@ class ProductModelTestCase(TestCase):
     def test_product_ordering(self):
         """Test: Productos se ordenan por más recientes primero."""
         product1 = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Producto 1',
             category=ProductCategory.CERAMICS,
             price=Decimal('10.00'),
@@ -150,7 +150,7 @@ class ProductModelTestCase(TestCase):
             thumbnail_url='https://res.cloudinary.com/test/p1.jpg'
         )
         product2 = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Producto 2',
             category=ProductCategory.CERAMICS,
             price=Decimal('20.00'),
@@ -181,7 +181,7 @@ class ProductAPITestCase(APITestCase):
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        self.artist1_profile = self.artist1_user.artist_profile
+        self.artist1_profile = self.artist1_user.artisan_profile
         
         # Crear artesano 2
         self.artist2_user = User.objects.create_user(
@@ -190,7 +190,7 @@ class ProductAPITestCase(APITestCase):
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        self.artist2_profile = self.artist2_user.artist_profile
+        self.artist2_profile = self.artist2_user.artisan_profile
         
         # Crear admin (no artesano)
         self.admin_user = User.objects.create_user(
@@ -202,7 +202,7 @@ class ProductAPITestCase(APITestCase):
         
         # Crear algunos productos para artist1
         self.product1 = Product.objects.create(
-            artist=self.artist1_profile,
+            artisan=self.artist1_user,
             name='Tazas de Cerámica',
             description='Pack de 4 tazas artesanales',
             category=ProductCategory.CERAMICS,
@@ -213,7 +213,7 @@ class ProductAPITestCase(APITestCase):
         )
         
         self.product2 = Product.objects.create(
-            artist=self.artist1_profile,
+            artisan=self.artist1_user,
             name='Collar de Plata',
             description='Collar único hecho a mano',
             category=ProductCategory.JEWELRY,
@@ -225,7 +225,7 @@ class ProductAPITestCase(APITestCase):
         
         # Producto sin stock (no debería aparecer en listado público)
         self.product3 = Product.objects.create(
-            artist=self.artist1_profile,
+            artisan=self.artist1_user,
             name='Producto Agotado',
             description='Sin stock',
             category=ProductCategory.WOOD,
@@ -237,7 +237,7 @@ class ProductAPITestCase(APITestCase):
         
         # Producto inactivo (no debería aparecer en listado público)
         self.product4 = Product.objects.create(
-            artist=self.artist1_profile,
+            artisan=self.artist1_user,
             name='Producto Inactivo',
             description='No visible',
             category=ProductCategory.TEXTILES,
@@ -274,7 +274,7 @@ class ProductAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'Tazas de Cerámica')
-        self.assertIn('artist', response.data)
+        self.assertIn('artisan', response.data)
         self.assertIn('is_available', response.data)
         self.assertIn('formatted_price', response.data)
     
@@ -327,7 +327,7 @@ class ProductAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['name'], 'Cuenco de Madera')
         # El artista se asigna automáticamente
-        self.assertEqual(response.data['artist']['id'], self.artist1_profile.id)
+        self.assertEqual(response.data['artisan']['id'], self.artist1_profile.id)
         self.assertTrue(response.data['is_available'])
     
     def test_update_own_product(self):
@@ -379,7 +379,7 @@ class ProductAPITestCase(APITestCase):
         """Test: Filtrar productos por artista."""
         # Crear producto para artist2
         Product.objects.create(
-            artist=self.artist2_profile,
+            artisan=self.artist2_user,
             name='Producto de Artista 2',
             category=ProductCategory.LEATHER,
             price=Decimal('50.00'),
@@ -388,7 +388,7 @@ class ProductAPITestCase(APITestCase):
         )
         
         # Filtrar por artist1 (sin autenticación, solo ve disponibles)
-        url = f'{self.list_url}?artist={self.artist1_profile.pk}'
+        url = f'{self.list_url}?artisan={self.artist1_user.pk}'
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -559,18 +559,18 @@ class ProductSignalsTestCase(TestCase):
         """Configuración inicial."""
         self.user = User.objects.create_user(
             email='artist@test.com',
-            username='artist',
+            username='artisan',
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        self.artist_profile = self.user.artist_profile
+        self.artisan_profile = self.user.artisan_profile
     
     def test_product_counter_increases_on_create(self):
         """Test: Contador total_products aumenta al crear producto."""
-        initial_count = self.artist_profile.total_products
+        initial_count = self.artisan_profile.total_products
         
         Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Nuevo Producto',
             category=ProductCategory.CERAMICS,
             price=Decimal('10.00'),
@@ -578,14 +578,14 @@ class ProductSignalsTestCase(TestCase):
             thumbnail_url='https://res.cloudinary.com/test/product.jpg'
         )
         
-        self.artist_profile.refresh_from_db()
-        self.assertEqual(self.artist_profile.total_products, initial_count + 1)
+        self.artisan_profile.refresh_from_db()
+        self.assertEqual(self.artisan_profile.total_products, initial_count + 1)
     
     def test_product_counter_decreases_on_delete(self):
         """Test: Contador total_products disminuye al eliminar producto."""
         # Crear producto
         product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Producto Temporal',
             category=ProductCategory.WOOD,
             price=Decimal('20.00'),
@@ -593,23 +593,23 @@ class ProductSignalsTestCase(TestCase):
             thumbnail_url='https://res.cloudinary.com/test/product.jpg'
         )
         
-        self.artist_profile.refresh_from_db()
-        count_after_create = self.artist_profile.total_products
+        self.artisan_profile.refresh_from_db()
+        count_after_create = self.artisan_profile.total_products
         
         # Eliminar producto
         product.delete()
         
-        self.artist_profile.refresh_from_db()
-        self.assertEqual(self.artist_profile.total_products, count_after_create - 1)
+        self.artisan_profile.refresh_from_db()
+        self.assertEqual(self.artisan_profile.total_products, count_after_create - 1)
     
     def test_product_counter_multiple_creates(self):
         """Test: Contador se actualiza correctamente con múltiples productos."""
-        initial_count = self.artist_profile.total_products
+        initial_count = self.artisan_profile.total_products
         
         # Crear 3 productos
         for i in range(3):
             Product.objects.create(
-                artist=self.artist_profile,
+                artisan=self.user,
                 name=f'Producto {i+1}',
                 category=ProductCategory.ACCESSORIES,
                 price=Decimal('15.00'),
@@ -617,14 +617,14 @@ class ProductSignalsTestCase(TestCase):
                 thumbnail_url=f'https://res.cloudinary.com/test/product{i+1}.jpg'
             )
         
-        self.artist_profile.refresh_from_db()
-        self.assertEqual(self.artist_profile.total_products, initial_count + 3)
+        self.artisan_profile.refresh_from_db()
+        self.assertEqual(self.artisan_profile.total_products, initial_count + 3)
     
     def test_product_counter_update_no_change(self):
         """Test: Actualizar producto no afecta contador."""
         # Crear producto
         product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.user,
             name='Producto Original',
             category=ProductCategory.JEWELRY,
             price=Decimal('50.00'),
@@ -632,13 +632,13 @@ class ProductSignalsTestCase(TestCase):
             thumbnail_url='https://res.cloudinary.com/test/product.jpg'
         )
         
-        self.artist_profile.refresh_from_db()
-        count_after_create = self.artist_profile.total_products
+        self.artisan_profile.refresh_from_db()
+        count_after_create = self.artisan_profile.total_products
         
         # Actualizar producto (cambiar precio)
         product.price = Decimal('60.00')
         product.save()
         
-        self.artist_profile.refresh_from_db()
+        self.artisan_profile.refresh_from_db()
         # Contador no debería cambiar
-        self.assertEqual(self.artist_profile.total_products, count_after_create)
+        self.assertEqual(self.artisan_profile.total_products, count_after_create)

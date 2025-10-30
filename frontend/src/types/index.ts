@@ -5,7 +5,6 @@ export type {
   User,
   UserRole,
   ArtisanProfile,
-  ArtistProfile,
   AuthResponse,
   RegisterData,
   LoginData,
@@ -24,14 +23,6 @@ export type {
 } from './artisan';
 
 export { CRAFT_TYPE_LABELS, LOCATION_LABELS } from './artisan';
-
-// Artist types (artistas - futura implementación)
-export type {
-  Artist,
-  ArtisticDiscipline,
-} from './artist';
-
-export { DISCIPLINE_LABELS } from './artist';
 
 // Work types
 export type {
@@ -52,6 +43,14 @@ export type {
   CartItem,
   CartSummary,
 } from './product';
+
+// Cart types (multi-vendor)
+export type {
+  CartItemsByArtisan,
+  ShippingOption,
+  ShippingSelection,
+  MultiVendorCartSummary,
+} from './cart';
 
 // Order types
 export type {

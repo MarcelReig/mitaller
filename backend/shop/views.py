@@ -51,7 +51,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     - ordering: created_at, price, name
     """
     
-    queryset = Product.objects.select_related('artisan', 'artisan__user')
+    queryset = Product.objects.select_related('artisan', 'artisan__artisan_profile')
     permission_classes = [IsAuthenticatedOrReadOnly, IsArtisanOwnerOrReadOnly]
     
     # Configuración de filtros y búsqueda
@@ -119,16 +119,16 @@ class ProductViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """
         Asigna automáticamente el artesano al crear un producto.
-        
-        El artesano se obtiene del perfil del usuario autenticado.
+
+        El artesano es el usuario autenticado (debe tener role='artisan').
         No se permite especificar un artesano diferente.
-        
+
         Esto asegura que:
-        1. Artesanos solo crean productos bajo su propio perfil
+        1. Artesanos solo crean productos bajo su propio usuario
         2. No se puede crear productos para otros artesanos
         3. La relación artesano-producto es siempre correcta
-        
+
         Args:
             serializer: Serializer validado con los datos del producto
         """
-        serializer.save(artisan=self.request.user.artisan_profile)
+        serializer.save(artisan=self.request.user)

@@ -134,8 +134,9 @@ class Work(models.Model):
         ]
     
     def __str__(self) -> str:
-        """Retorna representación legible de la obra."""
-        return f'{self.artisan.username} - {self.title}'
+        """Returns readable representation of the work."""
+        artisan_name = self.artisan.get_full_name() or self.artisan.username
+        return f'{artisan_name} - {self.title}'
     
     def save(self, *args, **kwargs) -> None:
         """

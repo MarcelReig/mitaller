@@ -243,10 +243,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           toast.success(`¡Bienvenido a Mitaller, ${user.username}! 🎉`);
 
           // 3. Redirigir según el rol del usuario
-          const redirectTo = user.role === 'admin' 
-            ? '/admin/dashboard' 
-            : user.role === 'artisan' 
-            ? '/dashboard' 
+          const redirectTo = user.role === 'admin'
+            ? '/admin'
+            : user.role === 'artisan'
+            ? '/dashboard'
             : '/';
           
           console.log(`[AUTH] ✓ Redirigiendo a ${redirectTo} (rol: ${user.role})...`);

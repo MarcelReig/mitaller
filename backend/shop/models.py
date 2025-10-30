@@ -19,9 +19,9 @@ Ejemplo:
 - Product: "Tazas de cerámica esmaltada - Pack de 4" (23.50€, stock: 12)
 """
 from django.db import models
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
-from artisans.models import ArtisanProfile
 
 
 class ProductCategory(models.TextChoices):
@@ -67,13 +67,14 @@ class Product(models.Model):
     - Permite cobros directos a cuenta del artesano (marketplace model)
     """
     
-    # Relación con el artesano
+    # Relationship with artisan user
     artisan = models.ForeignKey(
-        ArtisanProfile,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='products',
+        limit_choices_to={'role': 'artisan'},
         verbose_name=_('artesano'),
-        help_text=_('Artesano vendedor de este producto')
+        help_text=_('Artisan seller of this product')
     )
     
     # Información básica del producto
@@ -136,6 +137,18 @@ class Product(models.Model):
         default=True,
         help_text=_('Producto visible y disponible en la tienda')
     )
+
+    is_featured = models.BooleanField(
+        _('destacado'),
+        default=False,
+        help_text=_('Producto destacado por el artesano')
+    )
+
+    pickup_available = models.BooleanField(
+        _('recogida disponible'),
+        default=True,
+        help_text=_('Permite recoger en taller')
+    )
     
     # Integración con Stripe Connect
     stripe_product_id = models.CharField(
@@ -168,8 +181,8 @@ class Product(models.Model):
     class Meta:
         verbose_name = _('Producto')
         verbose_name_plural = _('Productos')
-        # Ordenar por más recientes primero
-        ordering = ['-created_at']
+        # Ordenar por destacados primero, luego más recientes
+        ordering = ['-is_featured', '-created_at']
         indexes = [
             # Índice para filtros por artesano y estado
             models.Index(fields=['artisan', 'is_active']),
@@ -177,11 +190,16 @@ class Product(models.Model):
             models.Index(fields=['artisan', 'category']),
             # Índice para listados públicos (activos, recientes primero)
             models.Index(fields=['is_active', '-created_at']),
+            # Índice para productos destacados
+            models.Index(fields=['is_featured', '-created_at']),
+            # Índice para productos destacados de un artesano
+            models.Index(fields=['artisan', 'is_featured', '-created_at']),
         ]
     
     def __str__(self) -> str:
-        """Retorna representación legible del producto."""
-        return f'{self.artisan.display_name} - {self.name}'
+        """Returns readable representation of the product."""
+        artisan_name = self.artisan.get_full_name() or self.artisan.username
+        return f'{artisan_name} - {self.name}'
     
     @property
     def is_available(self) -> bool:

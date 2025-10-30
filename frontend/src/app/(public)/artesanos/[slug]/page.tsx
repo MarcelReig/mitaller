@@ -25,9 +25,11 @@
 
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { ArtistHeader, ArtistSocials } from '@/components/artisans';
+import { ArtisanHeader, ArtisanSocials } from '@/components/artisans';
 import { WorkGrid } from '@/components/works';
+import { FeaturedProducts } from '@/components/products';
 import type { Artisan } from '@/types/artisan';
 import type { WorkListItem } from '@/types/work';
 
@@ -124,25 +126,25 @@ export default async function ArtisanProfilePage({ params }: PageParams) {
 
   return (
     <main className="min-h-screen bg-background">
-      
-      {/* Header del artesano con cover image */}
-      <ArtistHeader artist={artisan} />
+
+      {/* Header del artesano compacto con dual CTA */}
+      <ArtisanHeader artisan={artisan} />
 
       {/* Container principal */}
       <div className="container max-w-7xl mx-auto px-4 py-8 md:py-12">
-        <div className="space-y-12">
-          
+        <div className="space-y-12 md:space-y-16">
+
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="hover:text-primary transition-colors"
             >
               Inicio
             </Link>
             <span>/</span>
-            <Link 
-              href="/artesanos" 
+            <Link
+              href="/artesanos"
               className="hover:text-primary transition-colors"
             >
               Artesanos
@@ -153,28 +155,60 @@ export default async function ArtisanProfilePage({ params }: PageParams) {
             </span>
           </nav>
 
-          {/* Links de contacto y estadísticas */}
-          <ArtistSocials artist={artisan} />
+          {/* ========================================
+              SECCIÓN: PRODUCTOS DESTACADOS
+              ======================================== */}
+          <Suspense
+            fallback={
+              <div className="space-y-6">
+                <div className="h-8 w-64 bg-muted animate-pulse rounded" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-96 bg-muted animate-pulse rounded-lg" />
+                  ))}
+                </div>
+              </div>
+            }
+          >
+            <FeaturedProducts
+              slug={artisan.slug}
+              artisanName={artisan.display_name}
+            />
+          </Suspense>
 
-          {/* Sección de colecciones/galerías */}
-          <section>
+          {/* ========================================
+              SECCIÓN: PORTFOLIO (Obras)
+              ======================================== */}
+          <section id="portfolio" className="scroll-mt-20">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-foreground mb-2">
-                Portfolio
-              </h2>
-              <p className="text-muted-foreground">
-                {works.length > 0 
-                  ? `${works.length} ${works.length === 1 ? 'colección' : 'colecciones'} en el portfolio`
-                  : 'Sin colecciones publicadas'
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                  Portfolio
+                </h2>
+                <span className="text-sm text-muted-foreground">
+                  — Obras y proyectos
+                </span>
+              </div>
+              <p className="text-sm md:text-base text-muted-foreground">
+                {works.length > 0
+                  ? `${works.length} ${works.length === 1 ? 'colección' : 'colecciones'} de trabajos realizados`
+                  : 'Sin colecciones publicadas todavía'
                 }
               </p>
             </div>
 
             {/* Grid de portadas de colecciones */}
-            <WorkGrid 
-              works={works} 
-              artisanSlug={artisan.slug} 
+            <WorkGrid
+              works={works}
+              artisanSlug={artisan.slug}
             />
+          </section>
+
+          {/* ========================================
+              SECCIÓN: CONTACTO Y REDES SOCIALES
+              ======================================== */}
+          <section>
+            <ArtisanSocials artisan={artisan} />
           </section>
 
         </div>

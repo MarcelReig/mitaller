@@ -42,6 +42,8 @@ class ProductSerializer(serializers.ModelSerializer):
             'thumbnail_url',
             'images',
             'is_active',
+            'is_featured',
+            'pickup_available',
             'is_available',
             'formatted_price',
             'created_at',
@@ -59,11 +61,12 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_artisan(self, obj: Product) -> dict:
         """
         Retorna información básica del artesano asociado.
-        Incluye datos necesarios para mostrar el perfil del artesano.
-        
+        Incluye datos necesarios para mostrar el perfil del artesano
+        y calcular costes de envío en el carrito.
+
         Args:
             obj: Instancia de Product
-            
+
         Returns:
             dict: Información básica del artesano
         """
@@ -74,6 +77,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 'slug': artisan_profile.slug,
                 'display_name': artisan_profile.display_name,
                 'avatar': artisan_profile.avatar if artisan_profile.avatar else None,
+                'shipping_cost': str(artisan_profile.shipping_cost),
             }
         except Exception:
             return {
@@ -81,6 +85,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 'slug': obj.artisan.username,
                 'display_name': obj.artisan.username,
                 'avatar': None,
+                'shipping_cost': '5.00',
             }
     
     def validate_images(self, value):
@@ -172,30 +177,70 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     """
     Serializer simplificado para listados de productos.
-    
+
     Usado en vistas de listado y tienda pública.
     Solo incluye campos esenciales para tarjetas/previews de productos:
     - Identificación básica
     - Imagen principal
     - Precio y stock
     - Disponibilidad
-    
+    - Información básica del artesano
+
     Más ligero que ProductSerializer para optimizar respuestas
     con múltiples productos.
     """
-    
+
+    # Artesano anidado con información básica (solo lectura)
+    artisan = serializers.SerializerMethodField()
+
     # Campo calculado
     is_available = serializers.ReadOnlyField()
-    
+
     class Meta:
         model = Product
         fields = (
             'id',
+            'artisan',
             'name',
+            'description',
             'thumbnail_url',
+            'images',
             'category',
             'price',
             'stock',
+            'is_active',
+            'is_featured',
+            'pickup_available',
             'is_available',
+            'formatted_price',
         )
+
+    def get_artisan(self, obj: Product) -> dict:
+        """
+        Retorna información básica del artesano asociado.
+        Versión simplificada para listados.
+
+        Args:
+            obj: Instancia de Product
+
+        Returns:
+            dict: Información básica del artesano
+        """
+        try:
+            artisan_profile = obj.artisan.artisan_profile
+            return {
+                'id': artisan_profile.id,
+                'slug': artisan_profile.slug,
+                'display_name': artisan_profile.display_name,
+                'avatar': artisan_profile.avatar if artisan_profile.avatar else None,
+                'shipping_cost': str(artisan_profile.shipping_cost),
+            }
+        except Exception:
+            return {
+                'id': obj.artisan.id,
+                'slug': obj.artisan.username,
+                'display_name': obj.artisan.username,
+                'avatar': None,
+                'shipping_cost': '5.00',
+            }
 

@@ -1,11 +1,50 @@
 # 🎨 MiTaller.art - Snapshot del Proyecto para Claude Web
 
-> **Última actualización:** 2025-10-28
-> **Versión del snapshot:** 2.0.0
-> **Estado del proyecto:** En desarrollo activo (Fase 3 - Frontend en progreso)
+> **Última actualización:** 2025-10-30
+> **Versión del snapshot:** 2.2.0
+> **Estado del proyecto:** En desarrollo activo (Fase 3 - Admin Dashboard + Página Explorar)
 > **Tipo de proyecto:** Monorepo (Backend Django + Frontend Next.js)
 
 ## 📝 Changelog del Snapshot
+
+### v2.2.0 (2025-10-30) - Admin Dashboard + Página Explorar + Nomenclatura Artisans
+
+**Features implementadas:**
+- ✅ **Migración artists → artisans:** Eliminación completa del concepto "artists", renombrado a "artisans" en todo el codebase
+- ✅ **Admin Dashboard:** Panel administrativo completo con estadísticas, gráficos de ventas, gestión de artesanos
+- ✅ **Página /explorar:** Nueva página de exploración global de productos con búsqueda y filtros
+- ✅ **Route Groups Pattern:** Organización mejorada con `(admin)`, `(dashboard)`, `(public)`, `(auth)`
+- ✅ **Componentes admin:** AdminSidebar, StatsCard, SalesChart, RecentActivity
+- ✅ **Componentes carrito:** CartDrawer, CartItemRow con debounce y agrupación por artesano
+- ✅ **Sentry integrado:** Monitoreo de errores en producción
+- ✅ **Nuevos campos artisan:** `short_description`, `pickup_instructions` para mejor UX
+
+**Archivos nuevos/actualizados:**
+- Frontend: `app/(admin)/**`, `app/(public)/explorar/**`, `components/admin/**`, `components/cart/**`
+- Backend: Migraciones para nuevos campos de artisan
+- Docs: MULTI_VENDOR_IMPLEMENTATION.md actualizado
+
+**Cambios arquitectónicos:**
+- Eliminación de módulo `backend/artists/` completo
+- Restructuración de rutas frontend con route groups
+- Integración de Sentry para monitoreo
+
+### v2.1.0 (2025-10-29) - Sistema de Tienda Multi-Vendor
+
+**Features implementadas:**
+- ✅ **Backend Multi-Vendor:** Campos para shipping_cost, pickup, is_featured en productos
+- ✅ **Endpoint productos por artesano:** GET /api/v1/artisans/{slug}/products/
+- ✅ **Frontend tienda completa:** ProductCard, ProductGrid, ProductDetailModal, CartDrawer
+- ✅ **Carrito multi-vendor:** Agrupación por artesano con costes de envío independientes
+- ✅ **Hooks personalizados:** useArtisanProducts, useCartByArtisan, useCartTotals
+- ✅ **Tipos TypeScript:** Cart types completos con CartItemsByArtisan
+- ✅ **Página de tienda:** /artesanos/{slug}/tienda con filtros y productos destacados
+- ✅ **Documentación completa:** Backend y frontend documentados
+
+**Archivos nuevos/actualizados:**
+- Backend: artisans/views.py (action products), shop/models.py (campos multi-vendor)
+- Frontend: components/products/*, components/cart/*, types/cart.ts
+- Docs: TIENDA_MULTI_VENDOR.md, MULTI_VENDOR_IMPLEMENTATION.md
 
 ### v2.0.0 (2025-10-28) - Enfoque Monorepo
 
@@ -65,14 +104,21 @@ mitaller/
 ├── 📁 frontend/                   # Next.js 15 App Router
 │   ├── src/
 │   │   ├── app/                   # Routes (App Router)
+│   │   │   ├── (admin)/           # Panel administración **NUEVO**
 │   │   │   ├── (public)/          # Rutas públicas
+│   │   │   │   ├── explorar/      # Página explorar productos **NUEVO**
+│   │   │   │   └── artesanos/[slug]/
+│   │   │   │       ├── tienda/    # Tienda del artesano
+│   │   │   │       └── sobre-mi/  # Sobre mí
 │   │   │   ├── (dashboard)/       # Dashboard artesano (protegido)
 │   │   │   └── (auth)/            # Login/Registro
 │   │   ├── components/            # Componentes React
 │   │   │   ├── ui/                # shadcn/ui base
+│   │   │   ├── admin/             # Admin panel **NUEVO**
 │   │   │   ├── artisans/          # Artesanos
 │   │   │   ├── works/             # Portfolio
 │   │   │   ├── products/          # Tienda
+│   │   │   ├── cart/              # Carrito multi-vendor **NUEVO**
 │   │   │   ├── layout/            # Layout (Navbar, Footer)
 │   │   │   └── dashboard/         # Dashboard UI
 │   │   ├── stores/                # Zustand state management
@@ -118,6 +164,40 @@ mitaller/
 - ✅ Comunicación vía **REST API** en `/api/v1/`
 - ✅ Deploy **separado** (Railway + Vercel)
 - ✅ Base de datos **PostgreSQL** en Docker (desarrollo)
+
+### Patrón de Route Groups (Next.js)
+
+**NUEVO en v2.2.0:** Organización de rutas frontend con route groups para mejor arquitectura y layouts específicos.
+
+```
+app/
+├── (admin)/          # Panel de administración
+│   └── admin/
+│       ├── page.tsx              # Dashboard admin
+│       └── artesanos/page.tsx    # Gestión artesanos
+├── (public)/         # Páginas públicas
+│   ├── artesanos/
+│   │   ├── page.tsx              # Listado artesanos
+│   │   └── [slug]/
+│   │       ├── page.tsx          # Perfil artesano
+│   │       ├── tienda/page.tsx   # Tienda artesano
+│   │       └── sobre-mi/page.tsx # Sobre mí
+│   └── explorar/page.tsx         # Explorar productos **NUEVO**
+├── (dashboard)/      # Dashboard del artesano
+│   └── dashboard/
+│       ├── page.tsx              # Dashboard artesano
+│       ├── obras/page.tsx        # Gestión obras
+│       └── productos/page.tsx    # Gestión productos
+└── (auth)/           # Autenticación
+    ├── login/page.tsx
+    └── registro/page.tsx
+```
+
+**Ventajas:**
+- ✅ Layouts específicos por área (admin, dashboard, public)
+- ✅ Separación lógica clara sin afectar URLs
+- ✅ Mejor organización del código
+- ✅ Middleware específico por grupo
 
 ---
 
@@ -240,9 +320,9 @@ axiosInstance.interceptors.response.use(
 | Módulo | Endpoints | Frontend consume en |
 |--------|-----------|---------------------|
 | **Auth** | `POST /api/v1/auth/login/`<br>`POST /api/v1/auth/register/`<br>`POST /api/v1/auth/logout/`<br>`GET /api/v1/auth/me/`<br>`POST /api/v1/auth/token/refresh/` | `stores/authStore.ts`<br>`app/(auth)/*/page.tsx` |
-| **Artisans** | `GET /api/v1/artisans/`<br>`GET /api/v1/artisans/{slug}/`<br>`POST /api/v1/artisans/`<br>`PUT /api/v1/artisans/{slug}/` | `lib/api/artisans.ts`<br>`app/(public)/artesanos/**` |
+| **Artisans** | `GET /api/v1/artisans/`<br>`GET /api/v1/artisans/{slug}/`<br>`GET /api/v1/artisans/{slug}/products/` **NUEVO**<br>`POST /api/v1/artisans/`<br>`PUT /api/v1/artisans/{slug}/` | `lib/api/artisans.ts`<br>`hooks/useProducts.ts`<br>`app/(public)/artesanos/**` |
 | **Works** | `GET /api/v1/works/`<br>`POST /api/v1/works/`<br>`PUT /api/v1/works/{id}/`<br>`DELETE /api/v1/works/{id}/` | `lib/api/works.ts`<br>`app/(dashboard)/dashboard/obras/**` |
-| **Products** | `GET /api/v1/shop/products/`<br>`POST /api/v1/shop/products/`<br>`GET /api/v1/shop/cloudinary-signature/` | `components/products/**`<br>`app/(dashboard)/dashboard/productos/**` |
+| **Products** | `GET /api/v1/shop/products/`<br>`POST /api/v1/shop/products/`<br>`GET /api/v1/shop/cloudinary-signature/` | `components/products/**`<br>`hooks/useProducts.ts`<br>`app/(dashboard)/dashboard/productos/**` |
 | **Orders** | `POST /api/v1/orders/`<br>`GET /api/v1/orders/me/` | `components/checkout/**` |
 | **Payments** | `POST /api/v1/payments/create-checkout/`<br>`POST /api/v1/payments/webhook/` | `lib/stripe.ts` |
 | **Admin** | `GET /api/v1/admin/artisans/pending/`<br>`POST /api/v1/admin/artisans/{id}/approve/` | `lib/api/admin.ts`<br>`app/(dashboard)/admin/**` |
@@ -349,6 +429,77 @@ npm run dev  # http://localhost:3000
 
 ---
 
+## 🎛️ ADMIN DASHBOARD
+
+**NUEVO en v2.2.0:** Panel administrativo completo para gestión de la plataforma.
+
+### Componentes Principales
+
+| Componente | Descripción | Ubicación |
+|-----------|-------------|-----------|
+| **AdminSidebar** | Navegación lateral con menú admin | `components/admin/AdminSidebar.tsx` |
+| **StatsCard** | Tarjetas de estadísticas (usuarios, ventas, productos) | `components/admin/StatsCard.tsx` |
+| **SalesChart** | Gráfico de ventas con visualización temporal | `components/admin/SalesChart.tsx` |
+| **RecentActivity** | Lista de actividad reciente en la plataforma | `components/admin/RecentActivity.tsx` |
+
+### Páginas Admin
+
+| Ruta | Componente | Funcionalidad |
+|------|-----------|---------------|
+| `/admin` | `app/(admin)/admin/page.tsx` | Dashboard principal con estadísticas |
+| `/admin/artesanos` | `app/(admin)/admin/artesanos/page.tsx` | Gestión y aprobación de artesanos |
+
+### Endpoints Admin
+
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/v1/admin/artisans/stats/` | GET | Estadísticas de artesanos |
+| `/api/v1/admin/artisans/pending/` | GET | Artesanos pendientes de aprobación |
+| `/api/v1/admin/artisans/{id}/approve/` | POST | Aprobar artesano |
+
+### Features Clave
+
+- ✅ Estadísticas en tiempo real (usuarios, ventas, productos)
+- ✅ Aprobación manual de artesanos
+- ✅ Visualización de actividad reciente
+- ✅ Gráficos de ventas interactivos
+- ✅ Layout específico con AdminSidebar
+
+---
+
+## 🔍 PÁGINA DE EXPLORACIÓN
+
+**NUEVO en v2.2.0:** Página de descubrimiento global de productos de todos los artesanos.
+
+### Descripción
+
+La página `/explorar` permite a los usuarios buscar y filtrar productos de toda la plataforma, diferenciándose de las tiendas individuales por artesano.
+
+### Features
+
+| Feature | Descripción |
+|---------|-------------|
+| **Búsqueda de texto libre** | Buscar por nombre o descripción de producto |
+| **Filtros por categoría** | Filtrar por tipo de artesanía (cerámica, joyería, etc.) |
+| **Grid responsivo** | Visualización adaptativa móvil/desktop |
+| **Integración carrito** | Añadir productos directamente al carrito multi-vendor |
+
+### Componentes
+
+- **Página:** `app/(public)/explorar/page.tsx`
+- **Componentes reutilizados:** ProductGrid, ProductCard, ProductDetailModal
+
+### Diferencias con Tienda por Artesano
+
+| Característica | `/explorar` | `/artesanos/{slug}/tienda` |
+|----------------|-------------|---------------------------|
+| **Scope** | Todos los productos | Solo productos del artesano |
+| **Filtros** | Categoría + búsqueda | Destacados + categoría |
+| **Propósito** | Descubrimiento global | Compra enfocada en artesano |
+| **Layout** | Public layout | Perfil artesano layout |
+
+---
+
 ## 📋 RESUMEN EJECUTIVO (300 palabras)
 
 **MiTaller.art** es un marketplace SaaS B2C para artesanos menorquines que venden productos artesanales físicos (cerámica, joyería, madera, textiles, etc.). El proyecto conecta tradición artesanal con tecnología moderna.
@@ -361,7 +512,7 @@ npm run dev  # http://localhost:3000
 - JWT authentication (djangorestframework-simplejwt)
 - Cloudinary para gestión de imágenes
 - Stripe Connect para pagos marketplace (comisión 10%)
-- Sentry para monitoreo de errores
+- Sentry para monitoreo de errores en producción
 - Deploy: Railway
 
 **Frontend (Next.js 15):**
@@ -440,6 +591,8 @@ npm run dev  # http://localhost:3000
 - `docs/auth/SISTEMA_AUTENTICACION.md` - Sistema JWT completo con roles
 - `docs/architecture/ACLARACION_CONCEPTUAL.md` - Conceptos arquitectónicos clave
 - `docs/troubleshooting/PROBLEMA_LOGOUT.md` - Ejemplo de solución de problema real
+- `backend/docs/modules/shop/MULTI_VENDOR_IMPLEMENTATION.md` - **NUEVO** - Backend multi-vendor completo
+- `frontend/docs/features/TIENDA_MULTI_VENDOR.md` - **NUEVO** - Frontend tienda multi-vendor
 
 ### ⚙️ 2. CONFIGURACIÓN
 
@@ -513,7 +666,8 @@ OrderItem (N:1) ──→ User (artisan, para comisiones)
 | `frontend/src/types/user.ts` | User, UserRole, ArtisanProfile, AuthResponse | **CRÍTICO** - Autenticación |
 | `frontend/src/types/artisan.ts` | Artisan, ArtisanFormData, CraftType, Location | **ESENCIAL** - Artesanos |
 | `frontend/src/types/work.ts` | Work, WorkFormData | **ESENCIAL** - Portfolio |
-| `frontend/src/types/product.ts` | Product, CartItem, CartSummary | **CRÍTICO** - Tienda |
+| `frontend/src/types/product.ts` | Product, ProductFormData, ProductArtisan (con shipping_cost) | **CRÍTICO** - Tienda |
+| `frontend/src/types/cart.ts` | CartItem, CartItemsByArtisan, ShippingOption, CartSummary | **CRÍTICO** - Carrito multi-vendor **NUEVO** |
 | `frontend/src/types/order.ts` | Order, OrderItem, OrderStatus, PaymentStatus | **CRÍTICO** - Pedidos |
 
 ### 🎛️ 6. FRONTEND - STATE MANAGEMENT (ZUSTAND)
@@ -529,13 +683,25 @@ OrderItem (N:1) ──→ User (artisan, para comisiones)
 
 | Directorio | Descripción | Razón de inclusión |
 |-----------|-------------|-------------------|
-| `frontend/src/components/ui/*` | shadcn/ui components (Button, Card, Dialog, etc.) | **ÚTIL** - Sistema de diseño base |
-| `frontend/src/components/layout/Navbar.tsx` | Navegación principal con auth | **ESENCIAL** - Layout principal |
+| `frontend/src/components/ui/*` | shadcn/ui components (Button, Card, Dialog, Sheet, etc.) | **ÚTIL** - Sistema de diseño base |
+| `frontend/src/components/layout/Navbar.tsx` | Navegación principal con auth + CartDrawer | **ESENCIAL** - Layout principal |
+| `frontend/src/components/admin/*` | AdminSidebar, StatsCard, SalesChart, RecentActivity | **ESENCIAL** - Admin dashboard **NUEVO** |
 | `frontend/src/components/artisans/*` | ArtisanCard, ArtisansGrid, ArtisanHeader | **ESENCIAL** - Componentes de artesanos |
 | `frontend/src/components/works/*` | WorkCard, WorkGrid, WorkDetailHeader | **ESENCIAL** - Componentes de obras |
-| `frontend/src/components/products/*` | ProductCard, ProductGrid | **ESENCIAL** - Componentes de productos |
+| `frontend/src/components/products/*` | ProductCard, ProductGrid, ProductDetailModal | **CRÍTICO** - Tienda multi-vendor **ACTUALIZADO** |
+| `frontend/src/components/cart/*` | CartItemRow, CartDrawer (multi-vendor) | **CRÍTICO** - Carrito agrupado por artesano **NUEVO** |
 | `frontend/src/components/dashboard/*` | DashboardHeader, DashboardNav | **ÚTIL** - Dashboard artesano |
 | `frontend/src/components/profile/ProfileImageUpload.tsx` | Upload de imágenes a Cloudinary | **ESENCIAL** - Sistema de uploads |
+
+### 🪝 7.5 FRONTEND - HOOKS PERSONALIZADOS (NUEVO)
+
+| Archivo | Hook | Descripción | Razón de inclusión |
+|---------|------|-------------|-------------------|
+| `frontend/src/hooks/useProducts.ts` | useArtisanProducts, useProducts | Fetch productos (por artesano o globales) | **CRÍTICO** - Tienda multi-vendor |
+| `frontend/src/hooks/useArtisans.ts` | useArtisan, useArtisans | Fetch datos de artesanos (individual/listado) | **ESENCIAL** - Perfil con shipping |
+| `frontend/src/hooks/useCartByArtisan.ts` | useCartByArtisan | Agrupa items del carrito por artesano | **CRÍTICO** - Carrito multi-vendor **NUEVO** |
+| `frontend/src/hooks/useMediaQuery.ts` | useMediaQuery | Detecta breakpoints para responsive | **ÚTIL** - Responsive UI **NUEVO** |
+| `frontend/src/hooks/useAuth.ts` | useAuth | Hook para autenticación y usuario actual | **CRÍTICO** - Auth management |
 
 ### 📄 8. FRONTEND - PÁGINAS PRINCIPALES (APP ROUTER)
 
@@ -546,7 +712,9 @@ OrderItem (N:1) ──→ User (artisan, para comisiones)
 | `frontend/src/app/page.tsx` | `/` | Homepage con featured artisans | **ESENCIAL** - Punto de entrada |
 | `frontend/src/app/(public)/artesanos/page.tsx` | `/artesanos` | Listado de artesanos | **ESENCIAL** - Directorio artesanos |
 | `frontend/src/app/(public)/artesanos/[slug]/page.tsx` | `/artesanos/{slug}` | Perfil público del artesano | **CRÍTICO** - Página principal de artesano |
-| `frontend/src/app/(public)/productos/page.tsx` | `/productos` | Tienda de productos | **ESENCIAL** - Catálogo de tienda |
+| `frontend/src/app/(public)/artesanos/[slug]/tienda/page.tsx` | `/artesanos/{slug}/tienda` | Tienda del artesano con filtros | **CRÍTICO** - Tienda multi-vendor |
+| `frontend/src/app/(public)/artesanos/[slug]/sobre-mi/page.tsx` | `/artesanos/{slug}/sobre-mi` | Sobre mí del artesano | **ÚTIL** - Perfil extendido |
+| `frontend/src/app/(public)/explorar/page.tsx` | `/explorar` | Explorar todos los productos | **CRÍTICO** - Descubrimiento global **NUEVO** |
 
 **Páginas protegidas (dashboard):**
 
@@ -556,7 +724,13 @@ OrderItem (N:1) ──→ User (artisan, para comisiones)
 | `frontend/src/app/(dashboard)/dashboard/obras/page.tsx` | `/dashboard/obras` | Gestión de obras (portfolio) | **ESENCIAL** - CRUD de obras |
 | `frontend/src/app/(dashboard)/dashboard/productos/page.tsx` | `/dashboard/productos` | Gestión de productos | **ESENCIAL** - CRUD de productos |
 | `frontend/src/app/(dashboard)/dashboard/perfil/page.tsx` | `/dashboard/perfil` | Edición de perfil artesano | **ESENCIAL** - Configuración perfil |
-| `frontend/src/app/(dashboard)/admin/artesanos/page.tsx` | `/admin/artesanos` | Panel admin (aprobación) | **ÚTIL** - Gestión admin |
+
+**Páginas de administración:**
+
+| Archivo | Ruta | Descripción | Razón de inclusión |
+|---------|------|-------------|-------------------|
+| `frontend/src/app/(admin)/admin/page.tsx` | `/admin` | Dashboard admin con estadísticas | **ESENCIAL** - Panel admin **NUEVO** |
+| `frontend/src/app/(admin)/admin/artesanos/page.tsx` | `/admin/artesanos` | Gestión y aprobación de artesanos | **ESENCIAL** - Aprobación artesanos **NUEVO** |
 
 **Autenticación:**
 
@@ -729,6 +903,9 @@ ArtisanProfile (artisans)
 ├── bio, avatar, cover_image (Cloudinary URLs)
 ├── craft_type (CERAMICS | JEWELRY | WOOD | ...)
 ├── location (MAO | CIUTADELLA | ...)
+├── shipping_cost (Decimal, default 5.00) **NUEVO**
+├── workshop_address (Text, para recogida) **NUEVO**
+├── pickup_instructions (Text) **NUEVO**
 ├── stripe_account_id, stripe_account_status
 └── total_works, total_products
 
@@ -750,6 +927,8 @@ Product (shop) - Tienda, SÍ venta
 ├── price (Decimal), stock (Integer)
 ├── thumbnail_url (Cloudinary)
 ├── images (JSON array)
+├── is_featured (Boolean, destacados) **NUEVO**
+├── pickup_available (Boolean, recogida) **NUEVO**
 ├── stripe_product_id, stripe_price_id
 └── is_active
 
@@ -973,6 +1152,39 @@ class User:
 
 ---
 
+## 📜 DECISIONES HISTÓRICAS
+
+### Migración "Artists" → "Artisans" (Octubre 2025)
+
+**IMPORTANTE:** El proyecto originalmente usaba el término "artists" pero fue completamente migrado a "artisans" en octubre 2025.
+
+**Razones del cambio:**
+1. **Contexto cultural:** El término "artesanos" es más apropiado para artesanos menorquines que trabajan con oficios tradicionales
+2. **Identidad del proyecto:** "MiTaller.art" enfoca en talleres artesanales, no en arte contemporáneo
+3. **Público objetivo:** Artesanos de cerámica, joyería, madera, textiles (no artistas visuales)
+
+**Cambios realizados:**
+- ✅ Módulo completo `backend/artists/` eliminado
+- ✅ Nomenclatura actualizada en TODO el código: variables, funciones, rutas, componentes
+- ✅ URLs cambiadas: `/artists/{slug}` → `/artesanos/{slug}`
+- ✅ Tipos TypeScript: `Artist` → `Artisan`
+- ✅ Modelos Django: `ArtistProfile` → `ArtisanProfile`
+- ✅ Migraciones de base de datos aplicadas
+- ✅ Documentación actualizada
+
+**Archivos eliminados:**
+- `backend/artists/` (módulo completo)
+- `backend/docs/ARTISTS_VS_ARTISANS.md`
+- `frontend/src/types/artist.ts`
+- `frontend/src/components/artisans/Artist*.tsx` (componentes antiguos)
+
+**⚠️ Importante para desarrollo futuro:**
+- SIEMPRE usar "artisan" (NO "artist") en código nuevo
+- URLs siempre en español: `/artesanos` (NO `/artisans` ni `/artists`)
+- Modelo de negocio es para artesanos, no artistas
+
+---
+
 ## 📊 FLUJOS CRÍTICOS
 
 ### Flujo 1: Registro y Aprobación de Artesano
@@ -1056,6 +1268,53 @@ class User:
 - Frontend: `lib/cloudinary.ts` (uploadToCloudinary)
 - Backend: `shop/views.py` (CloudinarySignatureView)
 
+### Flujo 4: Navegación y Compra en Tienda Multi-Vendor (NUEVO)
+
+```
+1. Usuario navega a /artesanos
+2. Click en card de artesano → /artesanos/{slug}
+3. Click en "Ver tienda" → /artesanos/{slug}/tienda
+4. Página carga:
+   ├─ useArtisan(slug) → GET /api/v1/artisans/{slug}/
+   ├─ useArtisanProducts(slug) → GET /api/v1/artisans/{slug}/products/
+   └─ Renderiza ProductGrid con filtros
+5. Usuario filtra por "Solo destacados"
+   └─ useArtisanProducts(slug, {is_featured: true})
+6. Click en ProductCard → Modal de detalle (ProductDetailModal)
+7. Selecciona cantidad y "Añadir al carrito"
+   ├─ cartStore.addItem(product, quantity)
+   ├─ LocalStorage actualizado
+   └─ Badge del carrito se actualiza
+8. Navega a otro artesano y repite 3-7
+9. Click en icono del carrito (navbar)
+   └─ CartDrawer abre desde la derecha
+10. CartDrawer agrupa items:
+    ├─ useCartByArtisan() agrupa por artisan.id
+    ├─ Muestra sección por cada artesano
+    │   ├─ Subtotal de productos
+    │   ├─ Coste de envío (shipping_cost)
+    │   └─ Total por artesano
+    └─ Grand Total al final
+11. Ajusta cantidades con +/- (debounce 500ms)
+12. Click "Proceder al pago" → Checkout (futuro)
+```
+
+**Características clave:**
+- Agrupación automática por artesano en el carrito
+- Cada artesano tiene su propio shipping_cost independiente
+- Productos con pickup_available muestran badge
+- Productos is_featured aparecen primero
+- Debounce en actualización de cantidad para mejor UX
+
+**Archivos involucrados:**
+- Frontend: `app/(public)/artesanos/[slug]/tienda/page.tsx`
+- Frontend: `components/products/ProductCard.tsx`
+- Frontend: `components/products/ProductDetailModal.tsx`
+- Frontend: `components/cart/CartDrawer.tsx`
+- Frontend: `hooks/useCartByArtisan.ts`
+- Frontend: `stores/cartStore.ts`
+- Backend: `artisans/views.py` (products action)
+
 ---
 
 ## 🔐 SEGURIDAD Y PERMISOS
@@ -1120,17 +1379,23 @@ params_to_sign['timestamp'] = timestamp
 
 ## 🚀 PRÓXIMOS PASOS (ROADMAP)
 
-**Fase actual:** Fase 3 - Frontend en desarrollo
+**Fase actual:** Fase 3 - Admin Dashboard + Explorar Implementados
 
 **Completado:**
 - ✅ Fase 0: Setup (PostgreSQL, Django, Next.js)
-- ✅ Fase 1: Backend Core (Auth, Artists, Works, Products)
+- ✅ Fase 1: Backend Core (Auth, Artisans, Works, Products)
 - ✅ Fase 2: Store & Payments (Stripe Connect, Orders)
-- ✅ Fase 3 (parcial): Frontend (páginas públicas, dashboard básico)
+- ✅ Fase 3: Frontend completo (páginas públicas, dashboard, admin)
+- ✅ **Sistema Multi-Vendor:** Tienda por artesano con carrito agrupado
+- ✅ **Admin Dashboard:** Panel administrativo con estadísticas
+- ✅ **Página Explorar:** Descubrimiento global de productos
+- ✅ **Migración Artists → Artisans:** Nomenclatura actualizada
+- ✅ **Sentry:** Monitoreo de errores en producción
 
 **En progreso:**
-- 🔄 Fase 3: Completar dashboard artesano (gestión productos, perfil)
-- 🔄 Admin panel (aprobación artesanos, moderación)
+- 🔄 Checkout multi-vendor (pagos independientes por artesano)
+- 🔄 Sistema de notificaciones (email artesano en nueva venta)
+- 🔄 Optimización de imágenes (lazy loading, placeholders)
 
 **Próximos:**
 - ⏳ Fase 3.5: Sistema de aprobación híbrido (email verification + admin approval)

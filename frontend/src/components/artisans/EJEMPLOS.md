@@ -1,4 +1,4 @@
-# Ejemplos de Uso - Componentes de Artistas
+# Ejemplos de Uso - Componentes de Artesanos
 
 ## 📘 Ejemplo 1: Página de directorio completo
 
@@ -7,11 +7,11 @@
 'use client';
 
 import { useState } from 'react';
-import type { ArtistFilters } from '@/types';
-import { ArtistFilters as Filters, ArtistsGrid } from '@/components/artists';
+import type { ArtisanFilters } from '@/types';
+import { ArtisanFilters as Filters, ArtisansGrid } from '@/components/artisans';
 
 export default function ArtesanosPage() {
-  const [filters, setFilters] = useState<ArtistFilters>({});
+  const [filters, setFilters] = useState<ArtisanFilters>({});
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
@@ -30,7 +30,7 @@ export default function ArtesanosPage() {
       />
 
       {/* Grid */}
-      <ArtistsGrid
+      <ArtisansGrid
         search={filters.search}
         craftType={filters.craft_type}
         location={filters.location}
@@ -45,14 +45,14 @@ export default function ArtesanosPage() {
 ## 📘 Ejemplo 2: Artesanos destacados (home)
 
 ```tsx
-// src/components/home/FeaturedArtists.tsx
+// src/components/home/FeaturedArtisans.tsx
 'use client';
 
-import { ArtistsGrid } from '@/components/artists';
+import { ArtisansGrid } from '@/components/artisans';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-export default function FeaturedArtists() {
+export default function FeaturedArtisans() {
   return (
     <section className="container mx-auto px-4 py-16">
       <div className="flex items-center justify-between mb-8">
@@ -62,8 +62,8 @@ export default function FeaturedArtists() {
             Los mejores artesanos de Menorca
           </p>
         </div>
-        
-        <Link 
+
+        <Link
           href="/artesanos"
           className="flex items-center gap-2 text-primary hover:underline"
         >
@@ -73,9 +73,9 @@ export default function FeaturedArtists() {
       </div>
 
       {/* Grid de solo destacados, límite de 6 */}
-      <ArtistsGrid 
-        featured={true} 
-        limit={6} 
+      <ArtisansGrid
+        featured={true}
+        limit={6}
       />
     </section>
   );
@@ -90,7 +90,7 @@ export default function FeaturedArtists() {
 // src/app/artesanos/ceramica/page.tsx
 'use client';
 
-import { ArtistsGrid } from '@/components/artists';
+import { ArtisansGrid } from '@/components/artisans';
 
 export default function CeramicaPage() {
   return (
@@ -103,7 +103,7 @@ export default function CeramicaPage() {
       </div>
 
       {/* Grid filtrado por tipo de artesanía */}
-      <ArtistsGrid craftType="ceramics" />
+      <ArtisansGrid craftType="ceramics" />
     </div>
   );
 }
@@ -117,9 +117,9 @@ export default function CeramicaPage() {
 // src/app/artesanos/ciutadella/page.tsx
 'use client';
 
-import { ArtistsGrid } from '@/components/artists';
+import { ArtisansGrid } from '@/components/artisans';
 
-export default function CiutadellaArtistsPage() {
+export default function CiutadellaArtisansPage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="text-center space-y-4">
@@ -130,7 +130,7 @@ export default function CiutadellaArtistsPage() {
       </div>
 
       {/* Grid filtrado por ubicación */}
-      <ArtistsGrid location="ciutadella" />
+      <ArtisansGrid location="ciutadella" />
     </div>
   );
 }
@@ -141,36 +141,36 @@ export default function CiutadellaArtistsPage() {
 ## 📘 Ejemplo 5: Lista de artesanos relacionados
 
 ```tsx
-// src/components/artists/RelatedArtists.tsx
+// src/components/artisans/RelatedArtisans.tsx
 'use client';
 
-import { ArtistsGrid } from '@/components/artists';
+import { ArtisansGrid } from '@/components/artisans';
 import type { CraftType } from '@/types';
 
-interface RelatedArtistsProps {
+interface RelatedArtisansProps {
   craftType: CraftType;
-  excludeSlug: string; // Excluir el artista actual
+  excludeSlug: string; // Excluir el artesano actual
   limit?: number;
 }
 
-export default function RelatedArtists({ 
-  craftType, 
+export default function RelatedArtisans({
+  craftType,
   excludeSlug,
-  limit = 3 
-}: RelatedArtistsProps) {
+  limit = 3
+}: RelatedArtisansProps) {
   return (
     <section className="py-8">
       <h2 className="text-2xl font-bold mb-6">
         Artesanos Relacionados
       </h2>
-      
-      {/* 
-        Nota: ArtistsGrid actualmente no soporta excludeSlug,
+
+      {/*
+        Nota: ArtisansGrid actualmente no soporta excludeSlug,
         tendrías que filtrarlo después en el componente padre
         o añadir esta funcionalidad
       */}
-      <ArtistsGrid 
-        craftType={craftType} 
+      <ArtisansGrid
+        craftType={craftType}
         limit={limit}
       />
     </section>
@@ -180,33 +180,33 @@ export default function RelatedArtists({
 
 ---
 
-## 📘 Ejemplo 6: Card de artista individual
+## 📘 Ejemplo 6: Card de artesano individual
 
 ```tsx
-// src/components/shop/ProductArtist.tsx
+// src/components/shop/ProductArtisan.tsx
 'use client';
 
-import { ArtistCard } from '@/components/artists';
-import type { Artist } from '@/types';
+import { ArtisanCard } from '@/components/artisans';
+import type { Artisan } from '@/types';
 
-interface ProductArtistProps {
-  artist: Artist;
+interface ProductArtisanProps {
+  artisan: Artisan;
 }
 
 /**
- * Mostrar información del artista en una página de producto
+ * Mostrar información del artesano en una página de producto
  */
-export default function ProductArtist({ artist }: ProductArtistProps) {
+export default function ProductArtisan({ artisan }: ProductArtisanProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">
         Sobre el Artesano
       </h3>
-      
-      <ArtistCard artist={artist} />
-      
+
+      <ArtisanCard artisan={artisan} />
+
       <p className="text-sm text-muted-foreground">
-        {artist.bio}
+        {artisan.bio}
       </p>
     </div>
   );
@@ -223,15 +223,15 @@ export default function ProductArtist({ artist }: ProductArtistProps) {
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import type { ArtistFilters } from '@/types';
-import { ArtistFilters as Filters, ArtistsGrid } from '@/components/artists';
+import type { ArtisanFilters } from '@/types';
+import { ArtisanFilters as Filters, ArtisansGrid } from '@/components/artisans';
 
 export default function ArtesanosPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   // Leer filtros desde URL params
-  const [filters, setFilters] = useState<ArtistFilters>(() => ({
+  const [filters, setFilters] = useState<ArtisanFilters>(() => ({
     search: searchParams.get('search') || undefined,
     craft_type: searchParams.get('craft_type') as any || undefined,
     location: searchParams.get('location') as any || undefined,
@@ -240,15 +240,15 @@ export default function ArtesanosPage() {
   // Actualizar URL cuando cambien los filtros
   useEffect(() => {
     const params = new URLSearchParams();
-    
+
     if (filters.search) params.set('search', filters.search);
     if (filters.craft_type) params.set('craft_type', filters.craft_type);
     if (filters.location) params.set('location', filters.location);
-    
-    const newUrl = params.toString() 
+
+    const newUrl = params.toString()
       ? `/artesanos?${params.toString()}`
       : '/artesanos';
-    
+
     router.replace(newUrl, { scroll: false });
   }, [filters, router]);
 
@@ -263,7 +263,7 @@ export default function ArtesanosPage() {
         onFilterChange={setFilters}
       />
 
-      <ArtistsGrid {...filters} />
+      <ArtisansGrid {...filters} />
     </div>
   );
 }
@@ -279,7 +279,7 @@ export default function ArtesanosPage() {
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArtistsGrid } from '@/components/artists';
+import { ArtisansGrid } from '@/components/artisans';
 import { CRAFT_TYPE_LABELS, type CraftType } from '@/types';
 
 export default function ArtesanosPage() {
@@ -302,12 +302,12 @@ export default function ArtesanosPage() {
         </TabsList>
 
         <TabsContent value="all" className="mt-8">
-          <ArtistsGrid />
+          <ArtisansGrid />
         </TabsContent>
 
         {Object.keys(CRAFT_TYPE_LABELS).map((craftType) => (
           <TabsContent key={craftType} value={craftType} className="mt-8">
-            <ArtistsGrid craftType={craftType as CraftType} />
+            <ArtisansGrid craftType={craftType as CraftType} />
           </TabsContent>
         ))}
       </Tabs>
@@ -345,17 +345,17 @@ export default function ArtesanosPage() {
 // Ejemplo de test con React Testing Library
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ArtistsGrid } from '@/components/artists';
+import { ArtisansGrid } from '@/components/artisans';
 
 const queryClient = new QueryClient();
 
 test('muestra mensaje cuando no hay artesanos', async () => {
   render(
     <QueryClientProvider client={queryClient}>
-      <ArtistsGrid />
+      <ArtisansGrid />
     </QueryClientProvider>
   );
-  
+
   // Esperar a que aparezca el mensaje de "no hay artesanos"
   expect(await screen.findByText(/no se encontraron artesanos/i))
     .toBeInTheDocument();
@@ -367,7 +367,6 @@ test('muestra mensaje cuando no hay artesanos', async () => {
 ## 🔗 Links Útiles
 
 - [Documentación completa](./README.md)
-- [Tipos TypeScript](/src/types/artist.ts)
+- [Tipos TypeScript](/src/types/artisan.ts)
 - [shadcn/ui Docs](https://ui.shadcn.com/)
 - [React Query Docs](https://tanstack.com/query/latest)
-

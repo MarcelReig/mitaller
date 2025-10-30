@@ -68,14 +68,14 @@ export function ProfileImageUpload({
   const config = {
     avatar: {
       label: 'Avatar',
-      description: 'Imagen cuadrada (recomendado 400x400px)',
+      description: 'Imagen cuadrada (recomendado 800x800px o mayor)',
       aspectRatio: 'aspect-square',
       maxHeight: 'max-h-[240px]', // Avatar más compacto
       folder: 'artisans/avatars',
     },
     cover: {
       label: 'Imagen de portada',
-      description: 'Imagen horizontal (recomendado 1200x400px)',
+      description: 'Imagen horizontal (recomendado 2400x600px o mayor)',
       aspectRatio: 'aspect-[3/1]',
       maxHeight: 'max-h-[300px]', // Límite razonable para cover
       folder: 'artisans/covers',
@@ -194,6 +194,8 @@ export function ProfileImageUpload({
               src={previewUrl}
               alt={config.label}
               fill
+              quality={95}
+              sizes={type === 'cover' ? '100vw' : '240px'}
               className={cn(
                 'object-cover',
                 type === 'avatar' && 'rounded-full p-4'

@@ -75,16 +75,19 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="gap-2">
-            <Avatar className="h-8 w-8">
-              <SafeImage
-                src={user.avatar ? avatarUrl(user.avatar) : null}
-                alt={user.display_name}
-                fallbackType="avatar"
-                fallbackId={user.id}
-                className="w-full h-full object-cover rounded-full"
-              />
-              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-            </Avatar>
+            {/* Contenedor cuadrado para evitar deformación del avatar */}
+            <div className="h-8 w-8 shrink-0">
+              <Avatar className="h-full w-full">
+                <SafeImage
+                  src={user.avatar ? avatarUrl(user.avatar) : null}
+                  alt={user.display_name}
+                  fallbackType="avatar"
+                  fallbackId={user.id}
+                  className="w-full h-full object-cover rounded-full"
+                />
+                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+              </Avatar>
+            </div>
             <span className="hidden md:inline font-medium">{user.display_name}</span>
           </Button>
         </DropdownMenuTrigger>

@@ -112,7 +112,7 @@ class ProductAdmin(admin.ModelAdmin):
         
         Carga de forma anticipada las relaciones necesarias:
         - artisan: para mostrar display_name
-        - artisan__user: para acceder al usuario del artesano
+        - artisan__artisan_profile: to access the artisan profile
         """
         queryset = super().get_queryset(request)
-        return queryset.select_related('artisan', 'artisan__user')
+        return queryset.select_related('artisan', 'artisan__artisan_profile')

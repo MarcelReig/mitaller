@@ -49,6 +49,9 @@ GET /api/v1/shop/
 
 # Detalle de producto
 GET /api/v1/shop/{id}/
+
+# Listar productos de un artesano específico (NUEVO)
+GET /api/v1/artisans/{slug}/products/
 ```
 
 ### Privados (Artesano dueño)
@@ -231,9 +234,61 @@ def is_available(self) -> bool:
 - Habilitar/deshabilitar botón "Añadir al carrito"
 - Dashboard del artesano (inventario bajo)
 
+## 🛒 Sistema Multi-Vendor
+
+### Endpoint de Productos por Artesano (NUEVO)
+
+Agregado en `artisans/views.py` como action del ArtisanViewSet:
+
+```python
+GET /api/v1/artisans/{slug}/products/
+```
+
+**Features**:
+- Lista todos los productos de un artesano específico
+- Filtros disponibles:
+  - `is_active`: Filtrar por estado activo
+  - `is_featured`: Solo productos destacados
+  - `category`: Filtrar por categoría
+- Ordenamiento por `-is_featured`, `-created_at`
+- Utilizado en la página de tienda del artesano en el frontend
+
+**Ejemplo**:
+```bash
+# Todos los productos de un artesano
+GET /api/v1/artisans/ToniMercadal/products/
+
+# Solo productos destacados
+GET /api/v1/artisans/ToniMercadal/products/?is_featured=true
+
+# Solo productos activos
+GET /api/v1/artisans/ToniMercadal/products/?is_active=true
+
+# Filtrar por categoría
+GET /api/v1/artisans/ToniMercadal/products/?category=ceramics
+```
+
+### Nuevos Campos Multi-Vendor
+
+**Product**:
+- `is_featured` (Boolean): Producto destacado por el artesano
+- `pickup_available` (Boolean): Permite recogida en taller
+
+**ArtisanProfile**:
+- `shipping_cost` (Decimal): Tarifa fija de envío del artesano (EUR)
+- `workshop_address` (TextField): Dirección completa para recogida
+- `pickup_instructions` (TextField): Instrucciones de recogida
+
+Estos campos permiten que cada artesano tenga:
+- Su propio coste de envío independiente
+- Opción de recogida en taller con instrucciones personalizadas
+- Control sobre productos destacados en su tienda
+
 ## 🚀 Estado de Implementación
 
 - ✅ Modelo Product completo
+- ✅ Campos multi-vendor agregados
+- ✅ Endpoint productos por artesano
 - ✅ Admin configurado
 - ✅ Serializers con validaciones
 - ✅ Permisos personalizados
@@ -243,6 +298,7 @@ def is_available(self) -> bool:
 - ✅ Tests completos (34/34)
 - ✅ Migraciones aplicadas
 - ✅ Sin errores de linting
+- ✅ Frontend tienda multi-vendor implementado
 
 **Ready for production** ✅
 

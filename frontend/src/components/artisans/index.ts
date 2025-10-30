@@ -1,9 +1,7 @@
-// Barrel export de componentes de artistas
+// Barrel export de componentes de artesanos
 
-export { default as ArtistCard } from './ArtistCard';
-export { default as ArtistsGrid } from './ArtistsGrid';
-export { default as ArtistFilters } from './ArtistFilters';
+export { default as ArtisanCard } from './ArtisanCard';
+export { default as ArtisansGrid } from './ArtisansGrid';
+export { default as ArtisanFilters } from './ArtisanFilters';
 export { ArtisanHeader } from './ArtisanHeader';
-export { ArtistHeader } from './ArtistHeader';
-export { ArtistSocials } from './ArtistSocials';
-
+export { ArtisanSocials } from './ArtisanSocials';

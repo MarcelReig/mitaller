@@ -49,7 +49,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         'items',
         'items__product',
         'items__artisan',
-        'items__artisan__user'
+        'items__artisan__artisan_profile'
     )
     
     filter_backends = [
@@ -121,7 +121,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         # Artesanos solo ven pedidos con sus productos
         if hasattr(user, 'artisan_profile'):
             return queryset.filter(
-                items__artisan=user.artisan_profile
+                items__artisan=user
             ).distinct()
         
         # Otros usuarios no ven nada
@@ -182,12 +182,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         
         # Obtener OrderItems del artesano
         order_items = OrderItem.objects.filter(
-            artisan=request.user.artisan_profile
+            artisan=request.user
         ).select_related(
             'order',
             'product',
             'artisan',
-            'artisan__user'
+            'artisan__artisan_profile'
         ).order_by('-created_at')
         
         # Aplicar filtros opcionales

@@ -82,7 +82,7 @@ export function useAuth() {
 export const getDefaultRoute = (role: string): string => {
   switch (role) {
     case 'admin':
-      return '/admin/dashboard';
+      return '/admin';
     case 'artisan':
       return '/dashboard';
     case 'customer':

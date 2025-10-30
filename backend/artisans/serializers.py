@@ -46,6 +46,7 @@ class ArtisanProfileUpdateSerializer(serializers.ModelSerializer):
         model = ArtisanProfile
         fields = (
             'display_name',
+            'short_description',
             'bio',
             'craft_type',
             'location',
@@ -54,6 +55,9 @@ class ArtisanProfileUpdateSerializer(serializers.ModelSerializer):
             'website',
             'instagram',
             'phone',
+            'shipping_cost',
+            'workshop_address',
+            'pickup_instructions',
         )
     
     def validate_instagram(self, value):
@@ -95,6 +99,7 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
             'user',
             'slug',
             'display_name',
+            'short_description',
             'bio',
             'craft_type',
             'location',
@@ -104,6 +109,9 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
             'instagram',
             'instagram_url',
             'phone',
+            'shipping_cost',
+            'workshop_address',
+            'pickup_instructions',
             'full_location',
             'total_works',
             'total_products',
@@ -151,6 +159,7 @@ class ArtisanProfileListSerializer(serializers.ModelSerializer):
         fields = (
             'slug',
             'display_name',
+            'short_description',
             'craft_type',
             'location',
             'avatar',

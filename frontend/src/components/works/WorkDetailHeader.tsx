@@ -90,15 +90,19 @@ export function WorkDetailHeader({ work, artisanSlug }: WorkDetailHeaderProps) {
           {/* Info del artesano */}
           {work.artisan && (
             <div className="flex items-center gap-3 pt-4 border-t border-border">
-              <Avatar className="h-10 w-10">
-                <AvatarImage 
-                  src={optimizedAvatar || undefined}
-                  alt={work.artisan.display_name}
-                />
-                <AvatarFallback className="text-sm">
-                  {artisanInitials}
-                </AvatarFallback>
-              </Avatar>
+              {/* Avatar con dimensiones cuadradas exactas para evitar deformación */}
+              <div className="h-10 w-10 shrink-0">
+                <Avatar className="h-full w-full">
+                  <AvatarImage 
+                    src={optimizedAvatar || undefined}
+                    alt={work.artisan.display_name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="text-sm">
+                    {artisanInitials}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
               
               <div>
                 <p className="text-sm text-muted-foreground">Creado por</p>

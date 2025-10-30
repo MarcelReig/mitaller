@@ -134,7 +134,8 @@ export function thumbUrl(url: string | null | undefined): string {
 
 /**
  * URL optimizada para imágenes de portada (hero, headers)
- * Similar a thumbUrl pero sin rotación automática
+ * Alta resolución para pantallas grandes con transformaciones responsive
+ * Desktop: 2400x600px, Tablet: 1800x500px, Mobile: 1200x400px
  * 
  * @example
  * ```ts
@@ -145,16 +146,57 @@ export function coverUrl(url: string | null | undefined): string {
   return transformImageUrl(url, {
     c: 'fill',
     g: 'auto',
-    w: 600,
+    w: 2400,
     h: 600,
-    q: 'auto:eco',
+    q: 'auto:best',
   });
 }
 
 /**
- * URL optimizada para avatares (circular, small)
+ * URL optimizada para cover images responsive
+ * Genera diferentes tamaños según el breakpoint
+ * 
+ * @param url - URL de la imagen
+ * @param size - Tamaño: 'mobile' | 'tablet' | 'desktop'
+ * @returns URL transformada
+ * 
+ * @example
+ * ```tsx
+ * // En srcSet:
+ * srcSet={`
+ *   ${coverImageUrl(url, 'mobile')} 640w,
+ *   ${coverImageUrl(url, 'tablet')} 1024w,
+ *   ${coverImageUrl(url, 'desktop')} 1920w
+ * `}
+ * ```
+ */
+export function coverImageUrl(
+  url: string | null | undefined,
+  size: 'mobile' | 'tablet' | 'desktop' = 'desktop'
+): string {
+  const dimensions = {
+    mobile: { w: 1200, h: 400 },
+    tablet: { w: 1800, h: 500 },
+    desktop: { w: 2400, h: 600 },
+  };
+
+  const { w, h } = dimensions[size];
+
+  return transformImageUrl(url, {
+    c: 'fill',
+    g: 'auto',
+    w,
+    h,
+    q: 'auto:best',
+  });
+}
+
+/**
+ * URL optimizada para avatares (circular, high-res)
  * Crop: fill con gravity face
- * Tamaño: 200x200px
+ * Tamaño: 800x800px (soporta pantallas retina)
+ * Aspect ratio: 1:1 (perfectamente cuadrado)
+ * Calidad: best (máxima calidad para avatares)
  * 
  * @example
  * ```ts
@@ -165,9 +207,9 @@ export function avatarUrl(url: string | null | undefined): string {
   return transformImageUrl(url, {
     c: 'fill',
     g: 'face',
-    w: 200,
-    h: 200,
-    q: 'auto:good',
+    w: 800,
+    h: 800,
+    q: 'auto:best',
   });
 }
 

@@ -40,7 +40,7 @@ export function WorkCard({ work, artisanSlug }: WorkCardProps) {
       href={`/artesanos/${artisanSlug}/obras/${work.id}`}
       className="block group"
     >
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-border">
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-border p-0 gap-0">
         {/* Thumbnail con overlay */}
         <div className="relative aspect-square overflow-hidden bg-muted">
           <SafeNextImage

@@ -1,17 +1,17 @@
-# Componentes de Artistas
+# Componentes de Artesanos
 
 Componentes React para el directorio de artesanos de MiTaller.art.
 
 ## Componentes
 
-### 🎨 ArtistCard
+### 🎨 ArtisanCard
 
 Tarjeta individual de artesano con avatar, información básica y link al perfil.
 
 **Props:**
 ```typescript
-interface ArtistCardProps {
-  artist: Artist;
+interface ArtisanCardProps {
+  artisan: Artisan;
 }
 ```
 
@@ -25,21 +25,21 @@ interface ArtistCardProps {
 
 **Ejemplo:**
 ```tsx
-import { ArtistCard } from '@/components/artists';
+import { ArtisanCard } from '@/components/artisans';
 
-<ArtistCard artist={artist} />
+<ArtisanCard artisan={artisan} />
 ```
 
 ---
 
-### 📋 ArtistsGrid
+### 📋 ArtisansGrid
 
 Grid responsivo de artesanos con fetching de datos usando React Query.
 
 **Props:**
 ```typescript
-interface ArtistsGridProps {
-  artistSlug?: string;      // Filtrar por slug
+interface ArtisansGridProps {
+  artisanSlug?: string;      // Filtrar por slug
   craftType?: CraftType;     // Filtrar por especialidad
   location?: Location;       // Filtrar por ubicación
   search?: string;           // Búsqueda por nombre
@@ -52,7 +52,7 @@ interface ArtistsGridProps {
 - ⏳ **Loading**: Grid de 6 skeleton cards
 - ❌ **Error**: Mensaje con botón de reintento
 - 🔍 **Empty**: Mensaje cuando no hay resultados (con sugerencia de limpiar filtros)
-- ✅ **Success**: Grid de ArtistCard components
+- ✅ **Success**: Grid de ArtisanCard components
 
 **Características:**
 - Fetching con React Query (cache de 5 minutos)
@@ -62,9 +62,9 @@ interface ArtistsGridProps {
 
 **Ejemplo:**
 ```tsx
-import { ArtistsGrid } from '@/components/artists';
+import { ArtisansGrid } from '@/components/artisans';
 
-<ArtistsGrid
+<ArtisansGrid
   craftType="ceramics"
   location="ciutadella"
   search="Juan"
@@ -75,18 +75,18 @@ import { ArtistsGrid } from '@/components/artists';
 
 ---
 
-### 🔍 ArtistFilters
+### 🔍 ArtisanFilters
 
 Panel de filtros para búsqueda de artesanos con debounce.
 
 **Props:**
 ```typescript
-interface ArtistFiltersProps {
-  onFilterChange: (filters: ArtistFilters) => void;
-  initialFilters?: ArtistFilters;
+interface ArtisanFiltersProps {
+  onFilterChange: (filters: ArtisanFilters) => void;
+  initialFilters?: ArtisanFilters;
 }
 
-type ArtistFilters = {
+type ArtisanFilters = {
   search?: string;
   craft_type?: CraftType;
   location?: Location;
@@ -104,14 +104,69 @@ type ArtistFilters = {
 **Ejemplo:**
 ```tsx
 import { useState } from 'react';
-import { ArtistFilters } from '@/components/artists';
+import { ArtisanFilters } from '@/components/artisans';
 
-const [filters, setFilters] = useState<ArtistFilters>({});
+const [filters, setFilters] = useState<ArtisanFilters>({});
 
-<ArtistFilters
+<ArtisanFilters
   initialFilters={filters}
   onFilterChange={setFilters}
 />
+```
+
+---
+
+### 👤 ArtisanHeader
+
+Hero minimalista del perfil público del artesano con cover image.
+
+**Props:**
+```typescript
+interface ArtisanHeaderProps {
+  artisan: Artisan;
+  className?: string;
+}
+```
+
+**Características:**
+- Cover image de fondo con overlay oscuro
+- Avatar grande centrado sobrelapando
+- Información limpia y bien espaciada
+- Badges de especialidad, ubicación y destacado
+- Biografía del artesano
+- Diseño responsive y moderno
+
+**Ejemplo:**
+```tsx
+import { ArtisanHeader } from '@/components/artisans';
+
+<ArtisanHeader artisan={artisan} />
+```
+
+---
+
+### 🔗 ArtisanSocials
+
+Links de contacto y redes sociales del artesano con estadísticas.
+
+**Props:**
+```typescript
+interface ArtisanSocialsProps {
+  artisan: Artisan;
+}
+```
+
+**Características:**
+- Estadísticas: total de obras y productos
+- Links: Sitio web, Instagram, Teléfono
+- Se oculta si no hay contenido
+- Diseño responsive
+
+**Ejemplo:**
+```tsx
+import { ArtisanSocials } from '@/components/artisans';
+
+<ArtisanSocials artisan={artisan} />
 ```
 
 ---
@@ -122,16 +177,16 @@ const [filters, setFilters] = useState<ArtistFilters>({});
 'use client';
 
 import { useState } from 'react';
-import type { ArtistFilters } from '@/types';
-import { ArtistFilters as Filters, ArtistsGrid } from '@/components/artists';
+import type { ArtisanFilters } from '@/types';
+import { ArtisanFilters as Filters, ArtisansGrid } from '@/components/artisans';
 
 export default function ArtesanosPage() {
-  const [filters, setFilters] = useState<ArtistFilters>({});
+  const [filters, setFilters] = useState<ArtisanFilters>({});
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <h1 className="text-4xl font-bold">Directorio de Artesanos</h1>
-      
+
       {/* Filtros */}
       <Filters
         initialFilters={filters}
@@ -139,7 +194,7 @@ export default function ArtesanosPage() {
       />
 
       {/* Grid */}
-      <ArtistsGrid
+      <ArtisansGrid
         search={filters.search}
         craftType={filters.craft_type}
         location={filters.location}
@@ -156,16 +211,16 @@ export default function ArtesanosPage() {
 Todos los tipos están definidos en `@/types`:
 
 ```typescript
-import type { 
-  Artist, 
-  ArtistFilters, 
-  CraftType, 
-  Location 
+import type {
+  Artisan,
+  ArtisanFilters,
+  CraftType,
+  Location
 } from '@/types';
 
-import { 
-  CRAFT_TYPE_LABELS, 
-  LOCATION_LABELS 
+import {
+  CRAFT_TYPE_LABELS,
+  LOCATION_LABELS
 } from '@/types';
 ```
 
@@ -176,8 +231,9 @@ import {
 - **shadcn/ui**: Card, Avatar, Badge, Button, Input, Select, Skeleton, Label
 - **React Query**: useQuery para fetching
 - **Next.js**: Link para navegación
-- **lucide-react**: Iconos (Search, MapPin, Sparkles, AlertCircle, X)
+- **lucide-react**: Iconos (Search, MapPin, Sparkles, AlertCircle, X, Palette, etc.)
 - **axios**: Via `@/lib/axios` para llamadas API
+- **Cloudinary**: Transformaciones de imágenes vía `@/lib/cloudinary`
 
 ---
 
@@ -207,12 +263,13 @@ Todos los componentes usan:
 - **Debounce**: 500ms en búsqueda para evitar requests innecesarios
 - **Lazy loading**: Compatible con scroll infinito (futuro)
 - **Skeleton loading**: UX mejorada durante carga
+- **Cloudinary**: Optimización automática de imágenes (formato, calidad, DPR)
 
 ---
 
 ## 📝 Notas
 
-1. Todos los componentes son **'use client'** (usan hooks y eventos)
+1. Todos los componentes de fetching son **'use client'** (usan hooks y eventos)
 2. TypeScript estricto (no 'any')
 3. Comentarios en español
 4. Código production-ready
@@ -222,10 +279,9 @@ Todos los componentes usan:
 
 ## 🔮 Mejoras futuras
 
-- [ ] Scroll infinito en ArtistsGrid
+- [ ] Scroll infinito en ArtisansGrid
 - [ ] Ordenación (por nombre, fecha, etc.)
 - [ ] Vista de lista alternativa (además del grid)
 - [ ] Compartir filtros via URL params
 - [ ] Favoritos de artesanos
 - [ ] Mapa de ubicaciones
-

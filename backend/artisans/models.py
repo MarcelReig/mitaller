@@ -2,6 +2,7 @@
 Modelos para la app artisans.
 Define perfiles públicos de artesanos con información de taller y ubicación.
 """
+from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
@@ -77,7 +78,15 @@ class ArtisanProfile(BaseCreatorProfile):
         max_length=150,
         help_text=_('Nombre que aparece públicamente')
     )
-    
+
+    # Descripción corta para hero del perfil
+    short_description = models.CharField(
+        _('descripción corta'),
+        max_length=200,
+        blank=True,
+        help_text=_('Texto breve que aparece en el hero del perfil (1-2 líneas)')
+    )
+
     # Información del taller (campos específicos de artesanos)
     craft_type = models.CharField(
         _('tipo de artesanía'),
@@ -99,6 +108,27 @@ class ArtisanProfile(BaseCreatorProfile):
         blank=True,
         null=True,
         help_text=_('Número de teléfono de contacto')
+    )
+
+    # Información de envío y recogida
+    shipping_cost = models.DecimalField(
+        _('coste de envío'),
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('5.00'),
+        help_text=_('Tarifa fija de envío del artesano (EUR)')
+    )
+
+    workshop_address = models.TextField(
+        _('dirección del taller'),
+        blank=True,
+        help_text=_('Dirección completa para recogida en taller')
+    )
+
+    pickup_instructions = models.TextField(
+        _('instrucciones de recogida'),
+        blank=True,
+        help_text=_('Ej: "Llamar 30min antes de venir"')
     )
     
     # Integración con Stripe Connect

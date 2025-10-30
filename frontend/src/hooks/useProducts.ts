@@ -362,3 +362,70 @@ export function useDeleteProduct(): UseMutationResult<void, Error, number> {
   });
 }
 
+/**
+ * Hook para obtener productos de un artesano específico
+ *
+ * Utiliza el endpoint /api/v1/artisans/{slug}/products/ que permite
+ * filtrar productos por artesano con opciones adicionales.
+ *
+ * @param artisanSlug - Slug del artesano
+ * @param filters - Filtros opcionales (is_featured, is_active, category)
+ * @returns Query con lista de productos del artesano
+ *
+ * @example
+ * ```tsx
+ * function ArtisanShopPage({ slug }) {
+ *   // Obtener todos los productos del artesano
+ *   const { data: allProducts, isLoading } = useArtisanProducts(slug);
+ *
+ *   // Obtener solo productos destacados
+ *   const { data: featuredProducts } = useArtisanProducts(slug, {
+ *     is_featured: true
+ *   });
+ *
+ *   // Filtrar por categoría
+ *   const { data: ceramics } = useArtisanProducts(slug, {
+ *     category: 'ceramics'
+ *   });
+ *
+ *   return <ProductGrid products={allProducts} />;
+ * }
+ * ```
+ */
+export function useArtisanProducts(
+  artisanSlug: string,
+  filters?: {
+    is_featured?: boolean;
+    is_active?: boolean;
+    category?: string
+  }
+): UseQueryResult<Product[], Error> {
+  return useQuery({
+    queryKey: ['artisan-products', artisanSlug, filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+
+      if (filters?.is_featured !== undefined) {
+        params.append('is_featured', String(filters.is_featured));
+      }
+
+      if (filters?.is_active !== undefined) {
+        params.append('is_active', String(filters.is_active));
+      }
+
+      if (filters?.category) {
+        params.append('category', filters.category);
+      }
+
+      const response = await axiosInstance.get<Product[]>(
+        `/api/v1/artisans/${artisanSlug}/products/`,
+        { params }
+      );
+
+      return response.data;
+    },
+    enabled: !!artisanSlug, // Solo ejecutar si hay slug
+    staleTime: 3 * 60 * 1000, // 3 minutos
+  });
+}
+

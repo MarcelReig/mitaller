@@ -1,6 +1,6 @@
 """
-Tests para la app artists.
-Verifica el funcionamiento de ArtistProfile, signals, y API pública.
+Tests for artisans app.
+Verifies ArtisanProfile functionality, signals, and public API.
 """
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -8,14 +8,14 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 
 from accounts.models import UserRole
-from .models import ArtistProfile, CraftType, MenorcaLocation
+from .models import ArtisanProfile, CraftType, MenorcaLocation
 
 User = get_user_model()
 
 
-class ArtistProfileModelTest(TestCase):
+class ArtisanProfileModelTest(TestCase):
     """
-    Tests para el modelo ArtistProfile.
+    Tests for ArtisanProfile model.
     """
     
     def setUp(self):
@@ -29,19 +29,19 @@ class ArtistProfileModelTest(TestCase):
             role=UserRole.ARTISAN
         )
     
-    def test_artist_profile_created_automatically(self):
+    def test_artisan_profile_created_automatically(self):
         """
-        Test que verifica que se crea ArtistProfile automáticamente
+        Test que verifica que se crea ArtisanProfile automáticamente
         cuando se crea un User con role=ARTISAN.
         """
-        self.assertTrue(hasattr(self.user, 'artist_profile'))
-        self.assertIsNotNone(self.user.artist_profile)
+        self.assertTrue(hasattr(self.user, 'artisan_profile'))
+        self.assertIsNotNone(self.user.artisan_profile)
     
-    def test_artist_profile_default_values(self):
+    def test_artisan_profile_default_values(self):
         """
         Test que verifica los valores por defecto del perfil.
         """
-        profile = self.user.artist_profile
+        profile = self.user.artisan_profile
         
         self.assertEqual(profile.slug, self.user.username)
         self.assertEqual(profile.display_name, self.user.get_full_name())
@@ -51,7 +51,7 @@ class ArtistProfileModelTest(TestCase):
         self.assertEqual(profile.total_products, 0)
         self.assertFalse(profile.is_featured)
     
-    def test_artist_profile_slug_unique(self):
+    def test_artisan_profile_slug_unique(self):
         """
         Test que verifica que los slugs son únicos.
         """
@@ -63,8 +63,8 @@ class ArtistProfileModelTest(TestCase):
             role=UserRole.ARTISAN
         )
         
-        profile1 = self.user.artist_profile
-        profile2 = user2.artist_profile
+        profile1 = self.user.artisan_profile
+        profile2 = user2.artisan_profile
         
         self.assertNotEqual(profile1.slug, profile2.slug)
     
@@ -72,7 +72,7 @@ class ArtistProfileModelTest(TestCase):
         """
         Test que verifica la property full_location.
         """
-        profile = self.user.artist_profile
+        profile = self.user.artisan_profile
         profile.location = MenorcaLocation.MAO
         profile.save()
         
@@ -83,7 +83,7 @@ class ArtistProfileModelTest(TestCase):
         """
         Test que verifica la property instagram_url.
         """
-        profile = self.user.artist_profile
+        profile = self.user.artisan_profile
         profile.instagram = 'test_artist'
         profile.save()
         
@@ -94,33 +94,33 @@ class ArtistProfileModelTest(TestCase):
         """
         Test que verifica que instagram_url es None si no hay instagram.
         """
-        profile = self.user.artist_profile
+        profile = self.user.artisan_profile
         self.assertIsNone(profile.instagram_url)
     
     def test_get_absolute_url(self):
         """
         Test que verifica el método get_absolute_url.
         """
-        profile = self.user.artist_profile
-        expected = f'/artistas/{profile.slug}/'
+        profile = self.user.artisan_profile
+        expected = f'/artesanos/{profile.slug}/'
         self.assertEqual(profile.get_absolute_url(), expected)
     
     def test_str_representation(self):
         """
         Test que verifica el método __str__.
         """
-        profile = self.user.artist_profile
+        profile = self.user.artisan_profile
         self.assertEqual(str(profile), profile.display_name)
 
 
-class ArtistProfileSignalTest(TestCase):
+class ArtisanProfileSignalTest(TestCase):
     """
-    Tests para los signals de ArtistProfile.
+    Tests para los signals de ArtisanProfile.
     """
     
     def test_admin_user_no_profile(self):
         """
-        Test que verifica que los usuarios ADMIN no reciben ArtistProfile.
+        Test que verifica que los usuarios ADMIN no reciben ArtisanProfile.
         """
         admin = User.objects.create_user(
             email='admin@example.com',
@@ -129,13 +129,13 @@ class ArtistProfileSignalTest(TestCase):
             role=UserRole.ADMIN
         )
         
-        with self.assertRaises(ArtistProfile.DoesNotExist):
-            _ = admin.artist_profile
+        with self.assertRaises(ArtisanProfile.DoesNotExist):
+            _ = admin.artisan_profile
 
 
-class ArtistProfileAPITest(APITestCase):
+class ArtisanProfileAPITest(APITestCase):
     """
-    Tests para la API pública de ArtistProfile.
+    Tests para la API pública de ArtisanProfile.
     """
     
     def setUp(self):
@@ -160,12 +160,12 @@ class ArtistProfileAPITest(APITestCase):
         )
         
         # Actualizar perfiles
-        self.profile1 = self.user1.artist_profile
+        self.profile1 = self.user1.artisan_profile
         self.profile1.craft_type = CraftType.CERAMICS
         self.profile1.location = MenorcaLocation.MAO
         self.profile1.save()
         
-        self.profile2 = self.user2.artist_profile
+        self.profile2 = self.user2.artisan_profile
         self.profile2.craft_type = CraftType.JEWELRY
         self.profile2.location = MenorcaLocation.CIUTADELLA
         self.profile2.is_featured = True
@@ -175,7 +175,7 @@ class ArtistProfileAPITest(APITestCase):
         """
         Test que verifica el listado de artistas.
         """
-        response = self.client.get('/api/v1/artists/')
+        response = self.client.get('/api/v1/artisans/')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # DRF puede retornar lista directa o dict con 'results' si hay paginación
@@ -189,7 +189,7 @@ class ArtistProfileAPITest(APITestCase):
         """
         Test que verifica el detalle de un artista por slug.
         """
-        response = self.client.get(f'/api/v1/artists/{self.profile1.slug}/')
+        response = self.client.get(f'/api/v1/artisans/{self.profile1.slug}/')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['slug'], self.profile1.slug)
@@ -199,7 +199,7 @@ class ArtistProfileAPITest(APITestCase):
         """
         Test que verifica el filtro por tipo de artesanía.
         """
-        response = self.client.get(f'/api/v1/artists/?craft_type={CraftType.CERAMICS}')
+        response = self.client.get(f'/api/v1/artisans/?craft_type={CraftType.CERAMICS}')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
@@ -213,7 +213,7 @@ class ArtistProfileAPITest(APITestCase):
         """
         Test que verifica el filtro por ubicación.
         """
-        response = self.client.get(f'/api/v1/artists/?location={MenorcaLocation.MAO}')
+        response = self.client.get(f'/api/v1/artisans/?location={MenorcaLocation.MAO}')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
@@ -227,7 +227,7 @@ class ArtistProfileAPITest(APITestCase):
         """
         Test que verifica el filtro por destacados.
         """
-        response = self.client.get('/api/v1/artists/?is_featured=true')
+        response = self.client.get('/api/v1/artisans/?is_featured=true')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
@@ -241,7 +241,7 @@ class ArtistProfileAPITest(APITestCase):
         """
         Test que verifica la búsqueda de artistas.
         """
-        response = self.client.get('/api/v1/artists/?search=Artist One')
+        response = self.client.get('/api/v1/artisans/?search=Artist One')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
@@ -254,7 +254,7 @@ class ArtistProfileAPITest(APITestCase):
         """
         Test que verifica que los destacados aparecen primero.
         """
-        response = self.client.get('/api/v1/artists/')
+        response = self.client.get('/api/v1/artisans/')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
@@ -270,7 +270,7 @@ class ArtistProfileAPITest(APITestCase):
         Test que verifica que la API es pública (sin autenticación).
         """
         # No se envía token de autenticación
-        response = self.client.get('/api/v1/artists/')
+        response = self.client.get('/api/v1/artisans/')
         
         # Debe funcionar sin autenticación
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -280,7 +280,7 @@ class ArtistProfileAPITest(APITestCase):
         Test que verifica que la API es de solo lectura.
         """
         # Intentar crear perfil via POST
-        response = self.client.post('/api/v1/artists/', {
+        response = self.client.post('/api/v1/artisans/', {
             'display_name': 'New Artist',
             'craft_type': CraftType.WOOD,
         })

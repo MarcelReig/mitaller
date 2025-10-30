@@ -1,7 +1,7 @@
 # 🛠️ Setup de Claude AI + Cursor para MiTaller.art
 
-> **Fecha:** 2025-10-28
-> **Versión:** 1.0
+> **Fecha:** 2025-10-30
+> **Versión:** 1.1
 > **Autor:** Configuración optimizada para desarrollo con múltiples herramientas AI
 
 ---
@@ -38,12 +38,14 @@ Teníamos información duplicada y desorganizada entre:
    - Calidad de código con ejemplos
    - Convenciones y patrones
 
-2. **`CONTEXT_FOR_CLAUDE.md`** (1,100 líneas, 5,725 palabras)
+2. **`CONTEXT_FOR_CLAUDE.md`** (1,300+ líneas, 6,500+ palabras) - v2.2.0
    - Contexto profundo del proyecto
    - Arquitectura completa del monorepo
    - Diagrama de flujo JWT
    - Tabla de endpoints
+   - Admin Dashboard y página Explorar
    - Decisiones arquitectónicas detalladas
+   - Migración histórica artists → artisans
 
 3. **`.claude/commands/`** (3 comandos slash personalizados)
    - `/rules` - Carga `.cursorrules`
@@ -607,7 +609,7 @@ Claude Web da información incorrecta basada en contexto viejo
 ```bash
 # 1. Verificar versión
 head -10 docs/ai-assistants/CONTEXT_FOR_CLAUDE.md
-# Debería decir: v2.0.0 (2025-10-28)
+# Debería decir: v2.2.0 (2025-10-30)
 
 # 2. Si es vieja, actualizar:
 # - Revisar cambios arquitectónicos recientes
@@ -696,8 +698,8 @@ git commit -m "docs: añadir módulo notifications al contexto"
 
 | Archivo | Tamaño | Para | Actualización |
 |---------|--------|------|---------------|
-| `.cursorrules` | 823 líneas | Cursor (automático) + Claude Code (`/rules`) | Cada 2 semanas |
-| `CONTEXT_FOR_CLAUDE.md` | 1,100 líneas | Claude Web + Claude Code (`/context`) | Al completar fase |
+| `.cursorrules` | 850+ líneas | Cursor (automático) + Claude Code (`/rules`) | Cada 2 semanas |
+| `CONTEXT_FOR_CLAUDE.md` | 1,300+ líneas | Claude Web + Claude Code (`/context`) | Al completar fase |
 | `.claude/commands/rules.md` | 15 líneas | Claude Code (`/rules`) | Raramente |
 | `.claude/commands/context.md` | 12 líneas | Claude Code (`/context`) | Raramente |
 | `.claude/commands/sync.md` | 25 líneas | Claude Code (`/sync`) | Raramente |
@@ -778,6 +780,12 @@ Si encuentras algo que mejorar en este setup:
 ---
 
 ## 📝 Changelog
+
+### v1.1 (2025-10-30)
+- ✅ Actualización de referencias a v2.2.0 de CONTEXT_FOR_CLAUDE.md
+- ✅ Actualización de nomenclatura: artists → artisans
+- ✅ Inclusión de nuevas secciones (Admin Dashboard, Página Explorar)
+- ✅ Documentación de migración histórica
 
 ### v1.0 (2025-10-28)
 - ✅ Setup inicial completo

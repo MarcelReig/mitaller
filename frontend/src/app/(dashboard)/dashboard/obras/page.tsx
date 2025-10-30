@@ -324,7 +324,7 @@ function SortableWorkCard({ work, onDelete }: SortableWorkCardProps) {
           </button>
           
           {/* Thumbnail */}
-          <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+          <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
             <SafeNextImage
               src={work.thumbnail_url ? thumbUrl(work.thumbnail_url) : null}
               alt={work.title}

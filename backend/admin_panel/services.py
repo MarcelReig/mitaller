@@ -44,32 +44,32 @@ def extract_cloudinary_public_id(url: str) -> str | None:
         return None
 
 
-def delete_artist_cascade(artist_id: str) -> dict:
+def delete_artisan_cascade(artisan_id: str) -> dict:
     """
-    Elimina un artista y todo su contenido relacionado.
-    Incluye validación de pedidos completados.
+    Deletes an artisan and all related content.
+    Includes validation for completed orders.
     """
-    logger.info(f"Iniciando eliminación en cascada para artista {artist_id}")
-    
-    # 1. VALIDAR
+    logger.info(f"Starting cascade deletion for artisan {artisan_id}")
+
+    # 1. VALIDATE
     try:
-        user = User.objects.get(id=artist_id, role='artisan')
+        user = User.objects.get(id=artisan_id, role='artisan')
     except User.DoesNotExist:
-        raise ValidationError("Artista no encontrado")
+        raise ValidationError("Artisan not found")
     
-    # Verificar pedidos completados
+    # Check for completed orders (through OrderItem relationship)
     completed_orders = Order.objects.filter(
-        artist=user, 
+        items__artisan=user,
         status='completed'
-    ).count()
-    
+    ).distinct().count()
+
     if completed_orders > 0:
         raise ValidationError(
-            f"No se puede eliminar. El artista tiene {completed_orders} "
-            f"pedidos completados. Por razones de auditoría, debe conservarse."
+            f"Cannot delete. Artisan has {completed_orders} "
+            f"completed orders. Must be kept for audit purposes."
         )
-    
-    # 2. RECOPILAR DATOS
+
+    # 2. COLLECT DATA
     images_to_delete = []
     works_count = 0
     
@@ -86,12 +86,12 @@ def delete_artist_cascade(artist_id: str) -> dict:
     works_count = works.count()
     
     for work in works:
-        if work.thumbnail:
-            images_to_delete.append(work.thumbnail)
-        if hasattr(work, 'images'):
+        if work.thumbnail_url:
+            images_to_delete.append(work.thumbnail_url)
+        if hasattr(work, 'images') and work.images:
             images_to_delete.extend(work.images)
     
-    # 3. ELIMINAR DE CLOUDINARY
+    # 3. DELETE FROM CLOUDINARY
     images_deleted = 0
     for image_url in images_to_delete:
         public_id = extract_cloudinary_public_id(image_url)
@@ -100,29 +100,29 @@ def delete_artist_cascade(artist_id: str) -> dict:
                 result = cloudinary.uploader.destroy(public_id)
                 if result.get('result') == 'ok':
                     images_deleted += 1
-                    logger.info(f"Imagen eliminada: {public_id}")
+                    logger.info(f"Image deleted: {public_id}")
             except Exception as e:
-                logger.error(f"Error eliminando imagen {public_id}: {e}")
-    
-    # 4. ELIMINAR DE BD (con transacción)
+                logger.error(f"Error deleting image {public_id}: {e}")
+
+    # 4. DELETE FROM DB (with transaction)
     with transaction.atomic():
-        # Orden importante: obras → perfil → usuario
+        # Important order: works → profile → user
         Work.objects.filter(artisan=user).delete()
-        
+
         if profile:
             profile.delete()
-        
+
         username = user.username
         user.delete()
-    
+
     logger.info(
-        f"Artista {username} eliminado: {works_count} obras, "
-        f"{images_deleted} imágenes"
+        f"Artisan {username} deleted: {works_count} works, "
+        f"{images_deleted} images"
     )
-    
-    # 5. RETORNAR RESUMEN
+
+    # 5. RETURN SUMMARY
     return {
-        'user_id': artist_id,
+        'user_id': artisan_id,
         'username': username,
         'works_deleted': works_count,
         'images_deleted': images_deleted,

@@ -17,7 +17,7 @@ from rest_framework import status
 from decimal import Decimal
 
 from accounts.models import UserRole
-from artists.models import ArtistProfile, CraftType, MenorcaLocation
+from artisans.models import ArtisanProfile, CraftType, MenorcaLocation
 from shop.models import Product, ProductCategory
 from .models import Order, OrderItem, OrderStatus
 
@@ -29,23 +29,23 @@ class OrderModelTests(TestCase):
     
     def setUp(self):
         """Configurar datos de prueba."""
-        # Crear artesano (signal crea ArtistProfile automáticamente)
+        # Create artisan (signal creates ArtisanProfile automatically)
         self.artist_user = User.objects.create_user(
             email='artesano@mitaller.art',
             username='artesano',
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        # El signal create_artist_profile ya creó el perfil, solo lo obtenemos y configuramos
-        self.artist_profile = self.artist_user.artist_profile
-        self.artist_profile.display_name = 'Taller Test'
-        self.artist_profile.craft_type = CraftType.CERAMICS
-        self.artist_profile.location = MenorcaLocation.CIUTADELLA
-        self.artist_profile.save()
+        # El signal create_artisan_profile ya creó el perfil, solo lo obtenemos y configuramos
+        self.artisan_profile = self.artist_user.artisan_profile
+        self.artisan_profile.display_name = 'Taller Test'
+        self.artisan_profile.craft_type = CraftType.CERAMICS
+        self.artisan_profile.location = MenorcaLocation.CIUTADELLA
+        self.artisan_profile.save()
         
         # Crear productos
         self.product1 = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             name='Cerámica Azul',
             description='Pieza única',
             price=Decimal('50.00'),
@@ -55,7 +55,7 @@ class OrderModelTests(TestCase):
             is_active=True
         )
         self.product2 = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             name='Cerámica Verde',
             description='Pieza única',
             price=Decimal('30.00'),
@@ -118,7 +118,7 @@ class OrderModelTests(TestCase):
         item = OrderItem.objects.create(
             order=order,
             product=self.product1,
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             product_name='Test Product',
             product_price=Decimal('25.00'),
             quantity=3
@@ -141,7 +141,7 @@ class OrderModelTests(TestCase):
         item = OrderItem.objects.create(
             order=order,
             product=self.product1,
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             product_name='Cerámica Test',
             product_price=Decimal('50.00'),
             quantity=2
@@ -158,21 +158,21 @@ class OrderCreationTests(TestCase):
         """Configurar datos de prueba y cliente API."""
         self.client = APIClient()
         
-        # Crear artesano con productos (signal crea ArtistProfile)
+        # Create artisan with products (signal creates ArtisanProfile)
         self.artist_user = User.objects.create_user(
             email='artesano@mitaller.art',
             username='artesano',
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        self.artist_profile = self.artist_user.artist_profile
-        self.artist_profile.display_name = 'Taller Test'
-        self.artist_profile.craft_type = CraftType.CERAMICS
-        self.artist_profile.location = MenorcaLocation.CIUTADELLA
-        self.artist_profile.save()
+        self.artisan_profile = self.artist_user.artisan_profile
+        self.artisan_profile.display_name = 'Taller Test'
+        self.artisan_profile.craft_type = CraftType.CERAMICS
+        self.artisan_profile.location = MenorcaLocation.CIUTADELLA
+        self.artisan_profile.save()
         
         self.product1 = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             name='Cerámica Azul',
             description='Pieza única',
             price=Decimal('50.00'),
@@ -182,7 +182,7 @@ class OrderCreationTests(TestCase):
             is_active=True
         )
         self.product2 = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             name='Cerámica Verde',
             description='Pieza única',
             price=Decimal('30.00'),
@@ -278,7 +278,7 @@ class OrderCreationTests(TestCase):
         # Verificar snapshot
         self.assertEqual(item.product_name, self.product1.name)
         self.assertEqual(item.product_price, self.product1.price)
-        self.assertEqual(item.artist, self.artist_profile)
+        self.assertEqual(item.artisan, self.artist_user)
         
         # Cambiar producto y verificar que snapshot no cambia
         self.product1.name = 'Nuevo Título'
@@ -303,15 +303,15 @@ class OrderValidationTests(TestCase):
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        # El signal create_artist_profile ya creó el perfil, solo lo obtenemos y configuramos
-        self.artist_profile = self.artist_user.artist_profile
-        self.artist_profile.display_name = 'Taller Test'
-        self.artist_profile.craft_type = CraftType.CERAMICS
-        self.artist_profile.location = MenorcaLocation.CIUTADELLA
-        self.artist_profile.save()
+        # El signal create_artisan_profile ya creó el perfil, solo lo obtenemos y configuramos
+        self.artisan_profile = self.artist_user.artisan_profile
+        self.artisan_profile.display_name = 'Taller Test'
+        self.artisan_profile.craft_type = CraftType.CERAMICS
+        self.artisan_profile.location = MenorcaLocation.CIUTADELLA
+        self.artisan_profile.save()
         
         self.product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             name='Producto Test',
             description='Test',
             price=Decimal('50.00'),
@@ -410,13 +410,13 @@ class OrderQueryTests(TestCase):
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        self.artist1_profile = self.artist1_user.artist_profile
+        self.artist1_profile = self.artist1_user.artisan_profile
         self.artist1_profile.display_name = 'Taller 1'
         self.artist1_profile.craft_type = CraftType.CERAMICS
         self.artist1_profile.location = MenorcaLocation.CIUTADELLA
         self.artist1_profile.save()        
         self.product1 = Product.objects.create(
-            artist=self.artist1_profile,
+            artisan=self.artist1_user,
             name='Producto Artesano 1',
             description='Test',
             price=Decimal('50.00'),
@@ -433,13 +433,13 @@ class OrderQueryTests(TestCase):
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        self.artist2_profile = self.artist2_user.artist_profile
+        self.artist2_profile = self.artist2_user.artisan_profile
         self.artist2_profile.display_name = 'Taller 2'
         self.artist2_profile.craft_type = CraftType.JEWELRY
         self.artist2_profile.location = MenorcaLocation.MAO
         self.artist2_profile.save()
         self.product2 = Product.objects.create(
-            artist=self.artist2_profile,
+            artisan=self.artist2_user,
             name='Producto Artesano 2',
             description='Test',
             price=Decimal('30.00'),
@@ -468,7 +468,7 @@ class OrderQueryTests(TestCase):
         OrderItem.objects.create(
             order=self.order1,
             product=self.product1,
-            artist=self.artist1_profile,
+            artisan=self.artist1_user,
             product_name='Producto 1',
             product_price=Decimal('50.00'),
             quantity=1
@@ -485,7 +485,7 @@ class OrderQueryTests(TestCase):
         OrderItem.objects.create(
             order=self.order2,
             product=self.product2,
-            artist=self.artist2_profile,
+            artisan=self.artist2_user,
             product_name='Producto 2',
             product_price=Decimal('30.00'),
             quantity=1
@@ -533,15 +533,15 @@ class OrderArtistSalesTests(TestCase):
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        # El signal create_artist_profile ya creó el perfil, solo lo obtenemos y configuramos
-        self.artist_profile = self.artist_user.artist_profile
-        self.artist_profile.display_name = 'Taller Test'
-        self.artist_profile.craft_type = CraftType.CERAMICS
-        self.artist_profile.location = MenorcaLocation.CIUTADELLA
-        self.artist_profile.save()
+        # El signal create_artisan_profile ya creó el perfil, solo lo obtenemos y configuramos
+        self.artisan_profile = self.artist_user.artisan_profile
+        self.artisan_profile.display_name = 'Taller Test'
+        self.artisan_profile.craft_type = CraftType.CERAMICS
+        self.artisan_profile.location = MenorcaLocation.CIUTADELLA
+        self.artisan_profile.save()
         
         self.product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             name='Producto Test',
             description='Test',
             price=Decimal('50.00'),
@@ -563,7 +563,7 @@ class OrderArtistSalesTests(TestCase):
         OrderItem.objects.create(
             order=order,
             product=self.product,
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             product_name='Producto Test',
             product_price=Decimal('50.00'),
             quantity=2
@@ -608,15 +608,15 @@ class OrderSignalsTests(TestCase):
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        # El signal create_artist_profile ya creó el perfil, solo lo obtenemos y configuramos
-        self.artist_profile = self.artist_user.artist_profile
-        self.artist_profile.display_name = 'Taller Test'
-        self.artist_profile.craft_type = CraftType.CERAMICS
-        self.artist_profile.location = MenorcaLocation.CIUTADELLA
-        self.artist_profile.save()
+        # El signal create_artisan_profile ya creó el perfil, solo lo obtenemos y configuramos
+        self.artisan_profile = self.artist_user.artisan_profile
+        self.artisan_profile.display_name = 'Taller Test'
+        self.artisan_profile.craft_type = CraftType.CERAMICS
+        self.artisan_profile.location = MenorcaLocation.CIUTADELLA
+        self.artisan_profile.save()
         
         self.product = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             name='Producto Test',
             description='Test',
             price=Decimal('50.00'),
@@ -639,7 +639,7 @@ class OrderSignalsTests(TestCase):
         item = OrderItem.objects.create(
             order=order,
             product=self.product,
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             product_name='Test',
             product_price=Decimal('50.00'),
             quantity=3
@@ -673,7 +673,7 @@ class OrderSignalsTests(TestCase):
         OrderItem.objects.create(
             order=order,
             product=self.product,
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             product_name='Test',
             product_price=Decimal('50.00'),
             quantity=5
@@ -704,14 +704,14 @@ class OrderAtomicTransactionTests(TestCase):
             password='testpass123',
             role=UserRole.ARTISAN
         )
-        self.artist_profile = self.artist_user.artist_profile
-        self.artist_profile.display_name = 'Taller Test'
-        self.artist_profile.craft_type = CraftType.CERAMICS
-        self.artist_profile.location = MenorcaLocation.CIUTADELLA
-        self.artist_profile.save()
+        self.artisan_profile = self.artist_user.artisan_profile
+        self.artisan_profile.display_name = 'Taller Test'
+        self.artisan_profile.craft_type = CraftType.CERAMICS
+        self.artisan_profile.location = MenorcaLocation.CIUTADELLA
+        self.artisan_profile.save()
         
         self.product1 = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             name='Producto OK',
             description='Test',
             price=Decimal('50.00'),
@@ -722,7 +722,7 @@ class OrderAtomicTransactionTests(TestCase):
         )
         
         self.product2 = Product.objects.create(
-            artist=self.artist_profile,
+            artisan=self.artist_user,
             name='Producto Sin Stock',
             description='Test',
             price=Decimal('30.00'),

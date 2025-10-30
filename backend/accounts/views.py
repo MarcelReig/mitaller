@@ -162,12 +162,12 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     
     def get_object(self) -> User:
         """
-        Retorna el usuario autenticado.
-        Optimiza con select_related para cargar artisan_profile y artist_profile en una sola query.
+        Returns the authenticated user.
+        Optimizes with select_related to load artisan_profile in a single query.
         """
         user_id = self.request.user.id
         try:
-            return User.objects.select_related('artisan_profile', 'artist_profile').get(id=user_id)
+            return User.objects.select_related('artisan_profile').get(id=user_id)
         except User.DoesNotExist:
             return self.request.user
     

@@ -200,3 +200,66 @@ class ArtisanProfileViewSet(viewsets.ReadOnlyModelViewSet):
         # Serializar y retornar
         serializer = WorkListSerializer(works, many=True)
         return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=['get'],
+        permission_classes=[AllowAny],
+        url_path='products'
+    )
+    def products(self, request, slug=None):
+        """
+        Endpoint para obtener productos de un artesano específico.
+
+        GET /api/v1/artisans/{slug}/products/
+
+        Filtros disponibles vía query params:
+        - is_active: bool - Filtrar por estado activo
+        - is_featured: bool - Filtrar productos destacados
+        - category: string - Filtrar por categoría
+
+        Ordenamiento:
+        - Destacados primero (is_featured=True)
+        - Más recientes primero (created_at desc)
+
+        Permisos:
+        - Público (sin autenticación requerida)
+
+        Returns:
+        - 200: Lista de productos del artesano
+        - 404: Artesano no encontrado
+
+        Example:
+            GET /api/v1/artisans/juan-ceramista/products/
+            GET /api/v1/artisans/juan-ceramista/products/?is_featured=true
+            GET /api/v1/artisans/juan-ceramista/products/?category=ceramics
+        """
+        # Importar aquí para evitar circular imports
+        from shop.serializers import ProductSerializer
+
+        # Obtener el artesano por slug
+        artisan_profile = self.get_object()
+        artisan_user = artisan_profile.user
+
+        # Filtrar productos del artesano
+        products = artisan_user.products.all()
+
+        # Aplicar filtros adicionales desde query params
+        is_active = request.query_params.get('is_active')
+        if is_active is not None:
+            products = products.filter(is_active=is_active.lower() == 'true')
+
+        is_featured = request.query_params.get('is_featured')
+        if is_featured is not None:
+            products = products.filter(is_featured=is_featured.lower() == 'true')
+
+        category = request.query_params.get('category')
+        if category:
+            products = products.filter(category=category)
+
+        # Ordenar por destacados primero, luego por fecha
+        products = products.order_by('-is_featured', '-created_at')
+
+        # Serializar y retornar
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)

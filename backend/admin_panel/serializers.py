@@ -13,6 +13,7 @@ class AdminArtisanSerializer(serializers.ModelSerializer):
     bio = serializers.CharField(source='artisan_profile.bio', read_only=True)
     avatar = serializers.URLField(source='artisan_profile.avatar', read_only=True)
     cover_image = serializers.URLField(source='artisan_profile.cover_image', read_only=True)
+    is_featured = serializers.BooleanField(source='artisan_profile.is_featured', read_only=True)
     
     # Counts (se agregan via annotate en ViewSet)
     works_count = serializers.IntegerField(read_only=True)
@@ -25,13 +26,13 @@ class AdminArtisanSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'role', 'is_approved', 
-            'created_at', 'updated_at',
-            'slug', 'bio', 'avatar', 'cover_image',
+            'id', 'username', 'email', 'role', 'is_approved',
+            'date_joined', 'updated_at',
+            'slug', 'bio', 'avatar', 'cover_image', 'is_featured',
             'works_count', 'products_count', 'completed_orders_count',
             'can_be_deleted'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'can_be_deleted']
+        read_only_fields = ['id', 'date_joined', 'updated_at', 'can_be_deleted']
     
     def get_can_be_deleted(self, obj):
         """Puede eliminarse si no tiene pedidos completados"""

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -46,59 +47,60 @@ export default function HomePage() {
         {/* ============================================
             HERO SECTION
             ============================================ */}
-        <section className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-20 lg:py-32">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            {/* Badge */}
-            <Badge variant="secondary" className="text-sm">
-              ✨ Artesanía 100% de Menorca
-            </Badge>
+        <section className="relative overflow-hidden">
+          {/* Background image container */}
+          <div className="absolute inset-0">
+            <Image
+              src="/images/landing-hero.jpg"
+              alt="Artesanía y Arte de Menorca"
+              fill
+              className="object-cover"
+              priority
+              quality={90}
+              sizes="100vw"
+            />
+            {/* Overlay oscuro para legibilidad del texto */}
+            <div className="absolute inset-0 bg-black/50" />
+          </div>
 
-            {/* Título principal */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-              Artesanía Auténtica
-              <br />
-              <span className="text-primary">de Menorca</span>
-            </h1>
+          {/* Content */}
+          <div className="relative container mx-auto px-4 py-24 md:py-32 lg:py-40">
+            <div className="max-w-4xl mx-auto text-center space-y-8">
+              {/* Badge */}
+              <Badge variant="secondary" className="text-sm font-medium shadow-lg bg-white/90 text-gray-900 hover:bg-white">
+                ✨ Arte y Artesanía 100% de Menorca
+              </Badge>
 
-            {/* Subtítulo */}
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-              Descubre creaciones únicas hechas a mano por artesanos locales.
-              Cada pieza cuenta una historia.
-            </p>
+              {/* Título principal - más emocional */}
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight text-white drop-shadow-2xl">
+                Descubre el Arte y Artesanía
+                <br />
+                <span className="text-white">que Cuenta Historias</span>
+              </h1>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button asChild size="lg" className="text-lg px-8">
-                <Link href="/artesanos">
-                  Explorar Artesanos
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+              {/* Subtítulo - más específico y emocional */}
+              <p className="text-lg md:text-xl lg:text-2xl text-slate-200 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
+                Conecta con artistas y artesanos de Menorca. Descubre desde cerámica
+                tradicional hasta arte contemporáneo, cada pieza hecha con pasión
+                y dedicación. Cada creación es una historia de talento auténtico.
+              </p>
 
-              <Button asChild variant="outline" size="lg" className="text-lg px-8">
-                <Link href="/registro">Únete como Artesano</Link>
-              </Button>
-            </div>
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+                <Button asChild size="lg" className="text-base md:text-lg px-8 py-6 shadow-lg hover:shadow-xl">
+                  <Link href="/artesanos">
+                    Explorar Creadores
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8 border-t">
-              <div>
-                <p className="text-3xl font-bold text-primary">20+</p>
-                <p className="text-sm text-muted-foreground">Artesanos</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-primary">100+</p>
-                <p className="text-sm text-muted-foreground">Productos</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-primary">8</p>
-                <p className="text-sm text-muted-foreground">Localidades</p>
+                <Button asChild variant="outline" size="lg" className="text-base md:text-lg px-8 py-6 bg-background/80 backdrop-blur-sm">
+                  <Link href="/registro">Únete como Creador</Link>
+                </Button>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* ============================================
           FEATURED ARTISTS SECTION
@@ -109,11 +111,11 @@ export default function HomePage() {
             {/* Header */}
             <div className="text-center space-y-4 mb-12">
               <h2 className="text-3xl md:text-4xl font-bold">
-                Artesanos Destacados
+                Creadores Destacados
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Conoce a algunos de los talentosos artesanos que forman parte de
-                nuestra comunidad
+                Conoce a algunos de los artistas y artesanos que forman parte de
+                nuestra comunidad menorquina
               </p>
             </div>
 
@@ -135,62 +137,83 @@ export default function HomePage() {
                 ))}
               </div>
             ) : featuredArtists && featuredArtists.length > 0 ? (
-              // Grid con artistas
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {featuredArtists.map((artist) => (
-                  <Link
-                    key={artist.slug}
-                    href={`/artesanos/${artist.slug}`}
-                    className="group"
-                  >
-                    <Card className="h-full hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer">
-                      <CardContent className="p-6 flex flex-col items-center gap-4 text-center">
-                        {/* Avatar */}
-                        <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                          <AvatarImage
-                            src={artist.avatar || undefined}
-                            alt={artist.display_name}
-                          />
-                          <AvatarFallback className="text-2xl">
-                            {artist.display_name
-                              .split(' ')
-                              .map((n) => n[0])
-                              .join('')
-                              .toUpperCase()
-                              .slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
+              // Grid con artistas - Diseño moderno
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {featuredArtists.map((artist) => {
+                  const initials = artist.display_name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2);
 
-                        {/* Info */}
-                        <div className="space-y-2">
-                          <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
-                            {artist.display_name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {CRAFT_TYPE_LABELS[artist.craft_type]}
-                          </p>
-                          <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {artist.full_location}
-                          </p>
-                        </div>
+                  return (
+                    <Link
+                      key={artist.slug}
+                      href={`/artesanos/${artist.slug}`}
+                      className="group"
+                    >
+                      <div className="relative">
+                        <Card className="overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 p-0 gap-0">
+                          {/* Imagen */}
+                          <div className="relative aspect-square overflow-hidden bg-muted">
+                            {artist.avatar ? (
+                              <img
+                                src={artist.avatar}
+                                alt={artist.display_name}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                                <span className="text-6xl font-bold text-primary/30">
+                                  {initials}
+                                </span>
+                              </div>
+                            )}
+                            {/* Overlay sutil en hover */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+                          </div>
 
-                        {/* Badge destacado */}
+                          {/* Contenido */}
+                          <CardContent className="p-5">
+                            <div className="space-y-3">
+                              {/* Nombre */}
+                              <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+                                {artist.display_name}
+                              </h3>
+
+                              {/* Meta info */}
+                              <div className="space-y-1.5">
+                                <p className="text-sm text-muted-foreground font-medium">
+                                  {CRAFT_TYPE_LABELS[artist.craft_type]}
+                                </p>
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <MapPin className="h-3.5 w-3.5" />
+                                  <span>{artist.full_location}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Badge destacado flotante */}
                         {artist.is_featured && (
-                          <Badge variant="secondary" className="text-xs">
-                            Destacado
-                          </Badge>
+                          <div className="absolute top-3 right-3">
+                            <Badge className="bg-amber-500 text-white border-0 shadow-lg">
+                              ⭐ Destacado
+                            </Badge>
+                          </div>
                         )}
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
               // Empty state
               <div className="text-center py-12">
                 <p className="text-muted-foreground">
-                  No hay artesanos destacados por el momento
+                  No hay creadores destacados por el momento
                 </p>
               </div>
             )}
@@ -199,7 +222,7 @@ export default function HomePage() {
             <div className="text-center mt-12">
               <Button asChild variant="outline" size="lg">
                 <Link href="/artesanos">
-                  Ver todos los artesanos
+                  Ver todos los creadores
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -220,8 +243,8 @@ export default function HomePage() {
                 ¿Por qué MiTaller.art?
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Conectamos artesanos locales con personas que valoran la
-                artesanía auténtica
+                Conectamos artistas y artesanos locales con personas que valoran
+                el talento auténtico y las creaciones únicas
               </p>
             </div>
 
@@ -233,10 +256,10 @@ export default function HomePage() {
                   <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                     <MapPin className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold">Artesanía Local</h3>
+                  <h3 className="text-xl font-semibold">100% Menorca</h3>
                   <p className="text-muted-foreground">
-                    Todos nuestros artesanos son de Menorca. Conoce la historia
-                    detrás de cada pieza.
+                    Solo creadores verificados de Menorca. Desde artesanía tradicional
+                    hasta arte contemporáneo, cada pieza lleva el sello de nuestra isla.
                   </p>
                 </CardContent>
               </Card>
@@ -247,10 +270,10 @@ export default function HomePage() {
                   <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                     <Sparkles className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold">Piezas Únicas</h3>
+                  <h3 className="text-xl font-semibold">Conexión Personal</h3>
                   <p className="text-muted-foreground">
-                    Cada producto es hecho a mano con dedicación. No encontrarás
-                    dos piezas exactamente iguales.
+                    Conoce al creador detrás de cada pieza. Ve su taller o estudio,
+                    descubre su proceso y entiende el valor real de cada creación.
                   </p>
                 </CardContent>
               </Card>
@@ -261,10 +284,11 @@ export default function HomePage() {
                   <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                     <Heart className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold">Apoyo Directo</h3>
+                  <h3 className="text-xl font-semibold">Comercio Justo Local</h3>
                   <p className="text-muted-foreground">
-                    Tu compra va directamente al artesano. Apoya el talento local
-                    y preserva las tradiciones.
+                    Tu dinero va directo al creador, sin grandes plataformas que se
+                    queden con la mayoría. Impulsa la economía creativa local y apoya
+                    el talento menorquín.
                   </p>
                 </CardContent>
               </Card>
@@ -281,27 +305,31 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto text-center space-y-8 text-primary-foreground">
             {/* Título */}
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-              ¿Eres artesano de Menorca?
+              ¿Eres artista o artesano de Menorca?
             </h2>
 
             {/* Descripción */}
             <p className="text-xl md:text-2xl opacity-90 max-w-2xl mx-auto">
-              Únete a nuestra comunidad y vende tus creaciones. Sin costes
-              iniciales, solo una pequeña comisión por venta.
+              Únete a nuestra comunidad y muestra tu trabajo al mundo.
+              Ya sea arte contemporáneo o artesanía tradicional, vende directamente
+              sin intermediarios y recibe tus pagos al instante.
             </p>
 
             {/* Benefits */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto pt-8">
               <div className="space-y-2">
-                <p className="text-lg font-semibold">✓ Gratis durante 6 meses</p>
+                <p className="text-lg font-semibold">✓ Sin cuota mensual</p>
+                <p className="text-sm opacity-75">Gratis durante la fase beta</p>
               </div>
               <div className="space-y-2">
-                <p className="text-lg font-semibold">✓ Solo 10% de comisión</p>
+                <p className="text-lg font-semibold">✓ Solo 10% por venta</p>
+                <p className="text-sm opacity-75">Comisión justa y transparente</p>
               </div>
               <div className="space-y-2">
                 <p className="text-lg font-semibold">
-                  ✓ Cobros directos con Stripe
+                  ✓ Cobros con Stripe
                 </p>
+                <p className="text-sm opacity-75">Pagos seguros y directos</p>
               </div>
             </div>
 
@@ -309,7 +337,7 @@ export default function HomePage() {
             <div className="pt-4">
               <Button asChild size="lg" variant="secondary" className="text-lg px-8">
                 <Link href="/registro">
-                  Crear Cuenta de Artesano
+                  Crear Cuenta de Creador
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>

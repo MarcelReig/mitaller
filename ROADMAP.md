@@ -2,7 +2,7 @@
 
 ## 🎯 Visión del Proyecto
 
-Transformar el MVP actual (Marina) en **mitaller.art** - un marketplace SaaS donde múltiples artistas gestionan portfolios y tiendas independientes.
+Marketplace SaaS **mitaller.art** - plataforma multi-vendor donde artesanos menorquines gestionan portfolios y tiendas independientes.
 
 **Stack Objetivo:**
 - **Backend:** Django + Django Rest Framework + PostgreSQL  
@@ -13,34 +13,38 @@ Transformar el MVP actual (Marina) en **mitaller.art** - un marketplace SaaS don
 
 ## ✅ TODO LIST
 
-### 📦 Phase 0: Setup Básico (3-5 días)
-- [ ] Instalar PostgreSQL (local o Docker simple)
-- [ ] Crear proyecto Django con estructura básica
-- [ ] Diseñar esquema de base de datos (Users, Artists, Works, Products, Orders)
-- [ ] Configurar settings.py con JWT y CORS
-- [ ] Crear requirements.txt minimalista
+### 📦 Phase 0: Setup Básico ✅ COMPLETADO
+- [x] Instalar PostgreSQL (local o Docker simple)
+- [x] Crear proyecto Django con estructura básica
+- [x] Diseñar esquema de base de datos (Users, Artisans, Works, Products, Orders)
+- [x] Configurar settings.py con JWT y CORS
+- [x] Crear requirements.txt minimalista
 
-### 🔐 Phase 1: Backend Core (2 semanas)
-- [ ] Implementar autenticación (register, login, JWT, email verification)
-- [ ] Crear app Artists con perfiles y sistema de slugs
-- [ ] Implementar app Works (portfolio items) con CRUD
-- [ ] Sistema de permisos: IsArtistOwner
-- [ ] Endpoints públicos vs privados
+### 🔐 Phase 1: Backend Core ✅ COMPLETADO
+- [x] Implementar autenticación (register, login, JWT, email verification pendiente)
+- [x] Crear app Artisans con perfiles y sistema de slugs
+- [x] Implementar app Works (portfolio items) con CRUD
+- [x] Sistema de permisos: IsArtisanOwner
+- [x] Endpoints públicos vs privados
 
-### 🛒 Phase 2: Backend Store & Payments (1 semana)
-- [ ] Implementar modelo Products con inventario
-- [ ] Integrar Stripe Checkout
-- [ ] Implementar webhooks de Stripe
-- [ ] Crear sistema de Orders multi-artista
-- [ ] Sistema de suscripciones (Free/Pro/Enterprise)
+### 🛒 Phase 2: Backend Store & Payments ✅ COMPLETADO
+- [x] Implementar modelo Products con inventario
+- [x] Integrar Stripe Connect Express
+- [x] Implementar webhooks de Stripe
+- [x] Crear sistema de Orders multi-vendor
+- [x] Sistema multi-vendor (shipping_cost por artesano, pickup disponible)
 
-### ⚛️ Phase 3: Frontend (1-2 semanas)
+### ⚛️ Phase 3: Frontend ✅ COMPLETADO
 - [x] Setup Next.js 15 con App Router
-- [ ] Instalar Tailwind CSS + shadcn/ui
-- [ ] Implementar auth frontend (login, register, protected routes)
-- [ ] Crear páginas públicas (home, /artists/[slug], shop)
-- [ ] Crear dashboard de artista (obras, productos)
-- [ ] Integrar Cloudinary para upload de imágenes
+- [x] Instalar Tailwind CSS + shadcn/ui
+- [x] Implementar auth frontend (login, register, protected routes)
+- [x] Crear páginas públicas (home, /artesanos/[slug], shop, explorar)
+- [x] Crear dashboard de artesano (obras, productos, perfil)
+- [x] Integrar Cloudinary para upload de imágenes
+- [x] Sistema de carrito multi-vendor
+- [x] Admin Dashboard con estadísticas
+- [x] Página /explorar para descubrimiento global
+- [x] Route Groups pattern implementado
 
 ### 🔐 Phase 3.5: Sistema de Aprobación Híbrido (3-5 días)
 **Objetivo:** Implementar flujo profesional de onboarding para artesanos
@@ -158,30 +162,33 @@ Transformar el MVP actual (Marina) en **mitaller.art** - un marketplace SaaS don
 -- USUARIOS
 Users (id, email, username, password_hash, role, created_at)
   ↓ 1:1
-Artists (id, user_id, slug, bio, avatar_url, stripe_account_id, onboarding_completed)
+ArtisanProfiles (id, user_id, slug, bio, avatar_url, stripe_account_id,
+                 onboarding_completed, shipping_cost, workshop_address)
 
 -- PORTFOLIO (sin tabla intermedia Portfolio)
   ↓ 1:N
-Works (id, artist_id, title, description, media_url, thumbnail_url, display_order)
+Works (id, artisan_id, title, description, media_url, thumbnail_url, display_order)
 
 -- TIENDA
   ↓ 1:N
-Products (id, artist_id, name, price, image_url, stock, status)
+Products (id, artisan_id, name, price, image_url, stock, status,
+          is_featured, pickup_available)
 
--- ÓRDENES (multi-artista)
+-- ÓRDENES (multi-vendor)
 Orders (id, customer_email, total, status, stripe_session_id, created_at)
   ↓ 1:N
-OrderItems (id, order_id, product_id, artist_id, quantity, price_snapshot)
+OrderItems (id, order_id, product_id, artisan_id, quantity, price_snapshot)
 
--- SUSCRIPCIONES (SaaS)
-Subscriptions (id, artist_id, plan, status, started_at, expires_at)
+-- PAGOS (Stripe Connect)
+Payments (id, order_id, artisan_id, stripe_payment_id, amount, status)
 ```
 
 **Decisiones de diseño:**
-- ✅ Cada artista = UN portfolio implícito (sus "Works")
-- ✅ URLs: `mitaller.art/artists/{slug}/`
-- ✅ Multi-tenant: cada OrderItem conoce su artista para comisiones
-- ✅ Suscripciones desde el inicio (Free, Pro, Enterprise)
+- ✅ Cada artesano = UN portfolio implícito (sus "Works")
+- ✅ URLs: `mitaller.art/artesanos/{slug}/` (español)
+- ✅ Multi-vendor: cada OrderItem conoce su artesano para comisiones
+- ✅ Shipping cost independiente por artesano
+- ✅ Productos con opción de recogida en taller
 
 ---
 
@@ -229,17 +236,19 @@ Pillow==10.2.0
 
 ## 🗓️ Timeline Realista
 
-| Fase | Duración | Entregable |
-|------|----------|-----------|
-| 0. Setup | 3-5 días | PostgreSQL + Django funcionando |
-| 1. Backend Core | 2 semanas | Auth + Artists + Works API |
-| 2. Store & Payments | 1 semana | Products + Orders + Stripe |
-| 3. Frontend | 1-2 semanas | Next.js + Auth + Dashboard |
-| 4. Optimización | 1 semana | Redis + Caché (si necesitas) |
-| 5. Testing | 1 semana | Tests + CI/CD (cuando tengas tests) |
-| 6. Deploy | 3-5 días | Producción en Railway + Vercel |
+| Fase | Duración | Estado | Entregable |
+|------|----------|--------|-----------|
+| 0. Setup | 3-5 días | ✅ Completado | PostgreSQL + Django funcionando |
+| 1. Backend Core | 2 semanas | ✅ Completado | Auth + Artisans + Works API |
+| 2. Store & Payments | 1 semana | ✅ Completado | Products + Orders + Stripe Connect |
+| 3. Frontend | 1-2 semanas | ✅ Completado | Next.js + Auth + Dashboard + Admin + Explorar |
+| 3.5. Aprobación Híbrida | 3-5 días | 🔄 Pendiente | Email verification + wizard onboarding |
+| 4. Optimización | 1 semana | 🔄 Pendiente | Redis + Caché (cuando sea necesario) |
+| 5. Testing | 1 semana | 🔄 Pendiente | Tests + CI/CD |
+| 6. Deploy | 3-5 días | 🔄 Pendiente | Producción en Railway + Vercel |
 
-**Total:** 7-9 semanas de desarrollo enfocado
+**Progreso actual:** ~70% completado (Fases 0-3 completadas)
+**Tiempo invertido:** ~6-7 semanas
 
 ---
 
@@ -269,6 +278,32 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
+
+---
+
+## 🌟 LISTA DE DESEOS / WISHLIST
+
+Features no prioritarias para el MVP pero que pueden añadirse en el futuro:
+
+### Página "Sobre mí" - Mejoras Futuras
+- [ ] **Mapa de Google Maps** - Mostrar ubicación del taller en mapa interactivo
+- [ ] **Galería del taller** - Carrusel de fotos del espacio de trabajo
+- [ ] **Premios y reconocimientos** - Sección para mostrar logros
+- [ ] **Proceso creativo** - Timeline o galería mostrando el proceso de creación
+- [ ] **Colaboraciones** - Sección para mostrar trabajos con otros artesanos
+- [ ] **Testimonios** - Reviews de clientes satisfechos
+- [ ] **Video de presentación** - Embed de YouTube/Vimeo con presentación del artesano
+- [ ] **Certificaciones** - Badges de calidad, sostenibilidad, etc.
+
+### General
+- [ ] Sistema de reviews/ratings para productos
+- [ ] Notificaciones en tiempo real (WebSockets)
+- [ ] Chat artesano-comprador
+- [ ] Sistema de favoritos/wishlist
+- [ ] Calendario de eventos/talleres
+- [ ] Blog del artesano
+- [ ] Newsletter/email marketing
+- [ ] Programa de afiliados
 
 ---
 

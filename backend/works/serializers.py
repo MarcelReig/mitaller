@@ -225,17 +225,22 @@ class WorkCreateUpdateSerializer(serializers.ModelSerializer):
         - Si no hay thumbnail_url, usar primera imagen
         - Si no hay imágenes, thumbnail_url debe ser proporcionado
         """
-        images = data.get('images', [])
-        thumbnail_url = data.get('thumbnail_url')
-        
+        # En updates, usar valores existentes si no se proporcionan nuevos
+        if self.instance:
+            images = data.get('images', self.instance.images or [])
+            thumbnail_url = data.get('thumbnail_url', self.instance.thumbnail_url)
+        else:
+            images = data.get('images', [])
+            thumbnail_url = data.get('thumbnail_url')
+
         # Si no hay thumbnail pero sí imágenes, usar la primera
         if not thumbnail_url and images:
             data['thumbnail_url'] = images[0]
-        
-        # Si no hay ni thumbnail ni imágenes, error
-        if not thumbnail_url and not images:
+
+        # Si no hay ni thumbnail ni imágenes, error (solo en creación)
+        if not self.instance and not thumbnail_url and not images:
             raise serializers.ValidationError(
                 "Debes proporcionar al menos una imagen o un thumbnail_url"
             )
-        
+
         return data
